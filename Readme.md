@@ -37,6 +37,68 @@ flowchart LR
     H -->|Sync Success| B
 ```
 
+## Tech Stack
+
+- **Frontend**: React, Vite, Tailwind CSS
+- **Backend**: FastAPI, Python
+- **Database**: Cloud-native database (e.g., PostgreSQL, Firebase)
+- **Deployment**: Cloud-based (e.g., AWS, GCP, Azure)
+- **Other Tools**: Streamlit for UI, Progressive Web App (PWA) features
+
+## Getting Started
+
+### Prerequisites
+
+Ensure you have the following installed on your system:
+
+- Node.js (v16 or later)
+- Python (v3.9 or later)
+- pip (Python package manager)
+- Virtual environment tool (e.g., `venv` or `virtualenv`)
+
+### Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/aidilsaputrakirsan-classroom/cc-kelompok-a-awit.git
+   cd cc-kelompok-a-awit
+   ```
+
+2. Set up the backend:
+
+   ```bash
+   cd backend
+   python -m venv venv
+   source venv/bin/activate # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+
+3. Set up the frontend:
+
+   ```bash
+   cd ../frontend
+   npm install
+   ```
+
+### Running the Application
+
+1. Start the backend server:
+
+   ```bash
+   cd backend
+   uvicorn main:app --reload --port 8000
+   ```
+
+2. Start the frontend development server:
+
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+
+3. Open your browser and navigate to the provided `localhost` URL to access the application.
+
 
 
 
