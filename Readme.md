@@ -213,6 +213,37 @@ Untuk memastikan frontend dan backend sudah terhubung dengan baik:
 1. Buka browser ke `http://localhost:8000/team` untuk melihat informasi tim
 2. Aplikasi frontend seharusnya dapat melakukan fetch data dari API backend di port 8000
 
+
+## 🐳 Containerization & Docker Setup
+
+Sebagai bagian dari pendekatan **cloud-native architecture**, aplikasi e-Mandor dikemas menggunakan teknologi container (Docker) untuk memastikan konsistensi environment antara development, testing, dan deployment.
+
+Dengan containerization, seluruh dependency backend dan frontend terisolasi dalam environment yang terstandarisasi sehingga meminimalkan konflik versi dan mempermudah proses integrasi dengan CI/CD serta deployment ke cloud platform.
+
+---
+
+## 🎯 Tujuan Containerization
+
+- Menyamakan environment seluruh anggota tim
+- Menghindari konflik dependency (Node.js, Python, dll.)
+- Mempermudah proses onboarding anggota tim
+- Mendukung arsitektur cloud-ready
+- Mempermudah proses deployment dan scaling
+
+---
+
+## 📦 Arsitektur Container
+
+Project ini dijalankan menggunakan **Docker Compose** yang mengelola beberapa service:
+
+| Service | Teknologi | Port | Fungsi |
+|----------|------------|------|--------|
+| Backend | FastAPI (Python) | 8000 | REST API Service |
+| Frontend | React + Vite | 5173 | User Interface |
+| Database (Opsional) | PostgreSQL | 5432 | Penyimpanan Data |
+
+Semua service berjalan dalam satu virtual network internal Docker sehingga dapat saling berkomunikasi dengan aman.
+
 ## Deployment
 
 Panduan deployment ke cloud, CI/CD pipelines, dan konfigurasi produksi akan ditambahkan di sini.
