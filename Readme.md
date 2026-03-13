@@ -1,148 +1,283 @@
-> Dokumentasi awal disusun oleh Lead DevOps dan telah direview serta difinalisasi oleh Lead QA & Documentation.
-# Cloud App – E-Mandor
+# ☁️ Cloud App — e-Mandor
 
-Aplikasi **e-Mandor** merupakan sistem informasi berbasis **Cloud Computing** dengan pendekatan **Progressive Web App (PWA)** yang dirancang untuk mendigitalisasi pencatatan hasil panen kelapa sawit di tingkat afdeling.
+> Dokumentasi ini disusun dan difinalisasi oleh **Lead QA & Documentation** berdasarkan kontribusi seluruh anggota tim.
 
-Sistem ini memungkinkan:
+Aplikasi **e-Mandor** adalah sistem informasi berbasis **Cloud Computing** dengan pendekatan **Progressive Web App (PWA)** yang dirancang untuk mendigitalisasi pencatatan hasil panen kelapa sawit di tingkat afdeling.
 
-* Mandor melakukan input absensi, jumlah janjang, dan brondolan melalui perangkat seluler.
-* Krani/administrasi memantau laporan produksi harian secara real-time.
-* Sinkronisasi data dari mode offline ke cloud ketika jaringan tersedia.
+**Sistem ini memungkinkan:**
+- Mandor melakukan input absensi, jumlah janjang, dan brondolan melalui perangkat seluler
+- Krani/administrasi memantau laporan produksi harian secara real-time
+- Sinkronisasi data dari mode offline ke cloud ketika jaringan tersedia
 
 Dengan arsitektur cloud-native, e-Mandor meningkatkan efisiensi operasional, akurasi data, serta transparansi proses pengupahan.
 
 ---
 
-# Identitas Tim
+## 👥 Identitas Tim
 
-| Nama                         | NIM      | Peran                   |
-| ---------------------------- | -------- | ----------------------- |
-| Adam Ibnu Ramadhan           | 10231003 | Lead Backend            |
-| Adhyasta Firdaus             | 10231005 | Lead CI/CD & Deployment |
-| Adonia Azarya Tamalonggehe   | 10231007 | Lead QA & Documentation |
-| Alfian Fadillah Putra        | 10231009 | Lead Frontend           |
-| Varrel Kaleb Ropard Pasaribu | 10231089 | Lead DevOps             |
+| Nama | NIM | Peran |
+| ---- | ---- | ----- |
+| Adam Ibnu Ramadhan | 10231003 | Lead Backend |
+| Adhyasta Firdaus | 10231005 | Lead CI/CD & Deployment |
+| Adonia Azarya Tamalonggehe | 10231007 | Lead QA & Documentation |
+| Alfian Fadillah Putra | 10231009 | Lead Frontend |
+| Varrel Kaleb Ropard Pasaribu | 10231089 | Lead DevOps |
 
 ---
 
-# Architecture Overview
+## 📅 Roadmap Progress
+
+| Minggu | Fokus | Target Milestone | Status |
+|--------|-------|-----------------|--------|
+| **1** | Setup Environment & Hello World | Full-stack hello world berjalan lokal | ✅ Selesai |
+| **2** | Backend REST API + PostgreSQL | 6 CRUD endpoint + `/stats` terhubung ke DB | ✅ Selesai |
+| **3** | Frontend React + UI Integration | UI CRUD lengkap terhubung ke backend | ✅ Selesai |
+| 4 | Full-Stack Integration & Auth | CORS, JWT, environment variables | ⬜ |
+| 5–7 | Docker & Docker Compose | `docker compose up` menjalankan semua service | ⬜ |
+| 8 | UTS Demo | Full-stack + Docker (dinilai) | ⬜ |
+| 9–11 | CI/CD Pipeline | Auto test + auto deploy via GitHub Actions | ⬜ |
+| 12–14 | Microservices & API Gateway | Nginx reverse proxy + multi-service | ⬜ |
+| 15–16 | Polish, Security & UAS | Production-ready, monitoring | ⬜ |
+
+---
+
+## 🏗️ Architecture Overview
 
 ```mermaid
 flowchart LR
-
-    subgraph Client_Device
-        A[Mandor User]
-        B[React PWA]
+    subgraph Client_Device["🌐 Client"]
+        A[Mandor / User]
+        B[React PWA\nlocalhost:5173]
         C[Service Worker]
         D[Local Storage / IndexedDB]
     end
 
-    subgraph Cloud_Server
-        E[FastAPI REST API]
-        F[Validation Layer]
-        G[Business Logic]
-        H[(Cloud Database)]
+    subgraph Cloud_Server["☁️ Cloud Server"]
+        E[FastAPI REST API\nlocalhost:8000]
+        F[Validation Layer\nPydantic Schemas]
+        G[Business Logic\nCRUD Functions]
+        H[(PostgreSQL\ncloudapp DB)]
     end
 
-    subgraph Deployment
+    subgraph Deployment["📦 Deployment"]
         I[Docker Container]
     end
 
     A --> B
     B --> C
     C --> D
-
     D -->|Offline Data| C
     C -->|Sync When Online| E
-
-    E --> F
-    F --> G
-    G --> H
-
+    E --> F --> G --> H
     E -.-> I
 ```
 
 Arsitektur ini menerapkan pendekatan **client–server berbasis REST API** dengan dukungan mode offline pada sisi frontend dan penyimpanan terpusat di cloud database.
 
----
+**Alur request lengkap:**
 
-# Tech Stack
+```mermaid
+flowchart TD
+    CLIENT[🌐 Browser / React] -->|HTTP Request| MAIN[main.py\nFastAPI Router]
+    MAIN -->|Validasi input| SCHEMA[schemas.py\nPydantic Schema]
+    SCHEMA -->|Data valid| CRUD[crud.py\nBusiness Logic]
+    CRUD -->|SQL via ORM| MODEL[models.py\nSQLAlchemy Model]
+    MODEL --> DB[(PostgreSQL)]
 
-### Frontend
-
-* React
-* Vite
-* Tailwind CSS
-* Progressive Web App (PWA)
-
-### Backend
-
-* FastAPI (Python)
-* Uvicorn
-
-### Database
-
-* Cloud-native database (PostgreSQL / Firebase)
-
-### DevOps & Deployment
-
-* Docker & Docker Compose
-* CI/CD Pipeline
-* Cloud Platform (AWS / GCP / Azure)
+    DB -.->|Result| MODEL
+    MODEL -.->|Python Object| CRUD
+    CRUD -.->|Response Object| SCHEMA
+    SCHEMA -.->|JSON| MAIN
+    MAIN -.->|HTTP Response| CLIENT
+```
 
 ---
 
-# 🔌 API Endpoints
+## 🛠️ Tech Stack
 
-## Base URL
+| Kategori | Teknologi | Versi | Fungsi |
+|----------|-----------|-------|--------|
+| **Backend** | Python + FastAPI | 3.10+ / 0.115.0 | REST API server |
+| **Frontend** | React + Vite | 18+ | User interface (SPA/PWA) |
+| **Styling** | Tailwind CSS | — | Utility-first CSS framework |
+| **Database** | PostgreSQL | 14+ | Penyimpanan data relasional |
+| **ORM** | SQLAlchemy | 2.0.35 | Python ↔ SQL mapping |
+| **Validation** | Pydantic | 2.9.0 | Schema validasi request/response |
+| **Server** | Uvicorn | 0.30.0 | ASGI server untuk FastAPI |
+| **Container** | Docker & Docker Compose | — | Packaging & orchestration *(minggu 5–7)* |
+| **CI/CD** | GitHub Actions | — | Automated test & deploy *(minggu 9–11)* |
+| **Cloud** | Railway / Render | — | Hosting & deployment *(minggu 11)* |
+
+---
+
+## 📁 Struktur Proyek
+
+```
+cc-kelompok-a-awit/
+├── README.md                        ← Dokumentasi proyek (file ini)
+├── .gitignore
+├── setup.sh                         ← Script setup otomatis
+│
+├── backend/
+│   ├── main.py                      ← FastAPI app & semua endpoint
+│   ├── models.py                    ← SQLAlchemy model (tabel database)
+│   ├── schemas.py                   ← Pydantic schemas (validasi request/response)
+│   ├── crud.py                      ← Fungsi CRUD (business logic)
+│   ├── database.py                  ← Koneksi ke PostgreSQL
+│   ├── requirements.txt             ← Dependencies Python
+│   ├── .env                         ← ⚠️ TIDAK di-commit (berisi kredensial DB)
+│   └── .env.example                 ← Template konfigurasi (aman di-commit)
+│
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx                  ← Root component & state management
+│   │   ├── App.css                  ← Global styles
+│   │   ├── main.jsx                 ← Entry point React
+│   │   ├── components/
+│   │   │   ├── Header.jsx           ← Judul & statistik + status API
+│   │   │   ├── SearchBar.jsx        ← Input pencarian dengan clear
+│   │   │   ├── ItemForm.jsx         ← Form create/edit item
+│   │   │   ├── ItemList.jsx         ← Container grid daftar items
+│   │   │   └── ItemCard.jsx         ← Card per item dengan Edit/Delete
+│   │   └── services/
+│   │       └── api.js               ← Semua fungsi fetch API (service layer)
+│   ├── public/
+│   ├── package.json
+│   └── vite.config.js
+│
+├── docs/
+│   ├── api-test-results.md          ← Hasil testing endpoint API (Modul 2)
+│   ├── ui-test-results.md           ← Hasil testing UI CRUD (Modul 3)
+│   ├── database-schema.md           ← Schema database
+│   ├── member-[Adam Ibnu Ramadhan].md
+│   ├── member-[Adhyasta Firdaus].md
+│   ├── member-[Adonia Azarya Tamalonggehe].md
+│   ├── member-[Alfian Fadillah Putra].md
+│   └── member-[Varrel Kaleb Ropard Pasaribu].md
+│
+└── image_w3/                        ← Screenshot UI testing Week 3
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+| Tool | Versi Minimum | Cek Instalasi |
+|------|--------------|---------------|
+| Python | 3.10+ | `python --version` |
+| Node.js | 18+ | `node --version` |
+| npm | 9+ | `npm --version` |
+| Git | terbaru | `git --version` |
+| PostgreSQL | 14+ | `psql --version` |
+
+---
+
+### 1️⃣ Clone Repository
+
+```bash
+git clone https://github.com/aidilsaputrakirsan-classroom/cc-kelompok-a-awit.git
+cd cc-kelompok-a-awit
+```
+
+---
+
+### 2️⃣ Setup Backend
+
+```bash
+cd backend
+
+# Buat virtual environment
+python -m venv venv
+
+# Aktifkan (Windows)
+venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Salin template konfigurasi
+copy .env.example .env
+
+# Edit .env — sesuaikan DATABASE_URL dengan konfigurasi PostgreSQL lokal Anda:
+# DATABASE_URL=postgresql://postgres:PASSWORD@localhost:5432/cloudapp
+```
+
+Buat database di PostgreSQL terlebih dahulu:
+
+```sql
+CREATE DATABASE cloudapp;
+```
+
+Jalankan backend:
+
+```bash
+uvicorn main:app --reload --port 8000
+```
+
+Backend tersedia di:
+
+| URL | Keterangan |
+|-----|------------|
+| `http://localhost:8000` | Base API |
+| `http://localhost:8000/docs` | Swagger UI (dokumentasi interaktif) |
+| `http://localhost:8000/health` | Health check |
+
+Atau gunakan script otomatis dari root direktori:
+
+```bash
+bash setup.sh
+```
+
+---
+
+### 3️⃣ Setup Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend tersedia di: **`http://localhost:5173`**
+
+> ⚠️ Pastikan backend sudah berjalan sebelum membuka frontend agar status "API Connected" muncul di header.
+
+---
+
+## 🔌 API Reference
+
+### Base URL
 
 ```
 http://localhost:8000
 ```
 
-Swagger UI (dokumentasi interaktif):
+### Ringkasan Endpoint
 
-```
-http://localhost:8000/docs
-```
-
----
-
-## Ringkasan Endpoint
-
-| No | Method   | Endpoint           | Deskripsi                              | Status Code       |
-|----|----------|--------------------|----------------------------------------|-------------------|
-| 1  | `GET`    | `/health`          | Cek status API                         | 200               |
-| 2  | `GET`    | `/team`            | Informasi tim                          | 200               |
-| 3  | `POST`   | `/items`           | Buat item baru                         | 201               |
-| 4  | `GET`    | `/items`           | Ambil semua item (pagination & search) | 200               |
-| 5  | `GET`    | `/items/{item_id}` | Ambil satu item berdasarkan ID         | 200 / 404         |
-| 6  | `PUT`    | `/items/{item_id}` | Update item berdasarkan ID             | 200 / 404         |
-| 7  | `DELETE` | `/items/{item_id}` | Hapus item berdasarkan ID              | 204 / 404         |
-| 8  | `GET`    | `/items/stats`     | Statistik inventory                    | 200               |
+| No | Method | Endpoint | Deskripsi | Status Code |
+|----|--------|----------|-----------|-------------|
+| 1 | `GET` | `/health` | Cek status API | 200 |
+| 2 | `GET` | `/team` | Informasi tim | 200 |
+| 3 | `POST` | `/items` | Buat item baru | 201 / 422 |
+| 4 | `GET` | `/items` | Ambil semua item (pagination & search) | 200 |
+| 5 | `GET` | `/items/{item_id}` | Ambil satu item berdasarkan ID | 200 / 404 |
+| 6 | `PUT` | `/items/{item_id}` | Update item (partial update) | 200 / 404 |
+| 7 | `DELETE` | `/items/{item_id}` | Hapus item | 204 / 404 |
+| 8 | `GET` | `/items/stats` | Statistik inventory | 200 |
 
 ---
 
-# 1️⃣ Health Check
+### 1. GET `/health` — Health Check
 
-**Method**
+Mengecek apakah server API sedang berjalan.
 
-```
-GET
-```
-
-**Endpoint**
-
-```
-/health
+```http
+GET http://localhost:8000/health
 ```
 
-**Deskripsi**
-
-Mengecek apakah server API sedang berjalan dengan baik.
-
-**Response Example (200 OK)**
-
+**Response `200 OK`:**
 ```json
 {
   "status": "healthy",
@@ -152,90 +287,49 @@ Mengecek apakah server API sedang berjalan dengan baik.
 
 ---
 
-# 2️⃣ Team Information
+### 2. GET `/team` — Team Information
 
-**Method**
+Menampilkan informasi seluruh anggota tim.
 
-```
-GET
-```
-
-**Endpoint**
-
-```
-/team
+```http
+GET http://localhost:8000/team
 ```
 
-**Deskripsi**
-
-Menampilkan informasi seluruh anggota tim beserta peran masing-masing.
-
-**Response Example (200 OK)**
-
+**Response `200 OK`:**
 ```json
 {
   "team": "cloud-team-a-awit",
   "members": [
-    {
-      "name": "Adam Ibnu Ramadhan",
-      "nim": "10231003",
-      "role": "Lead Backend"
-    },
-    {
-      "name": "Adhyasta Firdaus",
-      "nim": "10231005",
-      "role": "Lead CI/CD & Deployment"
-    },
-    {
-      "name": "Adonia Azarya Tamalonggehe",
-      "nim": "10231007",
-      "role": "Lead QA & Documentation"
-    },
-    {
-      "name": "Alfian Fadillah Putra",
-      "nim": "10231009",
-      "role": "Lead Frontend"
-    },
-    {
-      "name": "Varrel Kaleb Ropard Pasaribu",
-      "nim": "10231089",
-      "role": "Lead DevOps"
-    }
+    { "name": "Adam Ibnu Ramadhan", "nim": "10231003", "role": "Lead Backend" },
+    { "name": "Adhyasta Firdaus", "nim": "10231005", "role": "Lead CI/CD & Deployment" },
+    { "name": "Adonia Azarya Tamalonggehe", "nim": "10231007", "role": "Lead QA & Documentation" },
+    { "name": "Alfian Fadillah Putra", "nim": "10231009", "role": "Lead Frontend" },
+    { "name": "Varrel Kaleb Ropard Pasaribu", "nim": "10231089", "role": "Lead DevOps" }
   ]
 }
 ```
 
 ---
 
-# 3️⃣ Create Item
-
-**Method**
-
-```
-POST
-```
-
-**Endpoint**
-
-```
-/items
-```
-
-**Deskripsi**
+### 3. POST `/items` — Create Item
 
 Membuat item baru dan menyimpannya ke database.
 
-**Request Body**
+```http
+POST http://localhost:8000/items
+Content-Type: application/json
+```
 
-| Field         | Type    | Required | Validasi                   | Deskripsi            |
-|---------------|---------|----------|----------------------------|----------------------|
-| `name`        | string  | ✅ Ya    | min 1, max 100 karakter    | Nama item            |
-| `price`       | float   | ✅ Ya    | harus > 0                  | Harga item           |
-| `description` | string  | ❌ Tidak | —                          | Deskripsi item       |
-| `quantity`    | integer | ❌ Tidak | default `0`, tidak negatif | Jumlah stok          |
+**Request Body:**
 
-**Request Body Example**
+| Field | Type | Required | Validasi | Deskripsi |
+|-------|------|----------|----------|-----------|
+| `name` | string | ✅ Ya | min 1, max 100 karakter | Nama item |
+| `price` | float | ✅ Ya | harus > 0 | Harga item |
+| `description` | string | ❌ Tidak | — | Deskripsi item |
+| `quantity` | integer | ❌ Tidak | default `0`, tidak negatif | Jumlah stok |
 
+**Request Body Example:**
 ```json
 {
   "name": "Laptop",
@@ -245,8 +339,7 @@ Membuat item baru dan menyimpannya ke database.
 }
 ```
 
-**Response Example (201 Created)**
-
+**Response `201 Created`:**
 ```json
 {
   "id": 1,
@@ -254,13 +347,12 @@ Membuat item baru dan menyimpannya ke database.
   "description": "Laptop untuk cloud computing",
   "price": 15000000,
   "quantity": 5,
-  "created_at": "2026-03-07T10:30:00",
+  "created_at": "2026-03-07T10:30:00+08:00",
   "updated_at": null
 }
 ```
 
-**Error Response (422 Unprocessable Entity)** — validasi gagal, misalnya `price` bernilai negatif:
-
+**Error Response `422 Unprocessable Entity`** — validasi gagal (misal `price` negatif):
 ```json
 {
   "detail": [
@@ -276,44 +368,23 @@ Membuat item baru dan menyimpannya ke database.
 
 ---
 
-# 4️⃣ Get All Items
+### 4. GET `/items` — List Items
 
-**Method**
+Mengambil daftar semua item dengan dukungan pagination dan pencarian.
 
-```
-GET
-```
-
-**Endpoint**
-
-```
-/items
+```http
+GET http://localhost:8000/items?skip=0&limit=20&search=
 ```
 
-**Deskripsi**
+**Query Parameters:**
 
-Mengambil daftar semua item dengan dukungan pagination dan pencarian berdasarkan nama atau deskripsi.
+| Parameter | Type | Default | Batas | Deskripsi |
+|-----------|------|---------|-------|-----------|
+| `skip` | integer | `0` | ≥ 0 | Offset untuk pagination |
+| `limit` | integer | `20` | 1 – 100 | Jumlah item per halaman |
+| `search` | string | — | — | Kata kunci (nama atau deskripsi) |
 
-**Query Parameters**
-
-| Parameter | Type    | Default | Batas      | Deskripsi                                  |
-|-----------|---------|---------|------------|--------------------------------------------|
-| `skip`    | integer | `0`     | ≥ 0        | Jumlah data yang di-skip (offset)          |
-| `limit`   | integer | `20`    | 1 – 100    | Jumlah item yang dikembalikan per halaman  |
-| `search`  | string  | —       | —          | Kata kunci pencarian (nama atau deskripsi) |
-
-**Example Request**
-
-```
-GET /items?skip=0&limit=10
-```
-
-```
-GET /items?search=laptop
-```
-
-**Response Example (200 OK)**
-
+**Response `200 OK`:**
 ```json
 {
   "total": 2,
@@ -324,7 +395,7 @@ GET /items?search=laptop
       "description": "Mouse bluetooth",
       "price": 250000,
       "quantity": 20,
-      "created_at": "2026-03-07T10:35:00",
+      "created_at": "2026-03-07T10:35:00+08:00",
       "updated_at": null
     },
     {
@@ -333,7 +404,7 @@ GET /items?search=laptop
       "description": "Laptop untuk cloud computing",
       "price": 15000000,
       "quantity": 5,
-      "created_at": "2026-03-07T10:30:00",
+      "created_at": "2026-03-07T10:30:00+08:00",
       "updated_at": null
     }
   ]
@@ -344,34 +415,19 @@ GET /items?search=laptop
 
 ---
 
-# 5️⃣ Get Item By ID
+### 5. GET `/items/{item_id}` — Get Item by ID
 
-**Method**
+Mengambil detail satu item berdasarkan ID.
 
-```
-GET
-```
-
-**Endpoint**
-
-```
-/items/{item_id}
+```http
+GET http://localhost:8000/items/1
 ```
 
-**Path Parameter**
-
-| Parameter | Type    | Deskripsi              |
-|-----------|---------|------------------------|
+| Parameter | Type | Deskripsi |
+|-----------|------|-----------|
 | `item_id` | integer | ID unik item di database |
 
-**Example Request**
-
-```
-GET /items/1
-```
-
-**Response Example (200 OK)**
-
+**Response `200 OK`:**
 ```json
 {
   "id": 1,
@@ -379,13 +435,12 @@ GET /items/1
   "description": "Laptop untuk cloud computing",
   "price": 15000000,
   "quantity": 5,
-  "created_at": "2026-03-07T10:30:00",
+  "created_at": "2026-03-07T10:30:00+08:00",
   "updated_at": null
 }
 ```
 
-**Error Response (404 Not Found)** — item tidak ditemukan:
-
+**Error Response `404 Not Found`:**
 ```json
 {
   "detail": "Item dengan id=1 tidak ditemukan"
@@ -394,50 +449,32 @@ GET /items/1
 
 ---
 
-# 6️⃣ Update Item
+### 6. PUT `/items/{item_id}` — Update Item
 
-**Method**
+Memperbarui sebagian atau seluruh field item berdasarkan ID (**partial update** — hanya field yang dikirim yang diperbarui).
 
-```
-PUT
-```
-
-**Endpoint**
-
-```
-/items/{item_id}
+```http
+PUT http://localhost:8000/items/1
+Content-Type: application/json
 ```
 
-**Deskripsi**
+**Request Body** — semua field opsional:
 
-Memperbarui sebagian atau seluruh field dari item tertentu berdasarkan ID.  
-Hanya field yang dikirim dalam request body yang akan diperbarui (**partial update**).
-
-**Path Parameter**
-
-| Parameter | Type    | Deskripsi              |
-|-----------|---------|------------------------|
-| `item_id` | integer | ID unik item di database |
-
-**Request Body** — semua field bersifat opsional:
-
-| Field         | Type    | Validasi               | Deskripsi            |
-|---------------|---------|------------------------|----------------------|
-| `name`        | string  | min 1, max 100 karakter | Nama item            |
-| `price`       | float   | harus > 0              | Harga item           |
-| `description` | string  | —                      | Deskripsi item       |
-| `quantity`    | integer | tidak negatif          | Jumlah stok          |
+| Field | Type | Validasi | Deskripsi |
+|-------|------|----------|-----------|
+| `name` | string | min 1, max 100 karakter | Nama item |
+| `price` | float | harus > 0 | Harga item |
+| `description` | string | — | Deskripsi item |
+| `quantity` | integer | tidak negatif | Jumlah stok |
 
 **Request Body Example** — hanya update harga:
-
 ```json
 {
   "price": 14000000
 }
 ```
 
-**Response Example (200 OK)**
-
+**Response `200 OK`:**
 ```json
 {
   "id": 1,
@@ -445,13 +482,12 @@ Hanya field yang dikirim dalam request body yang akan diperbarui (**partial upda
   "description": "Laptop untuk cloud computing",
   "price": 14000000,
   "quantity": 5,
-  "created_at": "2026-03-07T10:30:00",
-  "updated_at": "2026-03-07T11:00:00"
+  "created_at": "2026-03-07T10:30:00+08:00",
+  "updated_at": "2026-03-07T11:00:00+08:00"
 }
 ```
 
-**Error Response (404 Not Found)** — item tidak ditemukan:
-
+**Error Response `404 Not Found`:**
 ```json
 {
   "detail": "Item dengan id=1 tidak ditemukan"
@@ -460,42 +496,17 @@ Hanya field yang dikirim dalam request body yang akan diperbarui (**partial upda
 
 ---
 
-# 7️⃣ Delete Item
+### 7. DELETE `/items/{item_id}` — Delete Item
 
-**Method**
+Menghapus item secara permanen dari database.
 
-```
-DELETE
-```
-
-**Endpoint**
-
-```
-/items/{item_id}
+```http
+DELETE http://localhost:8000/items/1
 ```
 
-**Deskripsi**
+**Response `204 No Content`** — tidak ada response body. Status `204` menandakan item berhasil dihapus.
 
-Menghapus item secara permanen dari database berdasarkan ID.
-
-**Path Parameter**
-
-| Parameter | Type    | Deskripsi              |
-|-----------|---------|------------------------|
-| `item_id` | integer | ID unik item di database |
-
-**Example Request**
-
-```
-DELETE /items/1
-```
-
-**Response (204 No Content)**
-
-Tidak ada body response. Status code `204` menandakan item berhasil dihapus.
-
-**Error Response (404 Not Found)** — item tidak ditemukan:
-
+**Error Response `404 Not Found`:**
 ```json
 {
   "detail": "Item dengan id=1 tidak ditemukan"
@@ -504,26 +515,15 @@ Tidak ada body response. Status code `204` menandakan item berhasil dihapus.
 
 ---
 
-# 8️⃣ Item Statistics
+### 8. GET `/items/stats` — Item Statistics
 
-**Method**
+Mengembalikan statistik ringkasan dari seluruh data inventory.
 
-```
-GET
-```
-
-**Endpoint**
-
-```
-/items/stats
+```http
+GET http://localhost:8000/items/stats
 ```
 
-**Deskripsi**
-
-Mengembalikan statistik ringkasan dari seluruh data inventory, meliputi total jumlah item, total nilai inventory, item termahal, dan item termurah.
-
-**Response Example (200 OK)** — inventory memiliki data:
-
+**Response `200 OK`** — inventory memiliki data:
 ```json
 {
   "total_items": 3,
@@ -539,8 +539,7 @@ Mengembalikan statistik ringkasan dari seluruh data inventory, meliputi total ju
 }
 ```
 
-**Response Example (200 OK)** — inventory kosong:
-
+**Response `200 OK`** — inventory kosong:
 ```json
 {
   "total_items": 0,
@@ -554,15 +553,103 @@ Mengembalikan statistik ringkasan dari seluruh data inventory, meliputi total ju
 
 ---
 
-# API Testing (QA Validation)
+## 📝 Progress Pengerjaan per Minggu
 
-Testing dapat dilakukan menggunakan **Swagger UI**:
+### Week 1 — Setup Environment & Hello World
 
-```
-http://localhost:8000/docs
-```
+**Capaian:**
+- Pembentukan tim dan pembagian peran (Lead Backend, Frontend, DevOps, QA & Docs, CI/CD)
+- Setup environment: Python 3.10+, Node.js 18+, Git, VS Code
+- Join GitHub Classroom, buat repositori tim `cc-kelompok-a-awit`
+- Setup SSH key dan verifikasi koneksi ke GitHub
+- Buat struktur folder proyek (`backend/`, `frontend/`, `docs/`)
+- Buat `.gitignore` standar (Python, Node, Docker, IDE)
+- Hello World Backend — FastAPI dengan endpoint `/`, `/health`, `/team`
+- Hello World Frontend — React + Vite yang menampilkan data dari backend API
+- Setiap anggota berhasil push commit pertama (`docs/member-[NAMA].md`)
 
-### Alur Testing yang Direkomendasikan
+**Deliverable:**
+- Repository tim aktif dengan struktur folder
+- Backend FastAPI berjalan di `localhost:8000`
+- Frontend React berjalan di `localhost:5173` dan menampilkan response dari backend
+
+**Lead per area:**
+| Tugas | Dikerjakan oleh |
+|-------|----------------|
+| Struktur folder & `.gitignore` | Lead DevOps |
+| Backend hello world + `/team` endpoint | Lead Backend |
+| Frontend React hello world + fetch API | Lead Frontend |
+| Identitas tim & peer review README | Lead QA & Docs |
+| Setup branch & deployment placeholder | Lead CI/CD |
+
+---
+
+### Week 2 — Backend REST API + PostgreSQL
+
+**Capaian:**
+- Setup database PostgreSQL lokal: buat database `cloudapp`
+- Implementasi koneksi database via SQLAlchemy ORM (`database.py`)
+- Desain model database tabel `items` (`models.py`) dengan kolom: `id`, `name`, `description`, `price`, `quantity`, `created_at`, `updated_at`
+- Implementasi Pydantic schemas untuk validasi request/response (`schemas.py`): `ItemCreate`, `ItemUpdate`, `ItemResponse`, `ItemListResponse`
+- Implementasi CRUD functions (`crud.py`): create, get_items (dengan pagination & search), get_item, update_item, delete_item
+- Update `main.py` dengan 6 endpoint CRUD + endpoint `/items/stats` tambahan
+- Konfigurasi file `.env` dan `.env.example` untuk environment variables
+- Testing seluruh endpoint via Swagger UI (`/docs`)
+
+**Deliverable:**
+- 8 endpoint API berfungsi penuh (lihat tabel di atas)
+- Data tersimpan persisten di PostgreSQL
+- File `docs/api-test-results.md` — dokumentasi hasil testing semua endpoint
+
+**Lead per area:**
+| Tugas | Dikerjakan oleh |
+|-------|----------------|
+| `models.py`, `crud.py`, endpoint CRUD | Lead Backend |
+| Testing API via Swagger, dokumentasi `api-test-results.md` | Lead QA & Docs |
+| Setup PostgreSQL, konfigurasi `.env` | Lead DevOps |
+| Memahami format response untuk persiapan frontend | Lead Frontend |
+| Setup `.env.example` & environment variables | Lead CI/CD |
+
+---
+
+### Week 3 — Frontend React + UI CRUD Integration
+
+**Capaian:**
+- Pembuatan API service layer (`frontend/src/services/api.js`) — centralized fetch functions untuk semua operasi CRUD
+- Implementasi komponen React terpisah (component architecture):
+  - `Header.jsx` — menampilkan judul app, jumlah item, dan status koneksi API
+  - `SearchBar.jsx` — input pencarian dengan tombol clear
+  - `ItemForm.jsx` — form create/edit item dengan validasi frontend dan mode switch otomatis
+  - `ItemList.jsx` — grid layout daftar item dengan loading state dan empty state
+  - `ItemCard.jsx` — card per item dengan tombol Edit & Hapus
+- Update `App.jsx` — root component dengan state management terpusat (items, editingItem, searchQuery, loading, isConnected)
+- Implementasi semua CRUD handler: `handleSubmit`, `handleEdit`, `handleDelete`, `handleSearch`
+- Pindahkan `API_URL` ke environment variable (`VITE_API_URL`) via `frontend/.env`
+- Testing seluruh alur CRUD via browser (10 test case)
+
+**Deliverable:**
+- UI CRUD lengkap berjalan di `localhost:5173` terhubung ke backend
+- File `docs/ui-test-results.md` — dokumentasi 10 test case UI dengan screenshot
+- File `frontend/.env` dan `frontend/.env.example`
+
+**Lead per area:**
+| Tugas | Dikerjakan oleh |
+|-------|----------------|
+| Semua komponen React + `App.jsx` | Lead Frontend |
+| Pastikan API berjalan & bantu debug response | Lead Backend |
+| Setup `VITE_API_URL` env var, konfigurasi proxy | Lead DevOps |
+| Testing 10 fitur CRUD via UI, dokumentasi `ui-test-results.md` | Lead QA & Docs |
+| Implementasi komponen Notification/Toast | Lead CI/CD |
+
+---
+
+## 🧪 Testing & QA
+
+### API Testing (Week 2)
+
+Testing dilakukan via **Swagger UI** (`http://localhost:8000/docs`).
+
+**Alur testing yang direkomendasikan:**
 
 ```mermaid
 flowchart TD
@@ -581,225 +668,123 @@ flowchart TD
     style END fill:#70AD47,color:#fff
 ```
 
-### Data Testing yang Digunakan
+**Expected Results:**
 
-**Langkah 1 — POST /items** (buat 3 item):
+| Langkah | Endpoint | Expected Status | Expected Result |
+|---------|----------|-----------------|-----------------|
+| 1 | `POST /items` (×3) | `201 Created` | Item tersimpan dengan `id` unik |
+| 2 | `GET /items` | `200 OK` | `total: 3`, 3 item di array |
+| 3 | `GET /items/1` | `200 OK` | Data item id=1 lengkap |
+| 4 | `PUT /items/1` | `200 OK` | Response berisi data terbaru |
+| 5 | `GET /items/1` | `200 OK` | `price` berubah ke nilai baru |
+| 6 | `GET /items?search=laptop` | `200 OK` | `total: 1`, hanya "Laptop" |
+| 7 | `GET /items/stats` | `200 OK` | `total_items: 3`, `total_value` dihitung |
+| 8 | `DELETE /items/1` | `204 No Content` | Tidak ada response body |
+| 9 | `GET /items/1` | `404 Not Found` | `detail: "Item dengan id=1 tidak ditemukan"` |
 
-```json
-{ "name": "Laptop", "price": 15000000, "description": "Laptop untuk cloud computing", "quantity": 5 }
-```
-
-```json
-{ "name": "Mouse Wireless", "price": 250000, "description": "Mouse bluetooth", "quantity": 20 }
-```
-
-```json
-{ "name": "Keyboard Mechanical", "price": 1200000, "description": "Keyboard untuk coding", "quantity": 8 }
-```
-
-**Langkah 4 — PUT /items/1** (partial update):
-
-```json
-{ "price": 14000000 }
-```
-
-### Expected Test Results
-
-| Langkah | Endpoint                    | Expected Status | Expected Result                          |
-|---------|-----------------------------|-----------------|------------------------------------------|
-| 1       | `POST /items` (×3)          | `201 Created`   | Item tersimpan dengan `id` unik          |
-| 2       | `GET /items`                | `200 OK`        | `total: 3`, 3 item muncul di array       |
-| 3       | `GET /items/1`              | `200 OK`        | Data item id=1 lengkap                   |
-| 4       | `PUT /items/1`              | `200 OK`        | Response berisi data terbaru             |
-| 5       | `GET /items/1`              | `200 OK`        | `price` berubah ke `14000000`            |
-| 6       | `GET /items?search=laptop`  | `200 OK`        | `total: 1`, hanya "Laptop"               |
-| 7       | `GET /items/stats`          | `200 OK`        | `total_items: 3`, `total_value` dihitung |
-| 8       | `DELETE /items/1`           | `204 No Content`| Tidak ada response body                  |
-| 9       | `GET /items/1`              | `404 Not Found` | `detail: "Item dengan id=1 tidak ditemukan"` |
+📄 Detail lengkap: [`docs/api-test-results.md`](docs/api-test-results.md)
 
 ---
 
-# Struktur Proyek
+### UI Testing (Week 3)
 
-```
-cc-kelompok-a-awit/
-├── README.md
-├── .gitignore
-├── setup.sh
-├── backend/
-│   ├── main.py            ← FastAPI app & semua endpoint
-│   ├── models.py          ← SQLAlchemy model (tabel database)
-│   ├── schemas.py         ← Pydantic schemas (validasi request/response)
-│   ├── crud.py            ← Fungsi CRUD (business logic)
-│   ├── database.py        ← Koneksi ke PostgreSQL
-│   ├── requirements.txt   ← Dependencies Python
-│   ├── .env               ← ⚠️ TIDAK di-commit (berisi kredensial)
-│   └── .env.example       ← Template konfigurasi (safe to commit)
-│
-├── frontend/
-│   ├── src/
-│   ├── public/
-│   ├── package.json
-│   └── vite.config.js
-│
-└── docs/
-    ├── member-[Adam Ibnu Ramadhan].md
-    ├── member-[Adhyasta Firdaus].md
-    ├── member-[Adonia Azarya Tamalonggehe].md
-    ├── member-[Alfian Fadillah Putra].md
-    └── member-[Varrel Kaleb Ropard Pasaribu].md
-```
+Testing dilakukan manual via browser (`http://localhost:5173`).
+
+**10 Test Case Alur CRUD:**
+
+| No | Test Case | Komponen Diuji | Hasil |
+|----|-----------|----------------|-------|
+| TC-01 | Status koneksi API tampil "🟢 API Connected" | Header | ✅ Pass |
+| TC-02 | Item dari database Modul 2 tampil di daftar | ItemList + GET /items | ✅ Pass |
+| TC-03 | Tambah item baru via form | ItemForm + POST /items | ✅ Pass |
+| TC-04 | Item baru langsung muncul di daftar | ItemList re-render | ✅ Pass |
+| TC-05 | Klik Edit → form terisi otomatis data item | ItemForm mode Edit | ✅ Pass |
+| TC-06 | Update harga dan klik Update | ItemForm + PUT /items/:id | ✅ Pass |
+| TC-07 | Cari item via SearchBar | SearchBar + GET /items?search= | ✅ Pass |
+| TC-08 | Klik Hapus → confirm dialog muncul | window.confirm() | ✅ Pass |
+| TC-09 | Konfirmasi OK → item hilang dari daftar | DELETE /items/:id | ✅ Pass |
+| TC-10 | Hapus semua → empty state 📭 tampil | ItemList empty state | ✅ Pass |
+
+📄 Detail lengkap + screenshot: [`docs/ui-test-results.md`](docs/ui-test-results.md)
 
 ---
 
-# Getting Started
+## 🐳 Containerization
 
-## Prerequisites
+> 🚧 Akan diimplementasikan pada **Minggu 5–7**.
 
-* Node.js (v16+)
-* Python (v3.9+)
-* pip
-* Git
-* PostgreSQL
-* Docker (opsional untuk container)
+Aplikasi akan menggunakan Docker untuk memastikan konsistensi environment antara development dan production.
 
----
+Service yang akan di-containerize:
+- **Backend** — FastAPI (Python)
+- **Frontend** — React (Node.js)
+- **Database** — PostgreSQL
 
-## 1️⃣ Clone Repository
+Docker Compose akan memungkinkan seluruh service berjalan dalam satu network terisolasi dengan satu perintah:
 
 ```bash
-git clone https://github.com/aidilsaputrakirsan-classroom/cc-kelompok-a-awit.git
-cd cc-kelompok-a-awit
+docker compose up
 ```
 
 ---
 
-## 2️⃣ Setup Backend
+## 🚀 Deployment
 
-```bash
-cd backend
+> 🚧 Akan diimplementasikan pada **Minggu 9–11** (CI/CD) dan **Minggu 11** (Cloud Deployment).
 
-# Buat virtual environment
-python -m venv venv
-
-# Windows
-venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Salin dan isi konfigurasi database
-copy .env.example .env
-# Edit .env: ganti DATABASE_URL sesuai konfigurasi PostgreSQL lokal
-
-# Jalankan server
-uvicorn main:app --reload --port 8000
-```
-
-Backend berjalan di:
-
-```
-http://localhost:8000
-```
-
-Atau gunakan script otomatis:
-
-```bash
-# Dari root direktori
-bash setup.sh
-```
+Rencana deployment:
+- **CI/CD:** GitHub Actions untuk automated test & build
+- **Cloud Platform:** Railway atau Render (PaaS)
+- **Database:** Railway PostgreSQL atau Supabase
 
 ---
 
-## 3️⃣ Setup Frontend
+## ✅ QA Checklist
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+### Week 1
+- [x] Identitas tim lengkap & terdokumentasi
+- [x] Setiap anggota memiliki minimal 1 commit
+- [x] Backend hello world berjalan (`/health`, `/team`)
+- [x] Frontend React menampilkan data dari backend
+- [x] Struktur folder proyek rapi
 
-Frontend biasanya berjalan di:
+### Week 2
+- [x] Semua 8 endpoint API berfungsi dan terdokumentasi
+- [x] Request body & validasi terdokumentasi per endpoint
+- [x] Response schema konsisten dengan kode (`schemas.py`)
+- [x] Error response (404, 422) terdokumentasi
+- [x] Alur testing API terdokumentasi dengan expected results
+- [x] File `docs/api-test-results.md` dibuat dan lengkap
 
-```
-http://localhost:5173
-```
-
----
-
-# Containerization
-
-Aplikasi menggunakan Docker untuk memastikan konsistensi environment antara development dan production.
-
-Service utama:
-
-* Backend (FastAPI)
-* Frontend (React)
-* Database (opsional)
-
-Docker Compose memungkinkan seluruh service berjalan dalam satu network terisolasi.
+### Week 3
+- [x] Semua operasi CRUD berfungsi via UI (Create, Read, Update, Delete)
+- [x] 10 test case UI lulus semua (✅ Pass)
+- [x] Komponen React terstruktur rapi (minimal 5 komponen terpisah)
+- [x] Environment variable (`VITE_API_URL`) dikonfigurasi
+- [x] Struktur proyek diperbarui di README
+- [x] File `docs/ui-test-results.md` dibuat dengan screenshot
+- [x] `frontend/.env.example` di-commit sebagai template
 
 ---
 
-# Deployment
+## 📚 Dokumentasi Tambahan
 
-Panduan CI/CD dan deployment ke cloud platform akan ditambahkan pada tahap produksi.
-
----
-
-# Peer Review & Quality Assurance
-
-Dokumentasi ini telah melalui proses **peer review internal** untuk memastikan kualitas dan konsistensi.
-
-## Proses QA
-
-1. Setiap Lead menyusun bagian sesuai tanggung jawab.
-2. Review silang dilakukan oleh anggota tim.
-3. Lead QA & Docs melakukan final validation sebelum merge ke branch utama.
-
-## Checklist Validasi
-
-* [x] Identitas tim lengkap
-* [x] Arsitektur dijelaskan dengan diagram
-* [x] Tech stack konsisten
-* [x] API terdokumentasi lengkap (8 endpoint)
-* [x] Request body & validasi terdokumentasi untuk setiap endpoint
-* [x] Response schema konsisten dengan kode (`schemas.py`)
-* [x] Error response terdokumentasi untuk endpoint yang relevan
-* [x] Alur testing API terdokumentasi dengan expected results
-* [x] Instruksi instalasi dapat dijalankan
-* [x] Struktur proyek jelas dan akurat
+| Dokumen | Lokasi | Keterangan |
+|---------|--------|------------|
+| API Test Results | [`docs/api-test-results.md`](docs/api-test-results.md) | Hasil testing endpoint API — Modul 2 |
+| UI Test Results | [`docs/ui-test-results.md`](docs/ui-test-results.md) | Hasil testing UI CRUD — Modul 3 |
+| Database Schema | [`docs/database-schema.md`](docs/database-schema.md) | Skema tabel database |
+| Swagger UI | `http://localhost:8000/docs` | Dokumentasi API interaktif (saat backend berjalan) |
 
 ---
 
-# Dokumentasi Tambahan
+## 🔗 Links
 
-* Dokumentasi API interaktif tersedia di:
-
-```
-http://localhost:8000/docs
-```
-
-* Perubahan backend: `backend/main.py`
-* Perubahan frontend: `frontend/src/`
+- **Repository:** [GitHub Classroom](https://github.com/aidilsaputrakirsan-classroom/cc-kelompok-a-awit)
+- **Swagger UI:** `http://localhost:8000/docs` *(saat backend berjalan)*
+- **Frontend:** `http://localhost:5173` *(saat frontend berjalan)*
 
 ---
 
-# Status Proyek
-
-🚧 Project dalam tahap pengembangan aktif.
-Fitur dan dokumentasi akan terus diperbarui seiring progres implementasi.
-
----
-
-## Kontribusi Peran
-
-Sebagai Lead QA & Documentation, tanggung jawab yang dilakukan meliputi:
-- Review dan konsistensi struktur README
-- Validasi kesesuaian dokumentasi API dengan kode (`main.py`, `schemas.py`, `crud.py`)
-- Penambahan dokumentasi endpoint `/items/stats` (tugas Modul 2)
-- Penambahan tabel validasi request body untuk setiap endpoint
-- Penambahan error response untuk endpoint yang mengembalikan 404/422
-- Penambahan tabel *expected test results* untuk panduan QA
-- Standardisasi format dokumentasi
-- Finalisasi dokumen sebelum merge ke branch utama
+*Dokumentasi ini dikelola oleh **Adonia Azarya Tamalonggehe** (Lead QA & Documentation).*  
+*Institut Teknologi Kalimantan — Komputasi Awan 2026.*
