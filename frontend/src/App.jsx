@@ -4,6 +4,7 @@ import SearchBar from "./components/SearchBar"
 import SortBar from "./components/SortBar"
 import ItemForm from "./components/ItemForm"
 import ItemList from "./components/ItemList"
+import Notification from "./components/Notification"
 import { fetchItems, createItem, updateItem, deleteItem, checkHealth } from "./services/api"
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
   const [editingItem, setEditingItem] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState("terbaru")
+  const [notification, setNotification] = useState({ message: "", type: "" })
 
   // ==================== LOAD DATA ====================
   const loadItems = useCallback(async (search = "") => {
@@ -41,16 +43,31 @@ function App() {
   // ==================== HANDLERS ====================
 
   const handleSubmit = async (itemData, editId) => {
-    if (editId) {
-      // Mode edit
-      await updateItem(editId, itemData)
-      setEditingItem(null)
-    } else {
-      // Mode create
-      await createItem(itemData)
+    try {
+      if (editId) {
+        // Mode edit
+        await updateItem(editId, itemData)
+        setEditingItem(null)
+        setNotification({
+          message: `Item "${itemData.name}" berhasil diupdate!`,
+          type: "success",
+        })
+      } else {
+        // Mode create
+        await createItem(itemData)
+        setNotification({
+          message: `Item "${itemData.name}" berhasil ditambahkan!`,
+          type: "success",
+        })
+      }
+      // Reload daftar items
+      loadItems(searchQuery)
+    } catch (err) {
+      setNotification({
+        message: err.message,
+        type: "error",
+      })
     }
-    // Reload daftar items
-    loadItems(searchQuery)
   }
 
   const handleEdit = (item) => {
@@ -65,9 +82,16 @@ function App() {
 
     try {
       await deleteItem(id)
+      setNotification({
+        message: `Item "${item?.name}" berhasil dihapus!`,
+        type: "success",
+      })
       loadItems(searchQuery)
     } catch (err) {
-      alert("Gagal menghapus: " + err.message)
+      setNotification({
+        message: err.message,
+        type: "error",
+      })
     }
   }
 
@@ -104,6 +128,11 @@ function App() {
   // ==================== RENDER ====================
   return (
     <div style={styles.app}>
+      <Notification
+        message={notification.message}
+        type={notification.type}
+        onClose={() => setNotification({ message: "", type: "" })}
+      />
       <div style={styles.container}>
         <Header totalItems={totalItems} isConnected={isConnected} />
         <ItemForm
