@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 from datetime import datetime
+import re
 
 
 # === BASE SCHEMA ===
@@ -55,7 +56,40 @@ class UserCreate(BaseModel):
     """Schema untuk registrasi user baru."""
     email: str = Field(..., examples=["user@student.itk.ac.id"])
     name: str = Field(..., min_length=2, max_length=100, examples=["Aidil Saputra"])
-    password: str = Field(..., min_length=8, examples=["password123"])
+    password: str = Field(..., min_length=8, examples=["Password123!"])
+
+    @field_validator('email')
+    @classmethod
+    def validate_email(cls, v):
+        """Validasi format email — harus ITK atau umum."""
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, v):
+            raise ValueError('Format email tidak valid. Gunakan format: user@example.com')
+        return v.lower()
+
+    @field_validator('password')
+    @classmethod
+    def validate_password(cls, v):
+        """
+        Validasi password strength:
+        - Minimal 8 karakter
+        - Harus mengandung huruf (A-Z, a-z)
+        - Harus mengandung angka (0-9)
+        - Harus mengandung special character (!@#$%^&*)
+        """
+        if len(v) < 8:
+            raise ValueError('Password minimal 8 karakter')
+        
+        if not re.search(r'[a-zA-Z]', v):
+            raise ValueError('Password harus mengandung huruf (A-Z, a-z)')
+        
+        if not re.search(r'[0-9]', v):
+            raise ValueError('Password harus mengandung angka (0-9)')
+        
+        if not re.search(r'[!@#$%^&*()_+\-=\[\]{};:\'",.<>?/\\|`~]', v):
+            raise ValueError('Password harus mengandung special character (!@#$%^&*)')
+        
+        return v
 
 
 class UserResponse(BaseModel):

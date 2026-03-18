@@ -51,14 +51,26 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     """
     Registrasi user baru.
     
-    - **email**: Email unik (akan digunakan untuk login)
-    - **name**: Nama lengkap
-    - **password**: Minimal 8 karakter
+    Requirements:
+    - **email**: Format valid (contoh: user@itk.ac.id)
+    - **name**: Minimal 2 karakter, maksimal 100 karakter
+    - **password**: Minimal 8 karakter dengan kombinasi:
+      - Huruf (A-Z, a-z)
+      - Angka (0-9)
+      - Special character (!@#$%^&*)
+    
+    Contoh password valid: `Password123!`
     """
-    user = crud.create_user(db=db, user_data=user_data)
-    if not user:
-        raise HTTPException(status_code=400, detail="Email sudah terdaftar")
-    return user
+    try:
+        user = crud.create_user(db=db, user_data=user_data)
+        if not user:
+            raise HTTPException(
+                status_code=400,
+                detail="Email sudah terdaftar. Gunakan email lain atau login dengan akun yang sudah ada."
+            )
+        return user
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.post("/auth/login", response_model=TokenResponse)
@@ -66,15 +78,26 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     """
     Login dengan JSON body dan dapatkan JWT token.
     
-    - **email**: Email pengguna
+    - **email**: Email pengguna yang terdaftar
     - **password**: Password pengguna
     
-    Token berlaku selama 60 menit (default).
-    Gunakan token di header: `Authorization: Bearer <token>`
+    **Response:**
+    - **access_token**: JWT token untuk otorisasi (valid 60 menit)
+    - **token_type**: Tipe token (selalu 'bearer')
+    - **user**: Informasi user yang login
+    
+    **Penggunaan:**
+    Gunakan token di header setiap request:
+    ```
+    Authorization: Bearer <access_token>
+    ```
     """
     user = crud.authenticate_user(db=db, email=login_data.email, password=login_data.password)
     if not user:
-        raise HTTPException(status_code=401, detail="Email atau password salah")
+        raise HTTPException(
+            status_code=401,
+            detail="Email atau password salah. Periksa kembali kredensial Anda."
+        )
 
     token = create_access_token(data={"sub": user.id})
     return {
@@ -140,6 +163,26 @@ def list_items(
 ):
     """Ambil daftar items. **Membutuhkan autentikasi.**"""
     return crud.get_items(db=db, skip=skip, limit=limit, search=search)
+
+
+@app.get("/items/stats")
+def get_items_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Dapatkan statistik items.
+    
+    Returns:
+    - **total_items**: Jumlah total item
+    - **total_quantity**: Total quantity dari semua items
+    - **average_price**: Rata-rata harga item
+    - **min_price**: Harga terendah
+    - **max_price**: Harga tertinggi
+    
+    **Membutuhkan autentikasi.**
+    """
+    return crud.get_items_stats(db=db)
 
 
 @app.get("/items/{item_id}", response_model=ItemResponse)
