@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from "react"
+import "./App.css"
 import Header from "./components/Header"
 import SearchBar from "./components/SearchBar"
 import ItemForm from "./components/ItemForm"
 import ItemList from "./components/ItemList"
 import LoginPage from "./components/LoginPage"
+import Notification from "./components/Notification"
 import {
   fetchItems, createItem, updateItem, deleteItem,
-  checkHealth, login, register, setToken, clearToken,
+  checkHealth, login, register, clearToken,
 } from "./services/api"
 
 function App() {
@@ -18,9 +20,19 @@ function App() {
   const [items, setItems] = useState([])
   const [totalItems, setTotalItems] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [toast, setToast] = useState({ message: "", type: "" })
+
+  const showToast = (message, type = "info") => {
+    setToast({ message, type })
+  }
+
+  const clearToast = () => {
+    setToast({ message: "", type: "" })
+  }
 
   // ==================== LOAD DATA ====================
   const loadItems = useCallback(async (search = "") => {
@@ -32,8 +44,10 @@ function App() {
     } catch (err) {
       if (err.message === "UNAUTHORIZED") {
         handleLogout()
+      } else {
+        console.error("Error loading items:", err)
+        showToast("Gagal memuat data", "error")
       }
-      console.error("Error loading items:", err)
     } finally {
       setLoading(false)
     }
@@ -55,12 +69,14 @@ function App() {
     const data = await login(email, password)
     setUser(data.user)
     setIsAuthenticated(true)
+    showToast("Login berhasil", "success")
   }
 
   const handleRegister = async (userData) => {
     // Register lalu otomatis login
     await register(userData)
     await handleLogin(userData.email, userData.password)
+    showToast("Registrasi berhasil", "success")
   }
 
   const handleLogout = () => {
@@ -71,22 +87,32 @@ function App() {
     setTotalItems(0)
     setEditingItem(null)
     setSearchQuery("")
+    showToast("Logout berhasil", "info")
   }
 
   // ==================== ITEM HANDLERS ====================
 
   const handleSubmit = async (itemData, editId) => {
+    setActionLoading(true)
     try {
       if (editId) {
         await updateItem(editId, itemData)
         setEditingItem(null)
+        showToast("Item berhasil diperbarui", "success")
       } else {
         await createItem(itemData)
+        showToast("Item berhasil ditambahkan", "success")
       }
       loadItems(searchQuery)
     } catch (err) {
-      if (err.message === "UNAUTHORIZED") handleLogout()
-      else throw err
+      if (err.message === "UNAUTHORIZED") {
+        handleLogout()
+      } else {
+        showToast(err.message || "Terjadi kesalahan", "error")
+        throw err
+      }
+    } finally {
+      setActionLoading(false)
     }
   }
 
@@ -98,12 +124,19 @@ function App() {
   const handleDelete = async (id) => {
     const item = items.find((i) => i.id === id)
     if (!window.confirm(`Yakin ingin menghapus "${item?.name}"?`)) return
+    setActionLoading(true)
     try {
       await deleteItem(id)
+      showToast("Item berhasil dihapus", "success")
       loadItems(searchQuery)
     } catch (err) {
-      if (err.message === "UNAUTHORIZED") handleLogout()
-      else alert("Gagal menghapus: " + err.message)
+      if (err.message === "UNAUTHORIZED") {
+        handleLogout()
+      } else {
+        showToast(err.message || "Gagal menghapus item", "error")
+      }
+    } finally {
+      setActionLoading(false)
     }
   }
 
@@ -133,13 +166,19 @@ function App() {
           onSubmit={handleSubmit}
           editingItem={editingItem}
           onCancelEdit={() => setEditingItem(null)}
+          loading={actionLoading}
         />
         <SearchBar onSearch={handleSearch} />
         <ItemList
           items={items}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          loading={loading}
+          loading={loading || actionLoading}
+        />
+        <Notification
+          message={toast.message}
+          type={toast.type}
+          onClose={clearToast}
         />
       </div>
     </div>
