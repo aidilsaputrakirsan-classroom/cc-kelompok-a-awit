@@ -66,15 +66,3 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
-
-/* Notification Toast Animation */
-@keyframes slideIn {
-  from {
-    transform: translateX(400px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
