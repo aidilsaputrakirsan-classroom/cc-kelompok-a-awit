@@ -1,73 +1,35 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from models import Item
-from schemas import ItemCreate, ItemUpdate
+from models import Item, User
+from schemas import ItemCreate, ItemUpdate, UserCreate
+from auth import hash_password, verify_password
 
 
-def create_item(db: Session, item_data: ItemCreate) -> Item:
-    """Buat item baru di database."""
-    db_item = Item(**item_data.model_dump())
-    db.add(db_item)
+# ==================== USER CRUD ====================
+
+def create_user(db: Session, user_data: UserCreate) -> User:
+    """Buat user baru dengan password yang di-hash."""
+    # Cek apakah email sudah terdaftar
+    existing = db.query(User).filter(User.email == user_data.email).first()
+    if existing:
+        return None  # Email sudah dipakai
+
+    db_user = User(
+        email=user_data.email,
+        name=user_data.name,
+        hashed_password=hash_password(user_data.password),
+    )
+    db.add(db_user)
     db.commit()
-    db.refresh(db_item)
-    return db_item
+    db.refresh(db_user)
+    return db_user
 
 
-def get_items(db: Session, skip: int = 0, limit: int = 20, search: str = None):
-    """
-    Ambil daftar items dengan pagination & search.
-    - skip: jumlah data yang di-skip (untuk pagination)
-    - limit: jumlah data per halaman
-    - search: cari berdasarkan nama atau deskripsi
-    """
-    query = db.query(Item)
-    
-    if search:
-        query = query.filter(
-            or_(
-                Item.name.ilike(f"%{search}%"),
-                Item.description.ilike(f"%{search}%")
-            )
-        )
-    
-    total = query.count()
-    items = query.order_by(Item.created_at.desc()).offset(skip).limit(limit).all()
-    
-    return {"total": total, "items": items}
-
-
-def get_item(db: Session, item_id: int) -> Item | None:
-    """Ambil satu item berdasarkan ID."""
-    return db.query(Item).filter(Item.id == item_id).first()
-
-
-def update_item(db: Session, item_id: int, item_data: ItemUpdate) -> Item | None:
-    """
-    Update item berdasarkan ID.
-    Hanya update field yang dikirim (bukan None).
-    """
-    db_item = db.query(Item).filter(Item.id == item_id).first()
-    
-    if not db_item:
+def authenticate_user(db: Session, email: str, password: str) -> User | None:
+    """Autentikasi user: cek email & password."""
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
         return None
-    
-    # Hanya update field yang dikirim (exclude_unset=True)
-    update_data = item_data.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(db_item, field, value)
-    
-    db.commit()
-    db.refresh(db_item)
-    return db_item
-
-
-def delete_item(db: Session, item_id: int) -> bool:
-    """Hapus item berdasarkan ID. Return True jika berhasil."""
-    db_item = db.query(Item).filter(Item.id == item_id).first()
-    
-    if not db_item:
-        return False
-    
-    db.delete(db_item)
-    db.commit()
-    return True
+    if not verify_password(password, user.hashed_password):
+        return None
+    return user
