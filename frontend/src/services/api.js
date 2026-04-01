@@ -85,7 +85,10 @@ export async function fetchItems(search = "", skip = 0, limit = 20) {
 export async function createItem(itemData) {
   const response = await fetch(`${API_URL}/items`, {
     method: "POST",
-    headers: authHeaders(),
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify(itemData),
   })
   return handleResponse(response)
@@ -94,7 +97,10 @@ export async function createItem(itemData) {
 export async function updateItem(id, itemData) {
   const response = await fetch(`${API_URL}/items/${id}`, {
     method: "PUT",
-    headers: authHeaders(),
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify(itemData),
   })
   return handleResponse(response)
