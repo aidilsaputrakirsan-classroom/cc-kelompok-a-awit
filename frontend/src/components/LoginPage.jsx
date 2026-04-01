@@ -101,10 +101,21 @@ function LoginPage({ onLogin, onRegister }) {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Minimal 8 karakter"
+              placeholder={isRegister ? "Min: 8 char, 1 huruf, 1 angka, 1 special char" : "Password"}
               required
               style={styles.input}
             />
+            {isRegister && (
+              <div style={styles.passwordHint}>
+                <small>
+                  ✓ Password harus mengandung:<br />
+                  • Minimal 8 karakter<br />
+                  • Huruf (A-Z, a-z)<br />
+                  • Angka (0-9)<br />
+                  • Special character (!@#$%^&*)
+                </small>
+              </div>
+            )}
           </div>
 
           <button type="submit" style={styles.btnSubmit} disabled={loading}>

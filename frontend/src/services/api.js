@@ -32,7 +32,27 @@ async function handleResponse(response) {
   }
   if (!response.ok) {
     const error = await response.json().catch(() => ({}))
-    throw new Error(error.detail || `Request gagal (${response.status})`)
+    
+    // Handle validation errors (array of error objects from Pydantic)
+    if (Array.isArray(error.detail)) {
+      const messages = error.detail
+        .map(err => {
+          if (typeof err === 'object' && err.msg) {
+            return err.msg
+          }
+          return String(err)
+        })
+        .join("; ")
+      throw new Error(messages || `Validation error (${response.status})`)
+    }
+    
+    // Handle single error message
+    if (typeof error.detail === 'string') {
+      throw new Error(error.detail)
+    }
+    
+    // Fallback
+    throw new Error(`Request gagal (${response.status})`)
   }
   // 204 No Content
   if (response.status === 204) return null
