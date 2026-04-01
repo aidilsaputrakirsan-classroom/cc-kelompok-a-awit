@@ -728,6 +728,8 @@ docker compose up
 
 ---
 
+--> Update week 6: fix git email attribution
+
 ## 🚀 Deployment
 
 > 🚧 Akan diimplementasikan pada **Minggu 9–11** (CI/CD) dan **Minggu 11** (Cloud Deployment).
