@@ -16,6 +16,9 @@ COPY requirements.txt .
 #    --no-cache-dir: jangan simpan pip cache (hemat space)
 RUN pip install --no-cache-dir -r requirements.txt
 
+# 4.5. Install curl untuk healthcheck
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 # 5. Copy seluruh kode aplikasi
 #    Layer ini rebuild setiap kali kode berubah
 COPY . .
@@ -33,6 +36,12 @@ USER appuser
 # 7. Dokumentasikan port yang digunakan
 EXPOSE 8000
 
-# 8. Command untuk menjalankan aplikasi
+# 8. Health check
+#    Periksa setiap 30 detik apakah endpoint /health mengembalikan 200
+#    Jika 3x gagal, kontainer dianggap unhealthy
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# 9. Command untuk menjalankan aplikasi
 #    --host 0.0.0.0: agar bisa diakses dari luar container
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
