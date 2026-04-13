@@ -53,7 +53,7 @@ Form handling diimplementasikan pada `ItemForm.jsx` dengan validasi dasar:
 - menampilkan pesan error sederhana,
 - menolak submit jika input kosong atau format tidak valid.
 
-![Screenshot UI CRUD](./assets/frontend-crud.png)
+![Screenshot UI CRUD](../image_w4/crud.png)
 
 ## 3. Integrasi API & Autentikasi (Modul 4)
 Frontend mengkonsumsi REST API backend menggunakan **Fetch API** untuk semua operasi CRUD:
