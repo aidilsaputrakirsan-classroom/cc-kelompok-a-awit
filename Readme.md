@@ -107,7 +107,90 @@ flowchart TD
 | **Server** | Uvicorn | 0.30.0 | ASGI server untuk FastAPI |
 | **Container** | Docker & Docker Compose | — | Packaging & orchestration *(minggu 5–7)* |
 | **CI/CD** | GitHub Actions | — | Automated test & deploy *(minggu 9–11)* |
-| **Cloud** | Railway / Render | — | Hosting & deployment *(minggu 11)* |
+---
+
+## 🐳 Docker Setup
+
+Proyek ini menggunakan Docker untuk containerization. Backend dan frontend masing-masing memiliki Dockerfile yang dioptimalkan.
+
+### Prerequisites
+
+- Docker Desktop terinstall dan running
+- Akun Docker Hub (untuk push image)
+
+### Quick Start dengan Docker
+
+#### 1. Build Images
+
+```bash
+# Windows (Command Prompt/PowerShell)
+scripts\docker.bat build
+
+# Linux/Mac/WSL (Bash)
+./scripts/docker.sh build
+```
+
+#### 2. Run Containers
+
+```bash
+# Windows
+scripts\docker.bat run
+
+# Linux/Mac/WSL
+./scripts/docker.sh run
+```
+
+Aplikasi akan berjalan di:
+- Backend: http://localhost:8000
+- Frontend: http://localhost:3000
+
+#### 3. Push ke Docker Hub
+
+```bash
+# Set username Docker Hub
+set DOCKER_USERNAME=yourusername  # Windows
+export DOCKER_USERNAME=yourusername  # Linux/Mac
+
+# Push images
+scripts\docker.bat push  # Windows
+./scripts/docker.sh push  # Linux/Mac
+```
+
+### Available Commands
+
+| Command | Description |
+|---------|-------------|
+| `build` | Build backend dan frontend images |
+| `run` | Run backend dan frontend containers |
+| `push` | Push images ke Docker Hub |
+| `clean` | Stop containers, remove images, cleanup |
+| `status` | Show container dan image status |
+| `logs-backend` | Show backend container logs |
+| `logs-frontend` | Show frontend container logs |
+
+### Manual Docker Commands
+
+Jika ingin menggunakan Docker langsung:
+
+```bash
+# Build backend
+cd backend && docker build -t yourusername/cloudapp-backend:v1 .
+
+# Build frontend
+cd frontend && docker build -t yourusername/cloudapp-frontend:v1 .
+
+# Run backend
+docker run -d -p 8000:8000 --env-file backend/.env yourusername/cloudapp-backend:v1
+
+# Run frontend
+docker run -d -p 3000:80 yourusername/cloudapp-frontend:v1
+```
+
+### Troubleshooting
+
+- **Port conflict**: Pastikan port 8000 dan 3000 tidak digunakan aplikasi lain
+- **Database connection**: Update `backend/.env` dengan `DATABASE_URL` yang benar untuk Docker
+- **Permission denied**: Pastikan Docker Desktop running dengan akses admin
 
 ---
 
