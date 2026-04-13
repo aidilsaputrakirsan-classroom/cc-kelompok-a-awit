@@ -27,13 +27,13 @@
 | Version | Build Type | Size (Compressed) | Size (Uncompressed) | Target | Status |
 |---------|------------|-------------------|---------------------|--------|--------|
 | `cloudapp-backend:v1` | Single-stage | ~180 MB | ~450 MB | - | ✅ Built |
-| `cloudapp-backend:v2` | Multi-stage | ~140 MB | ~350 MB | < 150 MB | ✅ Built |
+| `cloudapp-backend:v2` | Multi-stage | ~140 MB | ~305 MB | < 150 MB | ✅ Built & Pushed |
 
 ### 2.2 Frontend Images
 
 | Version | Build Type | Size (Compressed) | Size (Uncompressed) | Target | Status |
 |---------|------------|-------------------|---------------------|--------|--------|
-| `cloudapp-frontend:v1` | Multi-stage | ~25 MB | ~60 MB | < 50 MB | ✅ Built |
+| `cloudapp-frontend:v1` | Multi-stage | ~25 MB | ~92.9 MB | < 50 MB | ✅ Built & Pushed |
 
 ### 2.3 Perbandingan Optimasi Backend
 
@@ -74,30 +74,31 @@ docker images | grep cloudapp
 # Login ke Docker Hub
 docker login
 
-# Set username (ganti dengan username Docker Hub Anda)
-export DOCKER_USERNAME=your-dockerhub-username
+# Username yang digunakan: dhyas
+export DOCKER_USERNAME=dhyas
 ```
 
 ### 4.2 Tag Images
 ```bash
 # Backend
-docker tag cloudapp-backend:v2 $DOCKER_USERNAME/cloudapp-backend:v2
+docker tag cloudapp-backend:v2 dhyas/cloudapp-backend:v2
 
 # Frontend
-docker tag cloudapp-frontend:v1 $DOCKER_USERNAME/cloudapp-frontend:v1
+docker tag cloudapp-frontend:v1 dhyas/cloudapp-frontend:v1
 ```
 
 ### 4.3 Push Images
 ```bash
 # Push backend
-docker push $DOCKER_USERNAME/cloudapp-backend:v2
+docker push dhyas/cloudapp-backend:v2
 
 # Push frontend
-docker push $DOCKER_USERNAME/cloudapp-frontend:v1
+docker push dhyas/cloudapp-frontend:v1
 ```
 
 ### 4.4 Verifikasi
-- Kunjungi https://hub.docker.com/
+- Kunjungi https://hub.docker.com/repositories/dhyas
+- Images: `dhyas/cloudapp-backend:v2` dan `dhyas/cloudapp-frontend:v1`
 - Repository: `$DOCKER_USERNAME/cloudapp-backend` dan `$DOCKER_USERNAME/cloudapp-frontend`
 - Tag: `v2` dan `v1` harus muncul
 
