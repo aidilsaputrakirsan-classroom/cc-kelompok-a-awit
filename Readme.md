@@ -34,7 +34,8 @@ Dengan arsitektur cloud-native, e-Mandor meningkatkan efisiensi operasional, aku
 | **3** | Frontend React + UI Integration | UI CRUD lengkap terhubung ke backend | ✅ Selesai |
 | **4** | Full-Stack Integration & Auth | CORS, JWT, environment variables | ✅ Selesai |
 | **5** | Docker Fundamentals — Dockerfile, Image & Container | Backend berjalan dalam Docker container, image di Docker Hub | ✅ Selesai |
-| 6–7 | Docker Lanjutan & Docker Compose | `docker compose up` menjalankan semua service | ⬜ |
+| **6** | Docker Lanjutan — Multi-Stage Build, Volumes & Networks | 3 container (backend + frontend + db) saling terhubung via network | ✅ Selesai |
+| 7 | Docker Compose | `docker compose up` menjalankan semua service | ⬜ |
 | 8 | UTS Demo | Full-stack + Docker (dinilai) | ⬜ |
 | 9–11 | CI/CD Pipeline | Auto test + auto deploy via GitHub Actions | ⬜ |
 | 12–14 | Microservices & API Gateway | Nginx reverse proxy + multi-service | ⬜ |
@@ -849,6 +850,39 @@ GET http://localhost:8000/items/stats
 
 ---
 
+### Week 6 — Docker Lanjutan: Multi-Stage Build, Volumes & Networks
+
+**Capaian:**
+- Setup Docker custom network `cloudnet` untuk komunikasi antar container
+- PostgreSQL berjalan dalam container dengan named volume `pgdata` untuk data persistence
+- Backend Dockerfile dioptimasi ke **multi-stage build** (v1 → v2): image 22% lebih kecil (~180 MB → ~140 MB)
+- Backend container terhubung ke database container via Docker network DNS (`db:5432`)
+- Frontend container berjalan dengan **Nginx production-ready**: gzip, security headers, custom error pages
+- Healthcheck terintegrasi di backend Dockerfile (`curl /health`)
+- 3 container (db, backend, frontend) berjalan bersamaan di satu network
+- `scripts/docker.sh` dan `scripts/docker.bat` dibuat untuk cross-platform Docker management
+- Dokumentasi arsitektur multi-container dengan diagram Mermaid
+
+**Deliverable:**
+- 3 container berjalan dan saling terhubung (db → backend → frontend)
+- Data PostgreSQL persist setelah container dihapus (volume `pgdata`)
+- Backend v2 image multi-stage < 150 MB ✅
+- Frontend image ~25 MB via multi-stage build ✅
+- File `docs/docker-architecture.md` — arsitektur 3-container dengan diagram
+- File `docs/image-comparison-modul6.md` — perbandingan ukuran sebelum vs sesudah optimasi
+- README diperbarui dengan Docker multi-container instructions
+
+**Lead per area:**
+| Tugas | Dikerjakan oleh |
+|-------|----------------|
+| Docker network, PostgreSQL container, multi-stage backend Dockerfile | Lead DevOps |
+| Healthcheck Dockerfile, verifikasi koneksi DB dari container | Lead Backend |
+| Production-ready `nginx.conf` (gzip, security headers, error pages) | Lead Frontend |
+| Arsitektur docs `docs/docker-architecture.md`, update README | Lead QA & Docs |
+| `scripts/docker.sh`, `scripts/docker.bat`, image size comparison | Lead CI/CD |
+
+---
+
 ## 🔐 Authentication
 
 Sejak **Modul 4**, seluruh endpoint `/items` dilindungi dengan **JWT (JSON Web Token)**. User harus register dan login terlebih dahulu untuk mendapatkan token sebelum bisa mengakses data.
@@ -1014,10 +1048,37 @@ docker logs backend
 docker stop backend && docker rm backend
 ```
 
-> 🚧 **Minggu 6–7:** Docker Compose akan memungkinkan seluruh service (backend + frontend + database) berjalan dalam satu network terisolasi:
+> 🚧 **Minggu 7:** Docker Compose akan menggantikan semua docker run manual dengan satu file `docker-compose.yml`:
 > ```bash
 > docker compose up
 > ```
+
+### Arsitektur Multi-Container (Modul 6)
+
+Sejak **Modul 6**, seluruh stack berjalan dalam **3 container** yang terhubung via Docker network:
+
+```mermaid
+flowchart LR
+    subgraph NET["🌐 cloudnet"]
+        FE["frontend\n:3000→:80\nnginx+react"]
+        BE["backend\n:8000\nFastAPI"]
+        DB["db\n:5433→:5432\nPostgreSQL"]
+        BE -->|"db:5432"| DB
+    end
+    USER["👤 Browser"] --> FE
+    USER --> BE
+    DB --- VOL["💾 pgdata"]
+
+    style NET fill:#DEEBF7,stroke:#2E75B6
+```
+
+| Container | Image | Port | Keterangan |
+|-----------|-------|------|------------|
+| `db` | `postgres:16-alpine` | `5433:5432` | Database + volume `pgdata` |
+| `backend` | `cloudapp-backend:v2` | `8000:8000` | Multi-stage, non-root, healthcheck |
+| `frontend` | `cloudapp-frontend:v1` | `3000:80` | Multi-stage (Node→Nginx), gzip, security headers |
+
+📄 Arsitektur lengkap: [`docs/docker-architecture.md`](docs/docker-architecture.md)
 
 ---
 
@@ -1086,6 +1147,20 @@ Rencana deployment:
 - [x] File `docs/image-comparison.md` dibuat — rekomendasi: `python:3.12-slim`
 - [x] README diperbarui: section Containerization + Docker instructions
 
+### Week 6
+- [x] Docker custom network `cloudnet` dibuat dan berfungsi
+- [x] PostgreSQL berjalan dalam container dengan named volume `pgdata`
+- [x] Data persist setelah container dihapus dan dibuat ulang (volume test)
+- [x] Backend Dockerfile dioptimasi ke multi-stage build (v2, < 150 MB)
+- [x] Backend container terhubung ke DB container via Docker DNS (`db:5432`)
+- [x] Backend healthcheck berfungsi (`curl /health`)
+- [x] Frontend Nginx production-ready (gzip, security headers, custom error pages)
+- [x] 3 container berjalan bersamaan di `cloudnet` (db, backend, frontend)
+- [x] `scripts/docker.sh` dan `scripts/docker.bat` dibuat untuk cross-platform management
+- [x] File `docs/docker-architecture.md` dibuat — arsitektur 3-container dengan Mermaid
+- [x] File `docs/image-comparison-modul6.md` dibuat — ukuran sebelum vs sesudah optimasi
+- [x] README diperbarui: section multi-container architecture + Week 6 progress
+
 ---
 
 ## 📚 Dokumentasi Tambahan
@@ -1096,6 +1171,8 @@ Rencana deployment:
 | UI Test Results | [`docs/ui-test-results.md`](docs/ui-test-results.md) | Hasil testing UI CRUD — Modul 3 |
 | Auth Test Results | [`docs/auth-test-results.md`](docs/auth-test-results.md) | Hasil testing JWT Auth end-to-end — Modul 4 |
 | Image Comparison | [`docs/image-comparison.md`](docs/image-comparison.md) | Perbandingan ukuran Docker image Python — Modul 5 |
+| Docker Architecture | [`docs/docker-architecture.md`](docs/docker-architecture.md) | Arsitektur 3-container: ports, networks, volumes — Modul 6 |
+| Image Comparison (Modul 6) | [`docs/image-comparison-modul6.md`](docs/image-comparison-modul6.md) | Ukuran sebelum vs sesudah multi-stage build — Modul 6 |
 | Setup Guide | [`docs/setup-guide.md`](docs/setup-guide.md) | Panduan setup dari clone hingga running |
 | Database Schema | [`docs/database-schema.md`](docs/database-schema.md) | Skema tabel database |
 | Swagger UI | `http://localhost:8000/docs` | Dokumentasi API interaktif (saat backend berjalan) |

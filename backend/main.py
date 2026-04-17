@@ -5,9 +5,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from database import engine, get_db
-from models import Base, User
+from models import Base, User, MasterVendor, MasterBlock, HaulingTransaction
+import uuid
 from schemas import (
-    ItemCreate, ItemUpdate, ItemResponse, ItemListResponse,
+    VendorCreate, VendorUpdate, VendorResponse,
+    BlockCreate, BlockUpdate, BlockResponse,
+    HaulingTransactionCreate, HaulingTransactionUpdate, HaulingTransactionResponse, HaulingTransactionListResponse,
+    DashboardResponse, DashboardTodayStats, DashboardMTDStats,
     UserCreate, UserResponse, LoginRequest, TokenResponse,
 )
 from auth import create_access_token, get_current_user
@@ -19,9 +23,9 @@ load_dotenv()
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="Cloud App API",
-    description="REST API untuk mata kuliah Komputasi Awan — SI ITK",
-    version="0.5.0",
+    title="PalmChain API",
+    description="REST API untuk Palm Oil Supply Chain Monitoring System (PalmChain)",
+    version="1.0.0",
 )
 
 # ==================== CORS (FIXED) ====================
@@ -141,88 +145,300 @@ def get_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 
-# ==================== ITEM ENDPOINTS (PROTECTED) ====================
+# ==================== VENDOR ENDPOINTS (PROTECTED) ====================
 
-@app.post("/items", response_model=ItemResponse, status_code=201)
-def create_item(
-    item: ItemCreate,
+@app.post("/api/vendors", response_model=VendorResponse, status_code=201)
+def create_vendor(
+    vendor: VendorCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Buat item baru. **Membutuhkan autentikasi.**"""
-    return crud.create_item(db=db, item_data=item)
+    """Buat vendor baru. **Membutuhkan autentikasi.**"""
+    db_vendor = crud.create_vendor(db=db, vendor_data=vendor)
+    if not db_vendor:
+        raise HTTPException(status_code=400, detail="Vendor code sudah terdaftar")
+    return db_vendor
 
 
-@app.get("/items", response_model=ItemListResponse)
-def list_items(
+@app.get("/api/vendors", status_code=200)
+def list_vendors(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
+    search: str = Query(None),
+    status: bool = Query(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Ambil daftar vendors dengan pagination. **Membutuhkan autentikasi.**"""
+    return crud.get_vendors(db=db, skip=skip, limit=limit, search=search, status=status)
+
+
+@app.get("/api/vendors/{vendor_id}", response_model=VendorResponse)
+def get_vendor(
+    vendor_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Ambil satu vendor berdasarkan ID. **Membutuhkan autentikasi.**"""
+    try:
+        vendor_uuid = uuid.UUID(vendor_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid vendor ID format")
+    
+    vendor = crud.get_vendor(db=db, vendor_id=vendor_uuid)
+    if not vendor:
+        raise HTTPException(status_code=404, detail="Vendor tidak ditemukan")
+    return vendor
+
+
+@app.put("/api/vendors/{vendor_id}", response_model=VendorResponse)
+def update_vendor(
+    vendor_id: str,
+    vendor: VendorUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Update vendor. **Membutuhkan autentikasi.**"""
+    try:
+        vendor_uuid = uuid.UUID(vendor_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid vendor ID format")
+    
+    updated = crud.update_vendor(db=db, vendor_id=vendor_uuid, vendor_data=vendor)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Vendor tidak ditemukan")
+    return updated
+
+
+@app.delete("/api/vendors/{vendor_id}", status_code=204)
+def delete_vendor(
+    vendor_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Hapus vendor. **Membutuhkan autentikasi.**"""
+    try:
+        vendor_uuid = uuid.UUID(vendor_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid vendor ID format")
+    
+    success = crud.delete_vendor(db=db, vendor_id=vendor_uuid)
+    if not success:
+        raise HTTPException(status_code=404, detail="Vendor tidak ditemukan")
+
+
+# ==================== BLOCK ENDPOINTS (PROTECTED) ====================
+
+@app.post("/api/blocks", response_model=BlockResponse, status_code=201)
+def create_block(
+    block: BlockCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Buat block/afdeling baru. **Membutuhkan autentikasi.**"""
+    db_block = crud.create_block(db=db, block_data=block)
+    if not db_block:
+        raise HTTPException(status_code=400, detail="Block code sudah terdaftar")
+    return db_block
+
+
+@app.get("/api/blocks", status_code=200)
+def list_blocks(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+    search: str = Query(None),
+    status: bool = Query(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Ambil daftar blocks dengan pagination. **Membutuhkan autentikasi.**"""
+    return crud.get_blocks(db=db, skip=skip, limit=limit, search=search, status=status)
+
+
+@app.get("/api/blocks/{block_id}", response_model=BlockResponse)
+def get_block(
+    block_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Ambil satu block berdasarkan ID. **Membutuhkan autentikasi.**"""
+    try:
+        block_uuid = uuid.UUID(block_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid block ID format")
+    
+    block = crud.get_block(db=db, block_id=block_uuid)
+    if not block:
+        raise HTTPException(status_code=404, detail="Block tidak ditemukan")
+    return block
+
+
+@app.put("/api/blocks/{block_id}", response_model=BlockResponse)
+def update_block(
+    block_id: str,
+    block: BlockUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Update block. **Membutuhkan autentikasi.**"""
+    try:
+        block_uuid = uuid.UUID(block_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid block ID format")
+    
+    updated = crud.update_block(db=db, block_id=block_uuid, block_data=block)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Block tidak ditemukan")
+    return updated
+
+
+@app.delete("/api/blocks/{block_id}", status_code=204)
+def delete_block(
+    block_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Hapus block. **Membutuhkan autentikasi.**"""
+    try:
+        block_uuid = uuid.UUID(block_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid block ID format")
+    
+    success = crud.delete_block(db=db, block_id=block_uuid)
+    if not success:
+        raise HTTPException(status_code=404, detail="Block tidak ditemukan")
+
+
+# ==================== HAULING TRANSACTION ENDPOINTS (PROTECTED) ====================
+
+@app.post("/api/hauling-transactions", response_model=HaulingTransactionResponse, status_code=201)
+def create_hauling_transaction(
+    hauling: HaulingTransactionCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Buat hauling transaction baru. **Membutuhkan autentikasi.**"""
+    db_hauling = crud.create_hauling_transaction(db=db, hauling_data=hauling)
+    if not db_hauling:
+        raise HTTPException(status_code=400, detail="Ticket number sudah terdaftar")
+    return db_hauling
+
+
+@app.get("/api/hauling-transactions", response_model=HaulingTransactionListResponse)
+def list_hauling_transactions(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+    vendor_id: str = Query(None),
+    block_id: str = Query(None),
+    status: str = Query(None),
     search: str = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Ambil daftar items. **Membutuhkan autentikasi.**"""
-    return crud.get_items(db=db, skip=skip, limit=limit, search=search)
-
-
-@app.get("/items/stats")
-def get_items_stats(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """
-    Dapatkan statistik items.
+    """Ambil daftar hauling transactions dengan pagination dan filter. **Membutuhkan autentikasi.**"""
+    vendor_uuid = None
+    block_uuid = None
     
-    Returns:
-    - **total_items**: Jumlah total item
-    - **total_quantity**: Total quantity dari semua items
-    - **average_price**: Rata-rata harga item
-    - **min_price**: Harga terendah
-    - **max_price**: Harga tertinggi
+    if vendor_id:
+        try:
+            vendor_uuid = uuid.UUID(vendor_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid vendor ID format")
     
-    **Membutuhkan autentikasi.**
-    """
-    return crud.get_items_stats(db=db)
+    if block_id:
+        try:
+            block_uuid = uuid.UUID(block_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid block ID format")
+    
+    return crud.get_hauling_transactions(
+        db=db, skip=skip, limit=limit,
+        vendor_id=vendor_uuid, block_id=block_uuid,
+        status=status, search=search
+    )
 
 
-@app.get("/items/{item_id}", response_model=ItemResponse)
-def get_item(
-    item_id: int,
+@app.get("/api/hauling-transactions/{hauling_id}", response_model=HaulingTransactionResponse)
+def get_hauling_transaction(
+    hauling_id: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Ambil satu item. **Membutuhkan autentikasi.**"""
-    item = crud.get_item(db=db, item_id=item_id)
-    if not item:
-        raise HTTPException(status_code=404, detail=f"Item {item_id} tidak ditemukan")
-    return item
+    """Ambil satu hauling transaction berdasarkan ID. **Membutuhkan autentikasi.**"""
+    try:
+        hauling_uuid = uuid.UUID(hauling_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid hauling ID format")
+    
+    hauling = crud.get_hauling_transaction(db=db, hauling_id=hauling_uuid)
+    if not hauling:
+        raise HTTPException(status_code=404, detail="Hauling transaction tidak ditemukan")
+    return hauling
 
 
-@app.put("/items/{item_id}", response_model=ItemResponse)
-def update_item(
-    item_id: int,
-    item: ItemUpdate,
+@app.put("/api/hauling-transactions/{hauling_id}", response_model=HaulingTransactionResponse)
+def update_hauling_transaction(
+    hauling_id: str,
+    hauling: HaulingTransactionUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Update item. **Membutuhkan autentikasi.**"""
-    updated = crud.update_item(db=db, item_id=item_id, item_data=item)
+    """Update hauling transaction. **Membutuhkan autentikasi.**"""
+    try:
+        hauling_uuid = uuid.UUID(hauling_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid hauling ID format")
+    
+    updated = crud.update_hauling_transaction(db=db, hauling_id=hauling_uuid, hauling_data=hauling)
     if not updated:
-        raise HTTPException(status_code=404, detail=f"Item {item_id} tidak ditemukan")
+        raise HTTPException(status_code=404, detail="Hauling transaction tidak ditemukan")
     return updated
 
 
-@app.delete("/items/{item_id}", status_code=204)
-def delete_item(
-    item_id: int,
+@app.delete("/api/hauling-transactions/{hauling_id}", status_code=204)
+def delete_hauling_transaction(
+    hauling_id: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Hapus item. **Membutuhkan autentikasi.**"""
-    success = crud.delete_item(db=db, item_id=item_id)
+    """Hapus hauling transaction. **Membutuhkan autentikasi.**"""
+    try:
+        hauling_uuid = uuid.UUID(hauling_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid hauling ID format")
+    
+    success = crud.delete_hauling_transaction(db=db, hauling_id=hauling_uuid)
     if not success:
-        raise HTTPException(status_code=404, detail=f"Item {item_id} tidak ditemukan")
-    return None
+        raise HTTPException(status_code=404, detail="Hauling transaction tidak ditemukan")
+
+
+# ==================== DASHBOARD ENDPOINTS (PROTECTED) ====================
+
+@app.get("/api/dashboard", response_model=DashboardResponse)
+def get_dashboard(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Dapatkan dashboard summary dengan statistik hari ini dan Month-To-Date.
+    
+    **Response:**
+    - **today**: Statistik transaksi hari ini (total_transactions, total_tonage, avg_tonage)
+    - **mtd**: Statistik bulan ini (total_transactions, total_tonage, target_tonage, achievement_percentage)
+    - **last_updated**: Waktu terakhir data diperbarui
+    
+    **Membutuhkan autentikasi.**
+    """
+    from datetime import datetime
+    
+    today_stats = crud.get_hauling_stats_today(db=db)
+    mtd_stats = crud.get_hauling_stats_mtd(db=db, target_tonage=500.0)
+    
+    return {
+        "today": DashboardTodayStats(**today_stats),
+        "mtd": DashboardMTDStats(**mtd_stats),
+        "last_updated": datetime.now()
+    }
 
 
 # ==================== TEAM INFO ====================
