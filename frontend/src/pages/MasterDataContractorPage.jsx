@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react"
 import { useOutletContext } from "react-router-dom"
-import { fetchVendors } from "../services/api"
+import { fetchVendors, createVendor, updateVendor, deleteVendor } from "../services/api"
 import ContractorTable from "../components/ContractorTable"
 import ContractorPagination from "../components/ContractorPagination"
+import ContractorForm from "../components/ContractorForm"
 import "./MasterDataContractorPage.css"
 
 /**
@@ -19,6 +20,9 @@ function MasterDataContractorPage({ onUnauthorized: onUnauthorizedProp, onNotify
   const [search, setSearch] = useState("")
   const [searchDraft, setSearchDraft] = useState("")
   const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState(false)
+  const [editingContractor, setEditingContractor] = useState(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -62,6 +66,65 @@ function MasterDataContractorPage({ onUnauthorized: onUnauthorizedProp, onNotify
     setSkip(0)
   }
 
+  const handleSubmit = async (contractorData, editId) => {
+    setActionLoading(true)
+    try {
+      if (editId) {
+        await updateVendor(editId, contractorData)
+        setEditingContractor(null)
+        onNotify?.("Kontraktor berhasil diperbarui", "success")
+      } else {
+        await createVendor(contractorData)
+        onNotify?.("Kontraktor berhasil ditambahkan", "success")
+      }
+      setIsModalOpen(false)
+      load()
+    } catch (err) {
+      if (err.message === "UNAUTHORIZED") {
+        onUnauthorized?.()
+      } else {
+        onNotify?.(err.message || "Terjadi kesalahan", "error")
+        throw err
+      }
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleEdit = (contractor) => {
+    setEditingContractor(contractor)
+    setIsModalOpen(true)
+  }
+
+  const openModal = () => {
+    setEditingContractor(null)
+    setIsModalOpen(true)
+  }
+
+  const closeModal = () => {
+    setEditingContractor(null)
+    setIsModalOpen(false)
+  }
+
+  const handleDelete = async (id) => {
+    const contractor = contractors.find((c) => c.id === id)
+    if (!window.confirm(`Yakin ingin menghapus kontraktor "${contractor?.name}"?`)) return
+    setActionLoading(true)
+    try {
+      await deleteVendor(id)
+      onNotify?.("Kontraktor berhasil dihapus", "success")
+      load()
+    } catch (err) {
+      if (err.message === "UNAUTHORIZED") {
+        onUnauthorized?.()
+      } else {
+        onNotify?.(err.message || "Gagal menghapus kontraktor", "error")
+      }
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
   return (
     <div className="mdc-page">
       <div className="mdc-page__toolbar">
@@ -87,20 +150,52 @@ function MasterDataContractorPage({ onUnauthorized: onUnauthorizedProp, onNotify
           <button
             type="button"
             className="mdc-btn-add"
-            onClick={() => onNotify?.("Form tambah kontraktor: hubungkan ke POST /api/vendors bila siap.", "info")}
+            onClick={openModal}
+            disabled={actionLoading}
           >
             + Add New
           </button>
         </div>
       </div>
 
-      <ContractorTable contractors={contractors} loading={loading} />
+      {isModalOpen && (
+        <div className="mdc-modal-overlay">
+          <div className="mdc-modal" role="dialog" aria-modal="true">
+            <div className="mdc-modal__header">
+              <h2 className="mdc-modal__title">
+                {editingContractor ? "Edit Contractor" : "Add Contractor"}
+              </h2>
+              <button
+                type="button"
+                className="mdc-modal__close"
+                onClick={closeModal}
+                aria-label="Close modal"
+              >
+                ×
+              </button>
+            </div>
+            <ContractorForm
+              onSubmit={handleSubmit}
+              editingContractor={editingContractor}
+              onCancel={closeModal}
+              loading={actionLoading}
+            />
+          </div>
+        </div>
+      )}
+
+      <ContractorTable
+        contractors={contractors}
+        loading={loading || actionLoading}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
 
       <ContractorPagination
         total={total}
         skip={skip}
         limit={limit}
-        disabled={loading}
+        disabled={loading || actionLoading}
         onPageChange={handlePageChange}
         onLimitChange={handleLimitChange}
       />

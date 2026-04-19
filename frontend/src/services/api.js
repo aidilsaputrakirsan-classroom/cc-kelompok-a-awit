@@ -209,6 +209,38 @@ export async function fetchVendors({ skip = 0, limit = 20, search = "", status =
   return handleResponse(response)
 }
 
+export async function createVendor(vendorData) {
+  const response = await fetch(`${API_URL}/api/vendors`, {
+    method: "POST",
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(vendorData),
+  })
+  return handleResponse(response)
+}
+
+export async function updateVendor(id, vendorData) {
+  const response = await fetch(`${API_URL}/api/vendors/${id}`, {
+    method: "PUT",
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(vendorData),
+  })
+  return handleResponse(response)
+}
+
+export async function deleteVendor(id) {
+  const response = await fetch(`${API_URL}/api/vendors/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  })
+  return handleResponse(response)
+}
+
 export async function checkHealth() {
   try {
     const response = await fetch(`${API_URL}/health`)
