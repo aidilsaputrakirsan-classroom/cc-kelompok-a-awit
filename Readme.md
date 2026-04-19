@@ -1189,3 +1189,4 @@ Rencana deployment:
 
 *Dokumentasi ini dikelola oleh **Adonia Azarya Tamalonggehe** (Lead QA & Documentation).*  
 *Institut Teknologi Kalimantan — Komputasi Awan 2026.*
+
