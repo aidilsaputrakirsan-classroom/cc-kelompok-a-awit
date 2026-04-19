@@ -25,6 +25,7 @@ class MasterVendor(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
+    blocks = relationship("MasterBlock", back_populates="vendor")
     hauling_transactions = relationship("HaulingTransaction", back_populates="vendor")
 
 
@@ -36,11 +37,13 @@ class MasterBlock(Base):
     block_code = Column(String(10), unique=True, nullable=False, index=True)
     division = Column(String(50))  # Afdeling
     hectarage = Column(Float)  # Luas area dalam hektar
+    vendor_id = Column(UUID(as_uuid=True), ForeignKey("master_vendors.id", ondelete="SET NULL"), nullable=True, index=True)
     status = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
+    vendor = relationship("MasterVendor", back_populates="blocks")
     hauling_transactions = relationship("HaulingTransaction", back_populates="block")
 
 

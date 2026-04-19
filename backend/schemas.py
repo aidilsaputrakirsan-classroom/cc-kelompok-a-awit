@@ -48,6 +48,12 @@ class VendorResponse(VendorBase):
         from_attributes = True
 
 
+class VendorListResponse(BaseModel):
+    """Schema untuk response list vendors"""
+    total: int
+    vendors: List[VendorResponse]
+
+
 # ============================================================
 # BLOCK/AFDELING SCHEMAS
 # ============================================================
@@ -57,6 +63,7 @@ class BlockBase(BaseModel):
     block_code: str = Field(..., min_length=1, max_length=10)
     division: Optional[str] = None
     hectarage: Optional[float] = Field(None, ge=0)
+    vendor_id: Optional[uuid.UUID] = None
     status: bool = Field(default=True)
 
 
@@ -69,6 +76,7 @@ class BlockUpdate(BaseModel):
     """Schema untuk update block"""
     division: Optional[str] = None
     hectarage: Optional[float] = None
+    vendor_id: Optional[uuid.UUID] = None
     status: Optional[bool] = None
 
 
@@ -80,6 +88,12 @@ class BlockResponse(BlockBase):
 
     class Config:
         from_attributes = True
+
+
+class BlockListResponse(BaseModel):
+    """Schema untuk response list blocks"""
+    total: int
+    blocks: List[BlockResponse]
 
 
 # ============================================================

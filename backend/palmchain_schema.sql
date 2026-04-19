@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS master_blocks (
     block_code VARCHAR(10) UNIQUE NOT NULL,
     division VARCHAR(50),
     hectarage DECIMAL(10,2),
+    vendor_id UUID REFERENCES master_vendors(id) ON DELETE SET NULL,
     status BOOLEAN DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

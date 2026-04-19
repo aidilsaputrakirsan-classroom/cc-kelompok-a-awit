@@ -8,8 +8,8 @@ from database import engine, get_db
 from models import Base, User, MasterVendor, MasterBlock, HaulingTransaction
 import uuid
 from schemas import (
-    VendorCreate, VendorUpdate, VendorResponse,
-    BlockCreate, BlockUpdate, BlockResponse,
+    VendorCreate, VendorUpdate, VendorResponse, VendorListResponse,
+    BlockCreate, BlockUpdate, BlockResponse, BlockListResponse,
     HaulingTransactionCreate, HaulingTransactionUpdate, HaulingTransactionResponse, HaulingTransactionListResponse,
     DashboardResponse, DashboardTodayStats, DashboardMTDStats,
     UserCreate, UserResponse, LoginRequest, TokenResponse,
@@ -160,10 +160,10 @@ def create_vendor(
     return db_vendor
 
 
-@app.get("/api/vendors", status_code=200)
+@app.get("/api/vendors", response_model=VendorListResponse)
 def list_vendors(
     skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(20, ge=1, le=1000),
     search: str = Query(None),
     status: bool = Query(None),
     db: Session = Depends(get_db),
@@ -242,10 +242,10 @@ def create_block(
     return db_block
 
 
-@app.get("/api/blocks", status_code=200)
+@app.get("/api/blocks", response_model=BlockListResponse)
 def list_blocks(
     skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(20, ge=1, le=1000),
     search: str = Query(None),
     status: bool = Query(None),
     db: Session = Depends(get_db),
