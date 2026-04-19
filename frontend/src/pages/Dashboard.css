@@ -1,0 +1,93 @@
+.pt-dash {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.pt-dash__intro {
+  margin-bottom: 1.25rem;
+}
+
+.pt-dash__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #323232;
+  letter-spacing: -0.02em;
+}
+
+.pt-dash__sub {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(50, 50, 50, 0.62);
+  line-height: 1.45;
+}
+
+.pt-dash__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.pt-dash-card {
+  background: #ffffff;
+  border: 1px solid rgba(50, 50, 50, 0.12);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  box-shadow: 0 4px 20px rgba(50, 50, 50, 0.05);
+}
+
+.pt-dash-card__head {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #323232;
+}
+
+.pt-dash-card__value {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #ba352c;
+  letter-spacing: -0.02em;
+}
+
+.pt-dash-card__hint {
+  margin: 0.45rem 0 0;
+  font-size: 0.75rem;
+  color: rgba(50, 50, 50, 0.5);
+}
+
+.pt-dash__charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+
+.pt-dash-chart {
+  background: #ffffff;
+  border: 1px solid rgba(50, 50, 50, 0.12);
+  border-radius: 12px;
+  padding: 1rem 1.15rem 1.25rem;
+  box-shadow: 0 4px 20px rgba(50, 50, 50, 0.05);
+}
+
+.pt-dash-chart__head {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #323232;
+}
+
+.pt-dash-chart__sub {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  color: rgba(50, 50, 50, 0.55);
+}
+
+.pt-dash-chart__frame {
+  width: 100%;
+  min-height: 280px;
+}
