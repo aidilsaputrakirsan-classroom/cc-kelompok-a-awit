@@ -241,6 +241,40 @@ export async function deleteVendor(id) {
   return handleResponse(response)
 }
 
+// ==================== BLOCKS API ====================
+
+export async function createBlock(blockData) {
+  const response = await fetch(`${API_URL}/api/blocks`, {
+    method: "POST",
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(blockData),
+  })
+  return handleResponse(response)
+}
+
+export async function updateBlock(id, blockData) {
+  const response = await fetch(`${API_URL}/api/blocks/${id}`, {
+    method: "PUT",
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(blockData),
+  })
+  return handleResponse(response)
+}
+
+export async function deleteBlock(id) {
+  const response = await fetch(`${API_URL}/api/blocks/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  })
+  return handleResponse(response)
+}
+
 export async function checkHealth() {
   try {
     const response = await fetch(`${API_URL}/health`)

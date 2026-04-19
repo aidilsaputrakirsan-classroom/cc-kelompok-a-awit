@@ -136,10 +136,10 @@ function ContractorForm({ onSubmit, editingContractor, onCancel, loading }) {
             style={styles.select}
             disabled={loading}
           >
-            <option value="">Pilih tipe kontraktor</option>
-            <option value="Coal Mining">Coal Mining</option>
-            <option value="Coal Hauling">Coal Hauling</option>
-            <option value="Other">Other</option>
+            <option value="">Select Contractor Type...</option>
+            <option value="Palm Oil Harvester">Palm Oil Harvester</option>
+            <option value="Palm Oil Hauling">Palm Oil Hauling</option>
+            <option value="Palm Oil Monitoring">Palm Oil Monitoring</option>
           </select>
         </div>
 
@@ -152,8 +152,8 @@ function ContractorForm({ onSubmit, editingContractor, onCancel, loading }) {
             style={styles.select}
             disabled={loading}
           >
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="active" style={styles.option}>Active</option>
+            <option value="inactive" style={styles.option}>Inactive</option>
           </select>
         </div>
 
@@ -241,7 +241,12 @@ const styles = {
     border: "1px solid rgba(50, 50, 50, 0.18)",
     fontSize: "0.95rem",
     backgroundColor: "white",
+    color: "#323232",
     outline: "none",
+  },
+  option: {
+    color: "#323232",
+    backgroundColor: "white",
   },
   actions: {
     display: "flex",
