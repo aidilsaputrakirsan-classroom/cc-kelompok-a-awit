@@ -1,4 +1,4 @@
-# 🐳 Arsitektur Multi-Container — e-Mandor
+# 🐳 Arsitektur Multi-Container — PalmTrack Cloud
 
 > Dokumentasi ini disusun oleh **Lead QA & Documentation** sebagai tugas Modul 6 — Docker Lanjutan.
 >
@@ -8,7 +8,7 @@
 
 ## 1. Arsitektur Overview
 
-Aplikasi e-Mandor berjalan dalam **3 container** yang saling terhubung melalui Docker custom network `cloudnet`.
+Aplikasi PalmTrack Cloud berjalan dalam **3 container** yang saling terhubung melalui Docker custom network `cloudnet`.
 
 ```mermaid
 flowchart TD

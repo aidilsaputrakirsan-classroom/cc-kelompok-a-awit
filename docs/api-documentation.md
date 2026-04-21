@@ -1,6 +1,6 @@
 # API Documentation
 
-Dokumentasi lengkap untuk REST API aplikasi e-Mandor. API ini menggunakan FastAPI dan berjalan di `http://localhost:8000` secara default.
+Dokumentasi lengkap untuk REST API aplikasi PalmTrack Cloud (PalmChain). API ini menggunakan FastAPI dan berjalan di `http://localhost:8000` secara default.
 
 ## Base URL
 ```
