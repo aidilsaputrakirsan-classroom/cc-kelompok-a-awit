@@ -64,6 +64,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=10s \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Start command dengan wait-for-db script
-ENTRYPOINT ["/app/wait-for-db.sh"]
+# Start command langsung uvicorn (database sudah ready via docker-compose depends_on)
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

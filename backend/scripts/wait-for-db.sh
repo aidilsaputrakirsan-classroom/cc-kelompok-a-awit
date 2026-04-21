@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/sh
 # wait-for-db.sh
 # Script untuk menunggu PostgreSQL siap sebelum menjalankan aplikasi
 # Mencegah error "connection refused" karena database belum sepenuhnya siap
@@ -10,7 +10,7 @@ host="${1:-db}"
 port="${2:-5432}"
 user="${3:-postgres}"
 
-echo "⏳ Waiting for PostgreSQL at $host:$port..."
+echo "â³ Waiting for PostgreSQL at $host:$port..."
 
 # Retry logic: cek database setiap 1 detik sampai siap (max 30 detik)
 max_attempts=30
@@ -18,7 +18,7 @@ attempt=1
 
 while [ $attempt -le $max_attempts ]; do
     if pg_isready -h "$host" -p "$port" -U "$user" -q; then
-        echo "✓ PostgreSQL is ready!"
+        echo "âœ“ PostgreSQL is ready!"
         break
     fi
     
@@ -28,7 +28,7 @@ while [ $attempt -le $max_attempts ]; do
 done
 
 if [ $attempt -gt $max_attempts ]; then
-    echo "✗ PostgreSQL did not become ready after $max_attempts seconds"
+    echo "âœ— PostgreSQL did not become ready after $max_attempts seconds"
     exit 1
 fi
 
