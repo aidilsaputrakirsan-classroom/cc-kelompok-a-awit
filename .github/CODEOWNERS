@@ -11,10 +11,10 @@
 /frontend/               @alvhayen
 
 # Docker & Infrastructure — Lead DevOps
-docker-compose.yml       @VarrelKaleb
-/backend/Dockerfile      @VarrelKaleb
-/frontend/Dockerfile     @VarrelKaleb
-Makefile                 @VarrelKaleb
+docker-compose.yml       @VarrelKaleb89
+/backend/Dockerfile      @VarrelKaleb89
+/frontend/Dockerfile     @VarrelKaleb89
+Makefile                 @VarrelKaleb89
 
 # Documentation — Lead QA & Docs
 README.md                @Adonia76
