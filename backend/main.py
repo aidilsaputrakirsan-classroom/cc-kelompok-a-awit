@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from database import engine, get_db
-from models import Base, User, MasterVendor, MasterBlock, HaulingTransaction
+from models import Base, User, MasterVendor, MasterBlock, HaulingTransaction, Item
 import uuid
 from schemas import (
     VendorCreate, VendorUpdate, VendorResponse, VendorListResponse,
@@ -13,6 +13,7 @@ from schemas import (
     HaulingTransactionCreate, HaulingTransactionUpdate, HaulingTransactionResponse, HaulingTransactionListResponse,
     DashboardResponse, DashboardTodayStats, DashboardMTDStats,
     UserCreate, UserResponse, LoginRequest, TokenResponse,
+    ItemCreate, ItemUpdate, ItemResponse, ItemListResponse,
 )
 from auth import create_access_token, get_current_user
 import crud
@@ -410,6 +411,96 @@ def delete_hauling_transaction(
     success = crud.delete_hauling_transaction(db=db, hauling_id=hauling_uuid)
     if not success:
         raise HTTPException(status_code=404, detail="Hauling transaction tidak ditemukan")
+
+
+# ==================== ITEM ENDPOINTS (PROTECTED) ====================
+
+@app.post("/api/items", response_model=ItemResponse, status_code=201)
+def create_item(
+    item: ItemCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Buat item baru. **Membutuhkan autentikasi.**"""
+    db_item = crud.create_item(db=db, item_data=item)
+    if not db_item:
+        raise HTTPException(status_code=400, detail="Item code sudah terdaftar")
+    return db_item
+
+
+@app.get("/api/items", response_model=ItemListResponse)
+def list_items(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=1000),
+    search: str = Query(None),
+    category: str = Query(None),
+    status: bool = Query(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Ambil daftar items dengan pagination. **Membutuhkan autentikasi.**
+    
+    Query parameters:
+    - **category**: Filter berdasarkan kategori (e.g., 'electronics', 'hardware')
+    - **search**: Cari berdasarkan code atau name
+    - **status**: Filter by active status
+    """
+    return crud.get_items(db=db, skip=skip, limit=limit, search=search, category=category, status=status)
+
+
+@app.get("/api/items/{item_id}", response_model=ItemResponse)
+def get_item(
+    item_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Ambil satu item berdasarkan ID. **Membutuhkan autentikasi.**"""
+    try:
+        item_uuid = uuid.UUID(item_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid item ID format")
+    
+    item = crud.get_item(db=db, item_id=item_uuid)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item tidak ditemukan")
+    return item
+
+
+@app.put("/api/items/{item_id}", response_model=ItemResponse)
+def update_item(
+    item_id: str,
+    item: ItemUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Update item. **Membutuhkan autentikasi.**"""
+    try:
+        item_uuid = uuid.UUID(item_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid item ID format")
+    
+    updated = crud.update_item(db=db, item_id=item_uuid, item_data=item)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Item tidak ditemukan")
+    return updated
+
+
+@app.delete("/api/items/{item_id}", status_code=204)
+def delete_item(
+    item_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Hapus item. **Membutuhkan autentikasi.**"""
+    try:
+        item_uuid = uuid.UUID(item_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid item ID format")
+    
+    success = crud.delete_item(db=db, item_id=item_uuid)
+    if not success:
+        raise HTTPException(status_code=404, detail="Item tidak ditemukan")
 
 
 # ==================== DASHBOARD ENDPOINTS (PROTECTED) ====================
