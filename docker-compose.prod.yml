@@ -5,13 +5,14 @@ services:
   backend:
     environment:
       - DEBUG=false
-      - CORS_ORIGINS=https://yourdomain.com
-    restart: always
+      - CORS_ORIGINS=${PROD_CORS_ORIGINS}
+    restart: unless-stopped
 
   frontend:
-    restart: always
+    restart: unless-stopped
 
   db:
-    restart: always
+    restart: unless-stopped
     # Tidak expose port ke host di production demi keamanan
     ports: !reset []
+    
