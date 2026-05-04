@@ -32,13 +32,13 @@ ps:
 # Linter (jalankan linter untuk cek kerapian kode backend)
 lint:
 	@echo "Menjalankan linter..."
-	# docker compose exec backend flake8 .
+	docker compose exec backend flake8 .
 
 # Test (placeholder untuk unit test)
 test:
 	@echo "Menjalankan unit test..."
-	# docker compose exec backend pytest
+	docker compose exec backend pytest
 
 # PR Check (simulasi CI lokal: build ulang lalu test)
-pr-check: build test
+pr-check: lint test
 	@echo "✅ PR Check selesai! Kode siap untuk dibuatkan Pull Request."
