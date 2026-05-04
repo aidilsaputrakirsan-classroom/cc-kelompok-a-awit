@@ -7,7 +7,9 @@ function Header({ totalItems, isConnected, user, onLogout }) {
       </div>
       <div style={styles.right}>
         <div style={styles.stats}>
-          <span style={styles.badge}>{totalItems} items</span>
+          {totalItems != null && (
+            <span style={styles.badge}>{totalItems} items</span>
+          )}
           <span style={{
             ...styles.status,
             backgroundColor: isConnected ? "#E2EFDA" : "#FBE5D6",

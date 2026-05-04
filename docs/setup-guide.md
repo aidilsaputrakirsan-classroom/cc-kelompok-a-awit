@@ -1,8 +1,8 @@
-# ⚙️ DevOps Setup Guide — e-Mandor
+# ⚙️ DevOps Setup Guide — PalmTrack Cloud
 
 ## 📌 Deskripsi
 
-Dokumen ini berisi panduan lengkap untuk menjalankan project **e-Mandor** dari awal hingga berhasil berjalan di local environment.
+Dokumen ini berisi panduan lengkap untuk menjalankan project **PalmTrack Cloud** dari awal hingga berhasil berjalan di local environment.
 
 Panduan ini ditujukan untuk:
 - Anggota tim baru

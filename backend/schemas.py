@@ -1,52 +1,173 @@
 from pydantic import BaseModel, Field, field_validator
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 import re
+import uuid
 
 
-# === BASE SCHEMA ===
-class ItemBase(BaseModel):
-    """Base schema — field yang dipakai untuk create & update."""
-    name: str = Field(..., min_length=1, max_length=100, examples=["Laptop"])
-    description: Optional[str] = Field(None, examples=["Laptop untuk cloud computing"])
-    price: float = Field(..., gt=0, examples=[15000000])
-    quantity: int = Field(0, ge=0, examples=[10])
+# ============================================================
+# VENDOR SCHEMAS
+# ============================================================
+
+class VendorBase(BaseModel):
+    """Base schema untuk Vendor"""
+    code: str = Field(..., min_length=1, max_length=10)
+    name: str = Field(..., min_length=1, max_length=100)
+    type: Optional[str] = Field(None)
+    phone: Optional[str] = Field(None)
+    email: Optional[str] = Field(None)
+    status: bool = Field(default=True)
 
 
-# === CREATE SCHEMA (untuk POST request) ===
-class ItemCreate(ItemBase):
-    """Schema untuk membuat item baru. Mewarisi semua field dari ItemBase."""
-    pass
+class VendorCreate(VendorBase):
+    """Schema untuk create vendor"""
+    @field_validator('email')
+    @classmethod
+    def validate_email(cls, v):
+        if v and not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', v):
+            raise ValueError('Invalid email format')
+        return v
 
 
-# === UPDATE SCHEMA (untuk PUT request) ===
-class ItemUpdate(BaseModel):
-    """
-    Schema untuk update item. Semua field optional 
-    karena user mungkin hanya ingin update sebagian field.
-    """
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    description: Optional[str] = None
-    price: Optional[float] = Field(None, gt=0)
-    quantity: Optional[int] = Field(None, ge=0)
+class VendorUpdate(BaseModel):
+    """Schema untuk update vendor"""
+    name: Optional[str] = None
+    type: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    status: Optional[bool] = None
 
 
-# === RESPONSE SCHEMA (untuk output) ===
-class ItemResponse(ItemBase):
-    """Schema untuk response. Termasuk id dan timestamp dari database."""
-    id: int
+class VendorResponse(VendorBase):
+    """Schema untuk response vendor"""
+    id: uuid.UUID
     created_at: datetime
     updated_at: Optional[datetime] = None
 
     class Config:
-        from_attributes = True  # Agar bisa convert dari SQLAlchemy model
+        from_attributes = True
 
 
-# === LIST RESPONSE (dengan metadata) ===
-class ItemListResponse(BaseModel):
-    """Schema untuk response list items dengan total count."""
+class VendorListResponse(BaseModel):
+    """Schema untuk response list vendors"""
     total: int
-    items: list[ItemResponse]
+    vendors: List[VendorResponse]
+
+
+# ============================================================
+# BLOCK/AFDELING SCHEMAS
+# ============================================================
+
+class BlockBase(BaseModel):
+    """Base schema untuk Block"""
+    block_code: str = Field(..., min_length=1, max_length=10)
+    division: Optional[str] = None
+    hectarage: Optional[float] = Field(None, ge=0)
+    vendor_id: Optional[uuid.UUID] = None
+    status: bool = Field(default=True)
+
+
+class BlockCreate(BlockBase):
+    """Schema untuk create block"""
+    pass
+
+
+class BlockUpdate(BaseModel):
+    """Schema untuk update block"""
+    division: Optional[str] = None
+    hectarage: Optional[float] = None
+    vendor_id: Optional[uuid.UUID] = None
+    status: Optional[bool] = None
+
+
+class BlockResponse(BlockBase):
+    """Schema untuk response block"""
+    id: uuid.UUID
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class BlockListResponse(BaseModel):
+    """Schema untuk response list blocks"""
+    total: int
+    blocks: List[BlockResponse]
+
+
+# ============================================================
+# HAULING TRANSACTION SCHEMAS
+# ============================================================
+
+class HaulingTransactionBase(BaseModel):
+    """Base schema untuk Hauling Transaction"""
+    ticket_no: str = Field(..., min_length=1, max_length=20)
+    vehicle_plate: str = Field(..., min_length=1, max_length=15)
+    weight_in: float = Field(..., gt=0)
+    weight_out: float = Field(..., ge=0)
+
+
+class HaulingTransactionCreate(HaulingTransactionBase):
+    """Schema untuk create hauling transaction"""
+    vendor_id: Optional[uuid.UUID] = None
+    block_id: Optional[uuid.UUID] = None
+    status: str = Field(default="completed")
+
+
+class HaulingTransactionUpdate(BaseModel):
+    """Schema untuk update hauling transaction"""
+    status: Optional[str] = None
+    gate_out_time: Optional[datetime] = None
+
+
+class HaulingTransactionResponse(HaulingTransactionBase):
+    """Schema untuk response hauling transaction"""
+    id: uuid.UUID
+    vendor_id: Optional[uuid.UUID] = None
+    block_id: Optional[uuid.UUID] = None
+    net_weight: float
+    gate_in_time: datetime
+    gate_out_time: Optional[datetime] = None
+    status: str
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class HaulingTransactionListResponse(BaseModel):
+    """Schema untuk response list hauling transactions"""
+    total: int
+    transactions: List[HaulingTransactionResponse]
+
+
+# ============================================================
+# DASHBOARD SCHEMAS
+# ============================================================
+
+class DashboardTodayStats(BaseModel):
+    """Schema untuk statistik hari ini"""
+    total_transactions: int
+    total_tonage: float
+    avg_tonage: float
+
+
+class DashboardMTDStats(BaseModel):
+    """Schema untuk statistik Month-To-Date"""
+    total_transactions: int
+    total_tonage: float
+    target_tonage: float
+    achievement_percentage: float
+
+
+class DashboardResponse(BaseModel):
+    """Schema untuk Dashboard Summary"""
+    today: DashboardTodayStats
+    mtd: DashboardMTDStats
+    last_updated: datetime
+
 
 # ============================================================
 # AUTH SCHEMAS

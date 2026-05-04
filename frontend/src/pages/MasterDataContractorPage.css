@@ -1,0 +1,328 @@
+/* PalmTrack Cloud — Master Data Contractor */
+
+.mdc-page {
+  background: #ffffff;
+  border: 1px solid rgba(50, 50, 50, 0.12);
+  border-radius: 12px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(50, 50, 50, 0.06);
+}
+
+.mdc-page__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.35rem 1.5rem 1.15rem;
+  border-bottom: 1px solid rgba(50, 50, 50, 0.1);
+  background: #ffffff;
+}
+
+.mdc-page__titles h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #323232;
+}
+
+.mdc-page__titles p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(50, 50, 50, 0.62);
+  max-width: 36rem;
+  line-height: 1.45;
+}
+
+.mdc-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.mdc-search {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid rgba(50, 50, 50, 0.22);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  min-width: 10rem;
+  color: #323232;
+  background: #fff;
+}
+
+.mdc-search:focus {
+  outline: none;
+  border-color: #ba352c;
+  box-shadow: 0 0 0 3px rgba(186, 53, 44, 0.15);
+}
+
+.mdc-btn-add {
+  padding: 0.58rem 1.15rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: #ffffff;
+  background: #ba352c;
+  box-shadow: 0 2px 8px rgba(186, 53, 44, 0.28);
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mdc-btn-add:hover {
+  background: #9a2b24;
+  box-shadow: 0 4px 12px rgba(186, 53, 44, 0.32);
+}
+
+.mdc-table-wrap {
+  overflow-x: auto;
+  background: #ffffff;
+}
+
+.mdc-table-loading {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  color: rgba(50, 50, 50, 0.55);
+  font-size: 0.92rem;
+}
+
+.mdc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.mdc-th {
+  text-align: left;
+  padding: 0.85rem 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: #323232;
+  border-bottom: 2px solid rgba(186, 53, 44, 0.35);
+  white-space: nowrap;
+}
+
+.mdc-th--logo {
+  width: 4.5rem;
+  text-align: center;
+}
+
+.mdc-th--status {
+  width: 6.5rem;
+}
+
+.mdc-tr:hover {
+  background: rgba(50, 50, 50, 0.03);
+}
+
+.mdc-td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(50, 50, 50, 0.08);
+  color: #323232;
+  vertical-align: middle;
+}
+
+.mdc-td--logo {
+  text-align: center;
+  width: 4.5rem;
+}
+
+.mdc-td--mono {
+  font-family: ui-monospace, "Cascadia Code", monospace;
+  font-size: 0.82rem;
+}
+
+.mdc-td--muted {
+  color: rgba(50, 50, 50, 0.58);
+  font-size: 0.82rem;
+}
+
+.mdc-td--empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: rgba(50, 50, 50, 0.5);
+}
+
+.mdc-logo-cell {
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: 0 auto;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.mdc-logo-cell__text {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+}
+
+.mdc-badge {
+  display: inline-block;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.mdc-badge--on {
+  background: rgba(186, 53, 44, 0.12);
+  color: #ba352c;
+  border: 1px solid rgba(186, 53, 44, 0.35);
+}
+
+.mdc-badge--off {
+  background: rgba(50, 50, 50, 0.06);
+  color: rgba(50, 50, 50, 0.55);
+  border: 1px solid rgba(50, 50, 50, 0.12);
+}
+
+.mdc-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem 1.25rem;
+  border-top: 1px solid rgba(50, 50, 50, 0.1);
+  background: #fafafa;
+}
+
+.mdc-pagination__info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mdc-pagination__label {
+  font-size: 0.84rem;
+  color: rgba(50, 50, 50, 0.72);
+}
+
+.mdc-pagination__label strong {
+  color: #323232;
+}
+
+.mdc-pagination__per {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.84rem;
+  color: rgba(50, 50, 50, 0.72);
+}
+
+.mdc-pagination__select {
+  padding: 0.4rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid rgba(50, 50, 50, 0.22);
+  font-size: 0.84rem;
+  color: #323232;
+  background: #fff;
+  cursor: pointer;
+}
+
+.mdc-pagination__select:focus {
+  outline: none;
+  border-color: #ba352c;
+}
+
+.mdc-pagination__nav {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.mdc-pagination__page {
+  font-size: 0.84rem;
+  color: rgba(50, 50, 50, 0.72);
+  min-width: 6.5rem;
+  text-align: center;
+}
+
+.mdc-pagination__page strong {
+  color: #323232;
+}
+
+.mdc-page-btn {
+  padding: 0.45rem 0.85rem;
+  border-radius: 6px;
+  border: 1px solid rgba(50, 50, 50, 0.22);
+  background: #ffffff;
+  color: #323232;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.mdc-page-btn:hover:not(:disabled) {
+  border-color: #ba352c;
+  color: #ba352c;
+  background: rgba(186, 53, 44, 0.06);
+}
+
+.mdc-page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.mdc-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 1000;
+}
+
+.mdc-modal {
+  width: min(680px, 100%);
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.16);
+  padding: 1.5rem;
+  position: relative;
+}
+
+.mdc-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.mdc-modal__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #323232;
+}
+
+.mdc-modal__close {
+  border: none;
+  background: transparent;
+  color: #323232;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  transition: background 0.15s ease;
+}
+
+.mdc-modal__close:hover {
+  background: rgba(50, 50, 50, 0.08);
+}

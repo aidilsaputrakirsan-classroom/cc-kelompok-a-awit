@@ -2,7 +2,7 @@
 
 > Dokumentasi ini disusun oleh **Lead QA & Documentation** sebagai tugas Modul 5 — Docker Fundamentals.
 > 
-> **Tujuan:** Membandingkan ukuran base image `python:3.12`, `python:3.12-slim`, dan `python:3.12-alpine` untuk menentukan pilihan terbaik bagi proyek e-Mandor.
+> **Tujuan:** Membandingkan ukuran base image `python:3.12`, `python:3.12-slim`, dan `python:3.12-alpine` untuk menentukan pilihan terbaik bagi proyek PalmTrack Cloud.
 
 ---
 
@@ -76,9 +76,9 @@ python:3.12-alpine  ██░░░░░░░░░░░░░░░░░░
 
 ---
 
-## 3. Analisis untuk Proyek e-Mandor
+## 3. Analisis untuk Proyek PalmTrack Cloud
 
-### 3.1 Dependencies e-Mandor yang Relevan
+### 3.1 Dependencies PalmTrack Cloud yang Relevan
 
 Berdasarkan `backend/requirements.txt`, proyek kita menggunakan:
 
@@ -136,7 +136,7 @@ flowchart TD
     Q3 -->|Ya| ALPINE
     Q3 -->|Tidak, mau balance| SLIM
     
-    SLIM --> BEST["✅ PILIHAN TERBAIK\nuntuk e-Mandor"]
+    SLIM --> BEST["✅ PILIHAN TERBAIK\nuntuk PalmTrack Cloud"]
     
     style START fill:#70AD47,color:#fff
     style SLIM fill:#2E75B6,color:#fff
@@ -155,9 +155,9 @@ flowchart TD
 | Build speed | ⭐⭐⭐ | ⭐⭐⭐ | ⭐ |
 | Security (attack surface) | ⭐ | ⭐⭐ | ⭐⭐⭐ |
 | Cocok untuk production | ❌ Terlalu besar | ✅ **Ideal** | ⚠️ Tergantung deps |
-| Cocok untuk e-Mandor | ❌ | ✅ **Ya** | ❌ |
+| Cocok untuk PalmTrack Cloud | ❌ | ✅ **Ya** | ❌ |
 
-**Kesimpulan akhir:** `python:3.12-slim` adalah pilihan **terbaik** untuk proyek e-Mandor karena memberikan keseimbangan optimal antara ukuran image, kompatibilitas dependency, dan kecepatan build.
+**Kesimpulan akhir:** `python:3.12-slim` adalah pilihan **terbaik** untuk proyek PalmTrack Cloud karena memberikan keseimbangan optimal antara ukuran image, kompatibilitas dependency, dan kecepatan build.
 
 ---
 
