@@ -1,0 +1,18 @@
+# Production overrides — gunakan dengan:
+# docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  backend:
+    environment:
+      - DEBUG=false
+      - CORS_ORIGINS=${PROD_CORS_ORIGINS}
+    restart: unless-stopped
+
+  frontend:
+    restart: unless-stopped
+
+  db:
+    restart: unless-stopped
+    # Tidak expose port ke host di production demi keamanan
+    ports: !reset []
+    
