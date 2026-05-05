@@ -144,6 +144,48 @@ class HaulingTransactionListResponse(BaseModel):
 
 
 # ============================================================
+# ITEM SCHEMAS
+# ============================================================
+
+class ItemBase(BaseModel):
+    """Base schema untuk Item"""
+    code: str = Field(..., min_length=1, max_length=20)
+    name: str = Field(..., min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=255)
+    category: Optional[str] = Field(None, max_length=50)
+    status: bool = Field(default=True)
+
+
+class ItemCreate(ItemBase):
+    """Schema untuk create item"""
+    pass
+
+
+class ItemUpdate(BaseModel):
+    """Schema untuk update item"""
+    name: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    status: Optional[bool] = None
+
+
+class ItemResponse(ItemBase):
+    """Schema untuk response item"""
+    id: uuid.UUID
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class ItemListResponse(BaseModel):
+    """Schema untuk response list items"""
+    total: int
+    items: List[ItemResponse]
+
+
+# ============================================================
 # DASHBOARD SCHEMAS
 # ============================================================
 

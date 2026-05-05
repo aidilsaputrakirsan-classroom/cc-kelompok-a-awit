@@ -48,6 +48,19 @@ CREATE TABLE IF NOT EXISTS hauling_transactions (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 4. Tabel Items
+-- Menampung master data item dengan kategori
+CREATE TABLE IF NOT EXISTS items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code VARCHAR(20) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    description VARCHAR(255),
+    category VARCHAR(50),
+    status BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- ============================================================
 -- INDEXES untuk performa query
 -- ============================================================
@@ -57,6 +70,10 @@ CREATE INDEX IF NOT EXISTS idx_hauling_date ON hauling_transactions(gate_in_time
 CREATE INDEX IF NOT EXISTS idx_hauling_vendor ON hauling_transactions(vendor_id);
 CREATE INDEX IF NOT EXISTS idx_hauling_block ON hauling_transactions(block_id);
 CREATE INDEX IF NOT EXISTS idx_hauling_status ON hauling_transactions(status);
+
+-- Index untuk items
+CREATE INDEX IF NOT EXISTS idx_items_category ON items(category);
+CREATE INDEX IF NOT EXISTS idx_items_status ON items(status);
 
 -- ============================================================
 -- SAMPLE DATA untuk testing
@@ -77,6 +94,20 @@ INSERT INTO master_blocks (block_code, division, hectarage, status) VALUES
 ('BLK-B2', 'Afdeling 2', 55.75, true),
 ('BLK-C1', 'Afdeling 3', 48.00, true)
 ON CONFLICT (block_code) DO NOTHING;
+
+-- Insert sample items
+INSERT INTO items (code, name, description, category, status) VALUES
+('ITM001', 'Engine Oil SAE 15W-40', 'Industrial engine oil SAE 15W-40 for heavy machinery', 'lubricants', true),
+('ITM002', 'Hydraulic Fluid ISO 46', 'Premium hydraulic fluid ISO grade 46', 'lubricants', true),
+('ITM003', 'Gear Oil EP 220', 'Extreme pressure gear oil for heavy load transmission', 'lubricants', true),
+('ITM004', 'Bearing Grease NLGI 2', 'High-temperature bearing grease NLGI grade 2', 'lubricants', true),
+('ITM005', 'Stainless Steel Bolt M12', 'Stainless steel fastener bolt M12x100', 'hardware', true),
+('ITM006', 'Hydraulic Hose 1/2 SAE', 'Industrial hydraulic hose 1/2 inch SAE specification', 'hoses', true),
+('ITM007', 'Water Pump Assembly', 'Centrifugal water pump 1.5 HP', 'pumps', true),
+('ITM008', 'Conveyor Belt PVC', 'Heavy-duty PVC conveyor belt 6mm thickness', 'belts', true),
+('ITM009', 'Electric Motor 3 Phase', 'Three-phase asynchronous motor 5.5 kW 380V', 'motors', true),
+('ITM010', 'Control Valve 24VDC', 'Solenoid control valve 24VDC 1/2 inch', 'valves', true)
+ON CONFLICT (code) DO NOTHING;
 
 -- ============================================================
 -- NOTES

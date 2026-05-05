@@ -2,10 +2,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_, func, and_
 from datetime import datetime, timedelta
 import uuid
-from models import MasterVendor, MasterBlock, HaulingTransaction, User
+from models import MasterVendor, MasterBlock, HaulingTransaction, User, Item
 from schemas import (
     VendorCreate, VendorUpdate, BlockCreate, BlockUpdate,
-    HaulingTransactionCreate, HaulingTransactionUpdate, UserCreate
+    HaulingTransactionCreate, HaulingTransactionUpdate, UserCreate,
+    ItemCreate, ItemUpdate
 )
 from auth import hash_password, verify_password
 
@@ -282,6 +283,89 @@ def delete_hauling_transaction(db: Session, hauling_id: uuid.UUID) -> bool:
         return False
     
     db.delete(db_hauling)
+    db.commit()
+    return True
+
+
+# ==================== ITEM CRUD ====================
+
+def create_item(db: Session, item_data: ItemCreate) -> Item:
+    """Buat item baru di database."""
+    # Check if item code already exists
+    existing = db.query(Item).filter(Item.code == item_data.code).first()
+    if existing:
+        return None
+    
+    db_item = Item(
+        **item_data.model_dump()
+    )
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+
+def get_items(db: Session, skip: int = 0, limit: int = 20, search: str = None, 
+              category: str = None, status: bool = None):
+    """
+    Ambil daftar items dengan pagination & filter.
+    - skip: jumlah data yang di-skip
+    - limit: jumlah data per halaman
+    - search: cari berdasarkan code atau name
+    - category: filter by category
+    - status: filter by active status
+    """
+    query = db.query(Item)
+    
+    if search:
+        query = query.filter(
+            or_(
+                Item.code.ilike(f"%{search}%"),
+                Item.name.ilike(f"%{search}%")
+            )
+        )
+    
+    if category:
+        query = query.filter(Item.category == category)
+    
+    if status is not None:
+        query = query.filter(Item.status == status)
+    
+    total = query.count()
+    items = query.order_by(Item.created_at.desc()).offset(skip).limit(limit).all()
+    
+    return {"total": total, "items": items}
+
+
+def get_item(db: Session, item_id: uuid.UUID) -> Item | None:
+    """Ambil satu item berdasarkan ID."""
+    return db.query(Item).filter(Item.id == item_id).first()
+
+
+def update_item(db: Session, item_id: uuid.UUID, item_data: ItemUpdate) -> Item | None:
+    """Update item berdasarkan ID."""
+    db_item = db.query(Item).filter(Item.id == item_id).first()
+    
+    if not db_item:
+        return None
+    
+    update_data = item_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_item, field, value)
+    
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+
+def delete_item(db: Session, item_id: uuid.UUID) -> bool:
+    """Hapus item berdasarkan ID. Return True jika berhasil."""
+    db_item = db.query(Item).filter(Item.id == item_id).first()
+    
+    if not db_item:
+        return False
+    
+    db.delete(db_item)
     db.commit()
     return True
 
