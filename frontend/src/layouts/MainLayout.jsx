@@ -1,12 +1,18 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useState, useEffect } from "react"
 import { Outlet } from "react-router-dom"
 import Sidebar from "../components/Sidebar"
 import { useAuth } from "../context/AuthContext"
+import { useTheme } from "../context/ThemeContext"
 import "./MainLayout.css"
 
 function MainLayout() {
   const { user, logout, showToast } = useAuth()
+  const { isDarkMode } = useTheme()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
+  useEffect(() => {
+    document.body.className = isDarkMode ? "dark" : "light"
+  }, [isDarkMode])
 
   const outletContext = useMemo(
     () => ({
@@ -20,6 +26,8 @@ function MainLayout() {
     setSidebarCollapsed((c) => !c)
   }, [])
 
+  const { toggleDarkMode } = useTheme()
+
   return (
     <div className={`pt-shell${sidebarCollapsed ? " pt-shell--collapsed" : ""}`}>
       <Sidebar collapsed={sidebarCollapsed} onToggleCollapse={toggleSidebar} />
@@ -27,6 +35,14 @@ function MainLayout() {
         <header className="pt-topbar">
           <h1 className="pt-topbar__title">Command Center</h1>
           <div className="pt-topbar__right">
+            <button 
+              type="button" 
+              className="pt-topbar__theme-toggle"
+              onClick={toggleDarkMode}
+              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {isDarkMode ? "☀️ Light" : "🌙 Dark"}
+            </button>
             {user && (
               <span className="pt-topbar__user">{user.name}</span>
             )}

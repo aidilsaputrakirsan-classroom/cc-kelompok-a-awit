@@ -1,12 +1,17 @@
 /* PalmTrack Cloud — Block / Area Master Data */
 
 .blk-page {
-  background: #ffffff;
-  border: 1px solid rgba(50, 50, 50, 0.12);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 0;
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(50, 50, 50, 0.06);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+body.dark .blk-page {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .blk-page__toolbar {
@@ -16,8 +21,9 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 1.35rem 1.5rem 1.15rem;
-  border-bottom: 1px solid rgba(50, 50, 50, 0.1);
-  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--card-bg);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .blk-page__titles h1 {
@@ -25,13 +31,13 @@
   font-size: 1.35rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: #323232;
+  color: var(--text-primary);
 }
 
 .blk-page__titles p {
   margin: 0;
   font-size: 0.85rem;
-  color: rgba(50, 50, 50, 0.62);
+  color: var(--text-secondary);
   max-width: 36rem;
   line-height: 1.45;
 }
@@ -45,17 +51,18 @@
 
 .blk-search {
   padding: 0.55rem 0.75rem;
-  border: 1px solid rgba(50, 50, 50, 0.22);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   font-size: 0.88rem;
   min-width: 10rem;
-  color: #323232;
-  background: #fff;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  transition: background-color 0.3s ease, border-color 0.2s ease, color 0.3s ease;
 }
 
 .blk-search:focus {
   outline: none;
-  border-color: #ba352c;
+  border-color: var(--accent-color);
   box-shadow: 0 0 0 3px rgba(186, 53, 44, 0.15);
 }
 
@@ -67,7 +74,7 @@
   font-weight: 700;
   cursor: pointer;
   color: #ffffff;
-  background: #ba352c;
+  background: var(--accent-color);
   box-shadow: 0 2px 8px rgba(186, 53, 44, 0.28);
   transition: background 0.15s ease, box-shadow 0.15s ease;
 }
@@ -84,13 +91,13 @@
 
 .blk-table-wrap {
   overflow-x: auto;
-  background: #ffffff;
+  background: var(--card-bg);
 }
 
 .blk-table-loading {
   padding: 2.5rem 1.5rem;
   text-align: center;
-  color: rgba(50, 50, 50, 0.55);
+  color: var(--text-muted);
   font-size: 0.92rem;
 }
 
@@ -110,6 +117,10 @@
   white-space: nowrap;
 }
 
+body.dark .blk-th {
+  background: #3a3a4a;
+}
+
 .blk-th--status {
   width: 6.5rem;
 }
@@ -123,10 +134,14 @@
   background: rgba(50, 50, 50, 0.03);
 }
 
+body.dark .blk-tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
 .blk-td {
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgba(50, 50, 50, 0.08);
-  color: #323232;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
   vertical-align: middle;
 }
 
@@ -156,18 +171,27 @@
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.03em;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .blk-badge--on {
   background: rgba(186, 53, 44, 0.12);
-  color: #ba352c;
+  color: var(--accent-color);
   border: 1px solid rgba(186, 53, 44, 0.35);
+}
+
+body.dark .blk-badge--on {
+  background: rgba(255, 107, 107, 0.15);
 }
 
 .blk-badge--off {
   background: rgba(50, 50, 50, 0.06);
-  color: rgba(50, 50, 50, 0.55);
-  border: 1px solid rgba(50, 50, 50, 0.12);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+body.dark .blk-badge--off {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .blk-pagination {
@@ -177,8 +201,9 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 1.5rem 1.25rem;
-  border-top: 1px solid rgba(50, 50, 50, 0.1);
-  background: #fafafa;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .blk-pagination__info {
@@ -190,11 +215,11 @@
 
 .blk-pagination__label {
   font-size: 0.84rem;
-  color: rgba(50, 50, 50, 0.72);
+  color: var(--text-secondary);
 }
 
 .blk-pagination__label strong {
-  color: #323232;
+  color: var(--text-primary);
 }
 
 .blk-pagination__controls {
@@ -205,13 +230,13 @@
 
 .blk-pagination__page {
   font-size: 0.84rem;
-  color: rgba(50, 50, 50, 0.72);
+  color: var(--text-secondary);
   min-width: 7rem;
   text-align: center;
 }
 
 .blk-pagination__page strong {
-  color: #323232;
+  color: var(--text-primary);
 }
 
 .blk-pagination__limit {
@@ -219,40 +244,45 @@
   align-items: center;
   gap: 0.45rem;
   font-size: 0.84rem;
-  color: rgba(50, 50, 50, 0.72);
+  color: var(--text-secondary);
 }
 
 .blk-pagination__select {
   padding: 0.4rem 0.55rem;
   border-radius: 6px;
-  border: 1px solid rgba(50, 50, 50, 0.22);
+  border: 1px solid var(--border-color);
   font-size: 0.84rem;
-  color: #323232;
-  background: #fff;
+  color: var(--text-primary);
+  background: var(--card-bg);
   cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
 .blk-pagination__select:focus {
   outline: none;
-  border-color: #ba352c;
+  border-color: var(--accent-color);
 }
 
 .blk-page-btn {
   padding: 0.45rem 0.85rem;
   border-radius: 6px;
-  border: 1px solid rgba(50, 50, 50, 0.22);
-  background: #ffffff;
-  color: #323232;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  transition: all 0.15s ease;
 }
 
 .blk-page-btn:hover:not(:disabled) {
-  border-color: #ba352c;
-  color: #ba352c;
+  border-color: var(--accent-color);
+  color: var(--accent-color);
   background: rgba(186, 53, 44, 0.06);
+}
+
+body.dark .blk-page-btn:hover:not(:disabled) {
+  background: rgba(255, 107, 107, 0.1);
 }
 
 .blk-page-btn:disabled {
@@ -273,11 +303,16 @@
 
 .blk-modal {
   width: min(680px, 100%);
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 24px;
   box-shadow: 0 20px 80px rgba(0, 0, 0, 0.16);
   padding: 1.5rem;
   position: relative;
+  transition: background-color 0.3s ease;
+}
+
+body.dark .blk-modal {
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.4);
 }
 
 .blk-modal__header {
@@ -292,13 +327,13 @@
   margin: 0;
   font-size: 1.25rem;
   font-weight: 800;
-  color: #323232;
+  color: var(--text-primary);
 }
 
 .blk-modal__close {
   border: none;
   background: transparent;
-  color: #323232;
+  color: var(--text-primary);
   font-size: 1.6rem;
   line-height: 1;
   cursor: pointer;
@@ -310,4 +345,8 @@
 
 .blk-modal__close:hover {
   background: rgba(50, 50, 50, 0.08);
+}
+
+body.dark .blk-modal__close:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
