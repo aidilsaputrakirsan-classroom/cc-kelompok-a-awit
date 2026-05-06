@@ -293,6 +293,13 @@ docker compose down
 docker compose down -v
 ```
 
+### Docker Shortcuts (Makefile)
+- `make up` : Menjalankan semua service
+- `make down` : Mematikan semua service
+- `make lint` : Mengecek kerapian kode
+- `make test` : Menjalankan pengujian otomatis
+- `make pr-check` : Menjalankan persiapan sebelum membuat PR
+
 ---
 
 ## Progress Pengerjaan
