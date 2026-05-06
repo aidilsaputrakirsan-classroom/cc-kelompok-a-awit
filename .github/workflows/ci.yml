@@ -24,6 +24,28 @@ concurrency:
 
 jobs:
   # ================================
+  # JOB 0: Lint Backend
+  # ================================
+  lint:
+    name: 🧹 Lint Backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 🧹 Install Ruff and Lint
+        run: |
+          pip install ruff
+          ruff check backend/
+
+  # ================================
   # JOB 1: Test Backend (Python/FastAPI)
   # ================================
   test-backend:

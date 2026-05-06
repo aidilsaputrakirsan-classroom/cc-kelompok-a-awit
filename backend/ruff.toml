@@ -1,0 +1,11 @@
+# ruff.toml
+line-length = 88
+target-version = "py312"
+
+[lint]
+select = [
+    "E",  # pycodestyle errors
+    "F",  # pyflakes
+    "I",  # isort
+]
+ignore = []
