@@ -12,8 +12,7 @@ describe('Header Component', () => {
         <Header totalItems={0} />
       </ThemeProvider>
     )
-    // Sepertinya judulmu diganti jadi PalmChain, bukan cloud
-    expect(screen.getByText(/PalmChain/i)).toBeInTheDocument() 
+    expect(screen.getByText(/Cloud App/i)).toBeInTheDocument() 
   })
 
   it('menampilkan jumlah total items', () => {
