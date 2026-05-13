@@ -12,6 +12,7 @@ import {
 } from "recharts"
 import { useOutletContext } from "react-router-dom"
 import { fetchBlocks, fetchDashboard, fetchVendors } from "../services/api"
+import { useDarkMode } from "../context/ThemeContext"
 import "./Dashboard.css"
 
 function StatCard({ title, value, hint }) {
@@ -26,12 +27,26 @@ function StatCard({ title, value, hint }) {
 
 function Dashboard() {
   const { showToast } = useOutletContext() || {}
+  const isDarkMode = useDarkMode()
   const [loading, setLoading] = useState(true)
   const [contractorTotal, setContractorTotal] = useState(0)
   const [blockTotal, setBlockTotal] = useState(0)
   const [todayTonnage, setTodayTonnage] = useState(0)
   const [barData, setBarData] = useState([])
   const [lineData, setLineData] = useState([])
+
+  // Get CSS variables for chart styling
+  const getChartColors = () => {
+    const root = document.documentElement
+    const style = getComputedStyle(root)
+    return {
+      textColor: style.getPropertyValue('--text-secondary').trim(),
+      gridColor: style.getPropertyValue('--border-color').trim(),
+      barColor: style.getPropertyValue('--accent-primary').trim(),
+      tooltipBg: style.getPropertyValue('--bg-card').trim(),
+      tooltipBorder: style.getPropertyValue('--border-color').trim(),
+    }
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -93,6 +108,8 @@ function Dashboard() {
       ? n.toLocaleString("id-ID", { maximumFractionDigits: 2 })
       : "0"
 
+  const colors = getChartColors()
+
   return (
     <div className="pt-dash">
       <div className="pt-dash__intro">
@@ -127,16 +144,18 @@ function Dashboard() {
           <div className="pt-dash-chart__frame">
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={barData} margin={{ top: 16, right: 16, left: 0, bottom: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(50,50,50,0.12)" />
-                <XAxis dataKey="name" tick={{ fill: "#323232", fontSize: 12 }} />
-                <YAxis tick={{ fill: "#323232", fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={colors.gridColor} />
+                <XAxis dataKey="name" tick={{ fill: colors.textColor, fontSize: 12 }} />
+                <YAxis tick={{ fill: colors.textColor, fontSize: 12 }} />
                 <Tooltip
                   contentStyle={{
-                    border: "1px solid rgba(50,50,50,0.15)",
+                    backgroundColor: colors.tooltipBg,
+                    border: `1px solid ${colors.tooltipBorder}`,
                     borderRadius: 8,
+                    color: 'var(--text-primary)',
                   }}
                 />
-                <Bar dataKey="value" fill="#ba352c" radius={[6, 6, 0, 0]} name="Ton" />
+                <Bar dataKey="value" fill={colors.barColor} radius={[6, 6, 0, 0]} name="Ton" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -148,21 +167,23 @@ function Dashboard() {
           <div className="pt-dash-chart__frame">
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={lineData} margin={{ top: 16, right: 16, left: 0, bottom: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(50,50,50,0.12)" />
-                <XAxis dataKey="name" tick={{ fill: "#323232", fontSize: 12 }} />
-                <YAxis tick={{ fill: "#323232", fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={colors.gridColor} />
+                <XAxis dataKey="name" tick={{ fill: colors.textColor, fontSize: 12 }} />
+                <YAxis tick={{ fill: colors.textColor, fontSize: 12 }} />
                 <Tooltip
                   contentStyle={{
-                    border: "1px solid rgba(50,50,50,0.15)",
+                    backgroundColor: colors.tooltipBg,
+                    border: `1px solid ${colors.tooltipBorder}`,
                     borderRadius: 8,
+                    color: 'var(--text-primary)',
                   }}
                 />
                 <Line
                   type="monotone"
                   dataKey="ton"
-                  stroke="#ba352c"
+                  stroke={colors.barColor}
                   strokeWidth={2.5}
-                  dot={{ fill: "#ba352c", r: 4 }}
+                  dot={{ fill: colors.barColor, r: 4 }}
                   name="Ton (idx)"
                 />
               </LineChart>

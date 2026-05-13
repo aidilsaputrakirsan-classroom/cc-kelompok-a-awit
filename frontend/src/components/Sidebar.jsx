@@ -10,6 +10,7 @@ import {
   PanelLeftClose,
   PanelLeft,
 } from "lucide-react"
+import DarkModeToggle from "./DarkModeToggle"
 
 const navCls = ({ isActive }) =>
   `pt-sidebar__link${isActive ? " pt-sidebar__link--active" : ""}`
@@ -45,6 +46,9 @@ function Sidebar({ collapsed, onToggleCollapse }) {
             <Truck size={22} className="pt-sidebar__icon" aria-hidden />
           </NavLink>
         </nav>
+        <div className="pt-sidebar__footer pt-sidebar__footer--collapsed">
+          <DarkModeToggle />
+        </div>
       </aside>
     )
   }
@@ -116,6 +120,10 @@ function Sidebar({ collapsed, onToggleCollapse }) {
           )}
         </div>
       </nav>
+
+      <div className="pt-sidebar__footer">
+        <DarkModeToggle />
+      </div>
     </aside>
   )
 }
