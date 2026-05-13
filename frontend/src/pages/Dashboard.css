@@ -39,6 +39,7 @@
 }
 
 :root.dark .pt-dash-card {
+body.dark .pt-dash-card {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
@@ -81,6 +82,7 @@
 }
 
 :root.dark .pt-dash-chart {
+body.dark .pt-dash-chart {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 

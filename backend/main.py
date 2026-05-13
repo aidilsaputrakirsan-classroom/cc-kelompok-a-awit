@@ -449,6 +449,16 @@ def list_items(
     return crud.get_items(db=db, skip=skip, limit=limit, search=search, category=category, status=status)
 
 
+@app.get("/api/items/stats")
+def get_items_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Get item statistics. **Membutuhkan autentikasi.**"""
+    stats = crud.get_item_stats(db=db)
+    return stats
+
+
 @app.get("/api/items/{item_id}", response_model=ItemResponse)
 def get_item(
     item_id: str,

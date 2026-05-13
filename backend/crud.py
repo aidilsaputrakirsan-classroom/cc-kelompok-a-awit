@@ -370,6 +370,35 @@ def delete_item(db: Session, item_id: uuid.UUID) -> bool:
     return True
 
 
+def get_item_stats(db: Session) -> dict:
+    """
+    Dapatkan statistik items.
+    - total_items: total semua items (aktif)
+    - total_categories: jumlah kategori unik
+    - items_by_category: breakdown items per kategori
+    """
+    # Total items aktif
+    total_items = db.query(Item).filter(Item.status == True).count()
+    
+    # Total kategori unik
+    total_categories = db.query(Item.category).filter(Item.status == True).distinct().count()
+    
+    # Items per kategori
+    items_by_category = db.query(Item.category, func.count(Item.id)).filter(
+        Item.status == True
+    ).group_by(Item.category).all()
+    
+    category_breakdown = {
+        cat or "Uncategorized": count for cat, count in items_by_category
+    }
+    
+    return {
+        "total_items": total_items,
+        "total_categories": total_categories,
+        "items_by_category": category_breakdown
+    }
+
+
 # ==================== DASHBOARD STATS ====================
 
 def get_hauling_stats_today(db: Session) -> dict:

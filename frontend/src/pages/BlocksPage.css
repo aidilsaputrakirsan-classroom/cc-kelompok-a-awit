@@ -11,6 +11,7 @@
 }
 
 :root.dark .blk-page {
+body.dark .blk-page {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
@@ -117,6 +118,10 @@
   white-space: nowrap;
 }
 
+body.dark .blk-th {
+  background: #3a3a4a;
+}
+
 .blk-th--status {
   width: 6.5rem;
 }
@@ -131,6 +136,7 @@
 }
 
 :root.dark .blk-tr:hover {
+body.dark .blk-tr:hover {
   background: rgba(255, 255, 255, 0.03);
 }
 
@@ -178,6 +184,13 @@
 
 :root.dark .blk-badge--on {
   background: rgba(192, 57, 43, 0.15);
+  background: rgba(186, 53, 44, 0.12);
+  color: var(--accent-color);
+  border: 1px solid rgba(186, 53, 44, 0.35);
+}
+
+body.dark .blk-badge--on {
+  background: rgba(255, 107, 107, 0.15);
 }
 
 .blk-badge--off {
@@ -187,6 +200,7 @@
 }
 
 :root.dark .blk-badge--off {
+body.dark .blk-badge--off {
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -279,6 +293,11 @@
 
 :root.dark .blk-page-btn:hover:not(:disabled) {
   background: rgba(192, 57, 43, 0.1);
+  background: rgba(186, 53, 44, 0.06);
+}
+
+body.dark .blk-page-btn:hover:not(:disabled) {
+  background: rgba(255, 107, 107, 0.1);
 }
 
 .blk-page-btn:disabled {
@@ -308,6 +327,7 @@
 }
 
 :root.dark .blk-modal {
+body.dark .blk-modal {
   box-shadow: 0 20px 80px rgba(0, 0, 0, 0.4);
 }
 
@@ -344,5 +364,6 @@
 }
 
 :root.dark .blk-modal__close:hover {
+body.dark .blk-modal__close:hover {
   background: rgba(255, 255, 255, 0.1);
 }

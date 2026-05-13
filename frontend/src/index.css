@@ -28,6 +28,17 @@
   --header-bg: #1f4e79;
   --card-bg: #ffffff;
   --accent-color: #c0392b;
+  /* Light Mode Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --text-primary: #323232;
+  --text-secondary: rgba(50, 50, 50, 0.62);
+  --text-muted: rgba(50, 50, 50, 0.5);
+  --border-color: rgba(50, 50, 50, 0.12);
+  --card-bg: #ffffff;
+  --header-bg: #1F4E79;
+  --sidebar-bg: #323232;
+  --accent-color: #ba352c;
 
   color-scheme: light dark;
   color: var(--text-primary);
@@ -65,6 +76,17 @@
   --header-bg: #1e2130;
   --card-bg: #2a2d3e;
   --accent-color: #c0392b;
+body.dark {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2a2a2a;
+  --text-primary: #f5f5f5;
+  --text-secondary: rgba(245, 245, 245, 0.7);
+  --text-muted: rgba(245, 245, 245, 0.5);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --card-bg: #2a2a2a;
+  --header-bg: #1a1a2a;
+  --sidebar-bg: #2a2a3a;
+  --accent-color: #ff6b6b;
 }
 
 a {
@@ -97,6 +119,7 @@ h1 {
 
 button {
   border: 1px solid var(--border-color);
+button {var(--border-color);
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
@@ -110,9 +133,19 @@ button {
 button:hover {
   background-color: var(--accent-color);
   color: white;
+  color: white
+button:hover {
+  border-color: #646cff;
 }
 
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}dark) {
+  :root {
+    color: var(--text-primary);
+    background-color: var(--bg-primary)
+  button {
+    background-color: #f9f9f9;
+  }
 }
