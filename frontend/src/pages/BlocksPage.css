@@ -10,7 +10,7 @@
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-body.dark .blk-page {
+:root.dark .blk-page {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
@@ -112,13 +112,9 @@ body.dark .blk-page {
   padding: 0.85rem 1rem;
   font-weight: 700;
   color: #ffffff;
-  background: #323232;
-  border-bottom: 2px solid rgba(186, 53, 44, 0.35);
+  background: var(--bg-table-header);
+  border-bottom: 2px solid var(--border-color);
   white-space: nowrap;
-}
-
-body.dark .blk-th {
-  background: #3a3a4a;
 }
 
 .blk-th--status {
@@ -134,7 +130,7 @@ body.dark .blk-th {
   background: rgba(50, 50, 50, 0.03);
 }
 
-body.dark .blk-tr:hover {
+:root.dark .blk-tr:hover {
   background: rgba(255, 255, 255, 0.03);
 }
 
@@ -175,13 +171,13 @@ body.dark .blk-tr:hover {
 }
 
 .blk-badge--on {
-  background: rgba(186, 53, 44, 0.12);
+  background: rgba(192, 57, 43, 0.12);
   color: var(--accent-color);
-  border: 1px solid rgba(186, 53, 44, 0.35);
+  border: 1px solid rgba(192, 57, 43, 0.35);
 }
 
-body.dark .blk-badge--on {
-  background: rgba(255, 107, 107, 0.15);
+:root.dark .blk-badge--on {
+  background: rgba(192, 57, 43, 0.15);
 }
 
 .blk-badge--off {
@@ -190,7 +186,7 @@ body.dark .blk-badge--on {
   border: 1px solid var(--border-color);
 }
 
-body.dark .blk-badge--off {
+:root.dark .blk-badge--off {
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -278,11 +274,11 @@ body.dark .blk-badge--off {
 .blk-page-btn:hover:not(:disabled) {
   border-color: var(--accent-color);
   color: var(--accent-color);
-  background: rgba(186, 53, 44, 0.06);
+  background: rgba(192, 57, 43, 0.06);
 }
 
-body.dark .blk-page-btn:hover:not(:disabled) {
-  background: rgba(255, 107, 107, 0.1);
+:root.dark .blk-page-btn:hover:not(:disabled) {
+  background: rgba(192, 57, 43, 0.1);
 }
 
 .blk-page-btn:disabled {
@@ -311,7 +307,7 @@ body.dark .blk-page-btn:hover:not(:disabled) {
   transition: background-color 0.3s ease;
 }
 
-body.dark .blk-modal {
+:root.dark .blk-modal {
   box-shadow: 0 20px 80px rgba(0, 0, 0, 0.4);
 }
 
@@ -347,6 +343,6 @@ body.dark .blk-modal {
   background: rgba(50, 50, 50, 0.08);
 }
 
-body.dark .blk-modal__close:hover {
+:root.dark .blk-modal__close:hover {
   background: rgba(255, 255, 255, 0.1);
 }

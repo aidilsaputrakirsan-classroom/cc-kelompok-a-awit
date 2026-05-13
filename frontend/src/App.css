@@ -48,9 +48,9 @@ button:hover {
 /* ——— PalmTrack Cloud — split-screen login ——— */
 .login-page {
   --pt-bg: #ffffff;
-  --pt-primary: #ba352c;
-  --pt-primary-hover: #9a2b24;
-  --pt-neutral: #323232;
+  --pt-primary: #c0392b;
+  --pt-primary-hover: #a93226;
+  --pt-neutral: #1a1a1a;
   --pt-line: rgba(50, 50, 50, 0.22);
   --pt-muted: rgba(50, 50, 50, 0.62);
 
@@ -61,11 +61,11 @@ button:hover {
   background-color: var(--pt-bg);
 }
 
-body.dark .login-page {
-  --pt-bg: #1a1a1a;
-  --pt-primary: #ff6b6b;
-  --pt-primary-hover: #ff5252;
-  --pt-neutral: #f5f5f5;
+:root.dark .login-page {
+  --pt-bg: #1e2130;
+  --pt-primary: #c0392b;
+  --pt-primary-hover: #a93226;
+  --pt-neutral: #e8eaf0;
   --pt-line: rgba(255, 255, 255, 0.15);
   --pt-muted: rgba(255, 255, 255, 0.6);
 }
@@ -462,26 +462,26 @@ body.dark .login-page {
 }
 
 /* Dark Mode Styles */
-body.dark {
-  --pt-bg: #1a1a1a;
-  --pt-primary: #ff6b6b;
-  --pt-primary-hover: #ff5252;
-  --pt-neutral: #ffffff;
-  --pt-line: rgba(255, 255, 255, 0.2);
+:root.dark {
+  --pt-bg: #1e2130;
+  --pt-primary: #c0392b;
+  --pt-primary-hover: #a93226;
+  --pt-neutral: #e8eaf0;
+  --pt-line: rgba(255, 255, 255, 0.15);
   --pt-muted: rgba(255, 255, 255, 0.6);
 }
 
-body.dark .login-page__form-shell {
-  background: #2a2a2a;
+:root.dark .login-page__form-shell {
+  background: #2a2d3e;
 }
 
-body.dark input {
-  background: #333;
-  color: white;
-  border-color: rgba(255, 255, 255, 0.2);
+:root.dark input {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border-color: var(--border-input);
 }
 
-body.dark button {
-  background: #444;
-  color: white;
+:root.dark button {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }

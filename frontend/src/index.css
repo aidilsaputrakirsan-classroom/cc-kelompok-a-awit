@@ -3,17 +3,31 @@
   line-height: 1.5;
   font-weight: 400;
 
-  /* Light Mode Colors */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f5f5f5;
-  --text-primary: #323232;
-  --text-secondary: rgba(50, 50, 50, 0.62);
-  --text-muted: rgba(50, 50, 50, 0.5);
-  --border-color: rgba(50, 50, 50, 0.12);
+  /* LIGHT MODE PALETTE */
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-table-header: #1a1a1a;
+  --bg-row-alt: #f9f9f9;
+  --bg-input: #ffffff;
+  --bg-topbar: #ffffff;
+
+  --text-primary: #1a1a1a;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+
+  --border-color: #e5e7eb;
+  --border-input: #d1d5db;
+
+  /* BRAND COLORS - unchanged */
+  --accent-primary: #c0392b;
+  --accent-hover: #a93226;
+
+  /* Legacy aliases for compatibility */
+  --sidebar-bg: #2d2d2d;
+  --header-bg: #1f4e79;
   --card-bg: #ffffff;
-  --header-bg: #1F4E79;
-  --sidebar-bg: #323232;
-  --accent-color: #ba352c;
+  --accent-color: #c0392b;
 
   color-scheme: light dark;
   color: var(--text-primary);
@@ -25,17 +39,32 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-body.dark {
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #2a2a2a;
-  --text-primary: #f5f5f5;
-  --text-secondary: rgba(245, 245, 245, 0.7);
-  --text-muted: rgba(245, 245, 245, 0.5);
-  --border-color: rgba(255, 255, 255, 0.1);
-  --card-bg: #2a2a2a;
-  --header-bg: #1a1a2a;
-  --sidebar-bg: #2a2a3a;
-  --accent-color: #ff6b6b;
+:root.dark {
+  /* DARK MODE PALETTE */
+  --bg-primary: #1e2130;
+  --bg-secondary: #252836;
+  --bg-card: #2a2d3e;
+  --bg-table-header: #1a1d2e;
+  --bg-row-alt: #242638;
+  --bg-input: #2a2d3e;
+  --bg-topbar: #1e2130;
+
+  --text-primary: #e8eaf0;
+  --text-secondary: #9da3b4;
+  --text-muted: #6b7280;
+
+  --border-color: #3a3d50;
+  --border-input: #4a4d60;
+
+  /* BRAND COLORS - unchanged */
+  --accent-primary: #c0392b;
+  --accent-hover: #a93226;
+
+  /* Legacy aliases for compatibility */
+  --sidebar-bg: #252836;
+  --header-bg: #1e2130;
+  --card-bg: #2a2d3e;
+  --accent-color: #c0392b;
 }
 
 a {
@@ -44,6 +73,7 @@ a {
   text-decoration: inherit;
   transition: color 0.2s ease;
 }
+
 a:hover {
   color: var(--accent-color);
   opacity: 0.8;
@@ -65,7 +95,8 @@ h1 {
   line-height: 1.1;
 }
 
-button {var(--border-color);
+button {
+  border: 1px solid var(--border-color);
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
@@ -75,20 +106,13 @@ button {var(--border-color);
   cursor: pointer;
   transition: all 0.25s ease;
 }
+
 button:hover {
   background-color: var(--accent-color);
-  color: white
-button:hover {
-  border-color: #646cff;
+  color: white;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}dark) {
-  :root {
-    color: var(--text-primary);
-    background-color: var(--bg-primary)
-  button {
-    background-color: #f9f9f9;
-  }
 }
