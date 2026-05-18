@@ -1,4 +1,5 @@
 # PalmTrack Cloud — PalmChain
+[![CI](https://github.com/aidilsaputrakirsan-classroom/cc-kelompok-a-awit/actions/workflows/ci.yml/badge.svg)](https://github.com/aidilsaputrakirsan-classroom/cc-kelompok-a-awit/actions/workflows/ci.yml)
 
 **PalmTrack Cloud** adalah sistem informasi cloud-native yang mendigitalisasi proses pencatatan dan monitoring pengangkutan Tandan Buah Segar (TBS) kelapa sawit dari kebun ke pabrik. Sistem ini memungkinkan admin atau krani untuk memantau transaksi pengangkutan (hauling), mengelola data vendor/kontraktor, mengatur data blok panen, serta melihat ringkasan produksi harian secara real-time melalui dashboard terintegrasi.
 
