@@ -308,6 +308,9 @@ docker compose down -v
 | **Frontend** | Halaman Manajemen Blok Area (Full CRUD Tabel & Form) | Selesai |
 | **Frontend** | Halaman Transaksi *Actual Hauling* (Input berat TBS) | Dalam Pengerjaan |
 | **DevOps** | Orkestrasi Multi-Container (Frontend, Backend, DB, Networks) | Selesai |
+| **CI/CD (Week 9-11)** | Git Workflow, Branch Protection, & CODEOWNERS | ✅ Selesai |
+| **CI/CD (Week 9-11)** | Automated Testing Pipeline via GitHub Actions | ✅ Selesai |
+| **Release (Week 11)** | Milestone 2 (v2.0) & Production Deployment | ✅ Selesai |
 
 ---
 
@@ -322,6 +325,10 @@ Sebagai bagian dari jaminan mutu proyek (Quality Assurance), seluruh aspek tekni
 - [Hasil Pengujian Seluruh Endpoint API](docs/api-test-results.md)
 - [Hasil Pengujian Keamanan Autentikasi](docs/auth-test-results.md)
 - [Panduan Skenario Demo Ujian Tengah Semester (UTS)](docs/uts-demo-script.md)
+- [Retrospektif Milestone 1 (Week 1-8)](docs/retrospective-m1.md)
+- [Panduan Git Workflow & Kolaborasi Tim](docs/git-workflow.md)
+- [Panduan Testing & CI/CD](docs/testing-guide.md)
+- [Release Notes Milestone 2 (v2.0)](docs/release-notes-m2.md)
 
 ---
 *Dokumentasi disusun dan difinalisasi secara profesional oleh **Adonia Azarya Tamalonggehe** (Lead QA & Documentation).*
