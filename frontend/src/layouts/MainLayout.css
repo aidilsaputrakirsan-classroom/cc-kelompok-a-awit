@@ -41,6 +41,9 @@
 
 :root.dark .pt-sidebar {
   background: #252836;
+  border-right-color: rgba(255, 255, 255, 0.08);
+}
+
 body.dark .pt-sidebar {
   background: #2a2a3a;
   border-right-color: rgba(255, 255, 255, 0.08);
@@ -282,62 +285,6 @@ body.dark .pt-sidebar {
 
 .pt-topbar__logout:hover {
   opacity: 0.85;
-  transform: translateY(-1px);
-}
-
-.pt-main {
-  flex: 1;
-  padding: 1.5rem 2rem;
-  overflow-y: auto;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.pt-topbar {
-  padding: 1rem 1.5rem;
-  background: var(--bg-topbar);
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-.pt-topbar__title {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--text-primary);
-}
-
-.pt-topbar__right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.pt-topbar__user {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.pt-topbar__logout {
-  padding: 0.35rem 0.75rem;
-  background: var(--accent-color);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.pt-topbar__logout:hover {
-  opacity: 0.85;
-  transform: translateY(-1px);
 }
 
 .pt-main {

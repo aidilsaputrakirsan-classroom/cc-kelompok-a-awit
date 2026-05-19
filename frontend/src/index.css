@@ -1,43 +1,36 @@
+html {
+  overflow-x: hidden;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  /* LIGHT MODE PALETTE */
-  --bg-primary: #f5f5f5;
-  --bg-secondary: #ffffff;
+  /* Light Mode Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
   --bg-card: #ffffff;
   --bg-table-header: #1a1a1a;
   --bg-row-alt: #f9f9f9;
   --bg-input: #ffffff;
   --bg-topbar: #ffffff;
 
-  --text-primary: #1a1a1a;
-  --text-secondary: #6b7280;
-  --text-muted: #9ca3af;
+  --text-primary: #323232;
+  --text-secondary: rgba(50, 50, 50, 0.62);
+  --text-muted: rgba(50, 50, 50, 0.5);
 
-  --border-color: #e5e7eb;
-  --border-input: #d1d5db;
+  --border-color: rgba(50, 50, 50, 0.12);
+  --border-input: rgba(50, 50, 50, 0.2);
 
   /* BRAND COLORS - unchanged */
   --accent-primary: #c0392b;
   --accent-hover: #a93226;
 
   /* Legacy aliases for compatibility */
-  --sidebar-bg: #2d2d2d;
-  --header-bg: #1f4e79;
-  --card-bg: #ffffff;
-  --accent-color: #c0392b;
-  /* Light Mode Colors */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f5f5f5;
-  --text-primary: #323232;
-  --text-secondary: rgba(50, 50, 50, 0.62);
-  --text-muted: rgba(50, 50, 50, 0.5);
-  --border-color: rgba(50, 50, 50, 0.12);
-  --card-bg: #ffffff;
-  --header-bg: #1F4E79;
   --sidebar-bg: #323232;
+  --header-bg: #1F4E79;
+  --card-bg: #ffffff;
   --accent-color: #ba352c;
 
   color-scheme: light dark;
@@ -76,6 +69,8 @@
   --header-bg: #1e2130;
   --card-bg: #2a2d3e;
   --accent-color: #c0392b;
+}
+
 body.dark {
   --bg-primary: #1a1a1a;
   --bg-secondary: #2a2a2a;

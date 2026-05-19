@@ -47,12 +47,12 @@ function BlockTable({ blocks, vendors, loading, onEdit, onDelete }) {
                   </span>
                 </td>
                 {(onEdit || onDelete) && (
-                  <td className="blk-td blk-td--actions" style={styles.actionsCell}>
+                  <td className="blk-td blk-td--actions">
                     {onEdit && (
                       <button
                         type="button"
                         onClick={() => onEdit(row)}
-                        style={styles.btnEdit}
+                        className="blk-btn-edit"
                         title="Edit block"
                       >
                         ✏️ Edit
@@ -62,7 +62,7 @@ function BlockTable({ blocks, vendors, loading, onEdit, onDelete }) {
                       <button
                         type="button"
                         onClick={() => onDelete(row.id)}
-                        style={styles.btnDelete}
+                        className="blk-btn-delete"
                         title="Delete block"
                       >
                         🗑️ Delete
@@ -77,34 +77,6 @@ function BlockTable({ blocks, vendors, loading, onEdit, onDelete }) {
       </table>
     </div>
   )
-}
-
-const styles = {
-  actionsCell: {
-    display: "flex",
-    gap: "0.5rem",
-    alignItems: "center",
-  },
-  btnEdit: {
-    padding: "0.4rem 0.8rem",
-    backgroundColor: "#4472C4",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontSize: "0.85rem",
-    fontWeight: "bold",
-  },
-  btnDelete: {
-    padding: "0.4rem 0.8rem",
-    backgroundColor: "#C00000",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontSize: "0.85rem",
-    fontWeight: "bold",
-  },
 }
 
 export default BlockTable
