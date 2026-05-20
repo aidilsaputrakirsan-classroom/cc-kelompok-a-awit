@@ -5,7 +5,6 @@ const ThemeContext = createContext(null)
 export function ThemeProvider({ children }) {
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem("palmchain_theme")
-    const saved = localStorage.getItem("darkMode")
     return saved ? JSON.parse(saved) : false
   })
 
@@ -16,7 +15,6 @@ export function ThemeProvider({ children }) {
     } else {
       document.documentElement.classList.remove("dark")
     }
-    localStorage.setItem("darkMode", JSON.stringify(isDarkMode))
     document.body.className = isDarkMode ? "dark" : "light"
   }, [isDarkMode])
 
