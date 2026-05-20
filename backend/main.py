@@ -4,6 +4,7 @@ from fastapi import FastAPI, Depends, HTTPException, Query, Form
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
+from config import settings
 from database import engine, get_db
 from models import Base, User, MasterVendor, MasterBlock, HaulingTransaction, Item
 import uuid
@@ -18,24 +19,21 @@ from schemas import (
 from auth import create_access_token, get_current_user
 import crud
 
-load_dotenv()
-
 # Buat semua tabel
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="PalmChain API",
-    description="REST API untuk Palm Oil Supply Chain Monitoring System (PalmChain)",
-    version="1.0.0",
+    title=settings.API_TITLE,
+    description=settings.API_DESCRIPTION,
+    version=settings.API_VERSION,
+    docs_url="/docs" if settings.ENABLE_DOCS else None,
+    redoc_url="/redoc" if settings.ENABLE_REDOC else None,
 )
 
-# ==================== CORS (FIXED) ====================
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
-origins_list = [origin.strip() for origin in allowed_origins.split(",")]
-
+# ==================== CORS ====================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins_list,
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
