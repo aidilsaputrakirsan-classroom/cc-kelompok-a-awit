@@ -53,6 +53,9 @@ jobs:
           pip install -r requirements.txt
 
       - name: 🧪 Run tests with coverage
+        env:
+          DATABASE_URL: "sqlite:///./test_ci.db"
+          SECRET_KEY: "ci-secret-key-for-testing-only"
         run: |
           pytest --cov=. --cov-report=term-missing --cov-fail-under=50
 
