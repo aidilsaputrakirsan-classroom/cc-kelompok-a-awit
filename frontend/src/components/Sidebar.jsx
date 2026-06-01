@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Building2,
   MapPinned,
+  Map,
   Truck,
   ChevronDown,
   ChevronRight,
@@ -41,6 +42,9 @@ function Sidebar({ collapsed, onToggleCollapse }) {
           </NavLink>
           <NavLink to="/master-data/blocks" className={navCls} title="Block / Area">
             <MapPinned size={22} className="pt-sidebar__icon" aria-hidden />
+          </NavLink>
+          <NavLink to="/master-data/mapping" className={navCls} title="Mapping">
+            <Map size={22} className="pt-sidebar__icon" aria-hidden />
           </NavLink>
           <NavLink to="/transactions/hauling" className={navCls} title="Actual Hauling">
             <Truck size={22} className="pt-sidebar__icon" aria-hidden />
@@ -95,6 +99,10 @@ function Sidebar({ collapsed, onToggleCollapse }) {
               <NavLink to="/master-data/blocks" className={navCls}>
                 <MapPinned size={18} className="pt-sidebar__icon" aria-hidden />
                 <span>Block / Area</span>
+              </NavLink>
+              <NavLink to="/master-data/mapping" className={navCls}>
+                <Map size={18} className="pt-sidebar__icon" aria-hidden />
+                <span>Mapping</span>
               </NavLink>
             </div>
           )}
