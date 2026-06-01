@@ -7,20 +7,16 @@ import {
   fetchVendors,
   fetchBlocks,
 } from "../services/api"
-import HaulingTable from "../components/HaulingTable"
-import HaulingModal from "../components/HaulingModal"
-import "./BlocksPage.css"
+
+import HaulingFilterBar from "../components/hauling/HaulingFilterBar"
+import HaulingTable from "../components/hauling/HaulingTable"
+import AddTransactionModal from "../components/hauling/AddTransactionModal"
+import EditTransactionModal from "../components/hauling/EditTransactionModal"
+import DeleteConfirmDialog from "../components/hauling/DeleteConfirmDialog"
+import ExportButton from "../components/hauling/ExportButton"
+import "./BlocksPage.css" // Keep original CSS
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
-
-const INITIAL_FORM = {
-  ticket_no: "",
-  vendor_id: "",
-  block_id: "",
-  vehicle_plate: "",
-  weight_in: "",
-  weight_out: "",
-}
 
 function authHeaders(json = true) {
   const headers = {}
@@ -66,18 +62,27 @@ async function haulingFetch(path, options = {}) {
   } catch (err) {
     if (err.message === "UNAUTHORIZED") throw err
     if (err instanceof TypeError) {
-      throw new Error("NETWORK_ERROR")
+      throw new Error("Gagal terhubung ke server. Periksa koneksi internet Anda.")
     }
     throw err
   }
 }
 
-async function fetchHaulingTransactions({ vendor_id, block_id } = {}) {
+async function fetchHaulingTransactions(paramsObj = {}) {
   const params = new URLSearchParams()
-  params.append("skip", "0")
-  params.append("limit", "1000")
-  if (vendor_id) params.append("vendor_id", vendor_id)
-  if (block_id) params.append("block_id", block_id)
+  if (paramsObj.skip !== undefined) params.append("skip", paramsObj.skip)
+  if (paramsObj.limit !== undefined) params.append("limit", paramsObj.limit)
+  
+  // Maps to backend fastAPI query parameters typically
+  if (paramsObj.ticket_no) params.append("ticket_no", paramsObj.ticket_no)
+  if (paramsObj.vendor_id) params.append("vendor_id", paramsObj.vendor_id)
+  if (paramsObj.block_id) params.append("block_id", paramsObj.block_id)
+  if (paramsObj.date_from) params.append("start_date", paramsObj.date_from)
+  if (paramsObj.date_to) params.append("end_date", paramsObj.date_to)
+  
+  if (paramsObj.sort_by) params.append("sort_by", paramsObj.sort_by)
+  if (paramsObj.sort_dir) params.append("sort_dir", paramsObj.sort_dir)
+  
   return haulingFetch(`/api/hauling-transactions?${params}`)
 }
 
@@ -109,15 +114,48 @@ function ActualHauling() {
   const [transactions, setTransactions] = useState([])
   const [vendors, setVendors] = useState([])
   const [blocks, setBlocks] = useState([])
+  
+  // Loading states
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [modalMode, setModalMode] = useState("add")
-  const [selectedTransaction, setSelectedTransaction] = useState(null)
-  const [formData, setFormData] = useState(INITIAL_FORM)
-  const [filters, setFilters] = useState({ search: "", vendor_id: "", block_id: "" })
-  const [submitting, setSubmitting] = useState(false)
+  const [masterLoading, setMasterLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [deleteError, setDeleteError] = useState(null)
+
+  // Filters state
+  const [filters, setFilters] = useState({
+    ticket_no: "",
+    vendor_id: "",
+    block_id: "",
+    date_from: "",
+    date_to: ""
+  })
+  
+  const hasActiveFilters = useMemo(() => {
+    return Object.values(filters).some(val => val !== "");
+  }, [filters]);
+
+  // Pagination state
+  const [pagination, setPagination] = useState({
+    page: 1,
+    per_page: 20,
+    total: 0,
+    total_pages: 1
+  })
+
+  // Sort state
+  const [sortConfig, setSortConfig] = useState({
+    sort_by: "",
+    sort_dir: "" // 'asc' | 'desc' | ''
+  })
+
+  // Modals state
+  const [addModalOpen, setAddModalOpen] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  
+  const [selectedTransactionId, setSelectedTransactionId] = useState(null)
+  const [selectedTicketNo, setSelectedTicketNo] = useState("")
 
   const activeVendors = useMemo(
     () => vendors.filter((v) => v.status === true),
@@ -131,7 +169,7 @@ function ActualHauling() {
 
   const notifyError = useCallback(
     (message) => {
-      const text = message || "Terjadi kesalahan"
+      const text = message || "Terjadi kesalahan yang tidak diketahui"
       setError(text)
       showToast?.(text, "error")
     },
@@ -144,16 +182,13 @@ function ActualHauling() {
         handleUnauthorized()
         return
       }
-      if (err.message === "NETWORK_ERROR") {
-        notifyError("Gagal terhubung ke server")
-        return
-      }
       notifyError(err.message)
     },
     [handleUnauthorized, notifyError],
   )
 
   const loadMasterData = useCallback(async () => {
+    setMasterLoading(true)
     try {
       const [vendorRes, blockRes] = await Promise.all([
         fetchVendors({ limit: 1000 }),
@@ -164,114 +199,128 @@ function ActualHauling() {
     } catch (err) {
       if (err.message === "UNAUTHORIZED") {
         handleUnauthorized()
-      } else if (err instanceof TypeError) {
-        notifyError("Gagal terhubung ke server")
       } else {
-        notifyError(err.message || "Gagal memuat data master")
+        showToast?.("Gagal memuat data master vendor/block", "warning")
       }
+    } finally {
+      setMasterLoading(false)
     }
-  }, [handleUnauthorized, notifyError])
+  }, [handleUnauthorized, showToast])
 
   const loadTransactions = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
+      const skip = (pagination.page - 1) * pagination.per_page;
+      
       const data = await fetchHaulingTransactions({
-        vendor_id: filters.vendor_id || undefined,
-        block_id: filters.block_id || undefined,
+        ...filters,
+        skip,
+        limit: pagination.per_page,
+        sort_by: sortConfig.sort_by,
+        sort_dir: sortConfig.sort_dir
       })
-      setTransactions(data.transactions || [])
+      
+      setTransactions(data.transactions || data.data || [])
+      
+      // Update pagination based on response
+      if (data.total !== undefined) {
+        setPagination(prev => ({
+          ...prev,
+          total: data.total,
+          total_pages: Math.ceil(data.total / prev.per_page) || 1
+        }))
+      } else {
+        // Fallback if backend doesn't return total
+        setPagination(prev => ({
+          ...prev,
+          total: (data.transactions || data.data || []).length,
+          total_pages: 1
+        }))
+      }
     } catch (err) {
       handleApiError(err)
       setTransactions([])
     } finally {
       setLoading(false)
     }
-  }, [filters.vendor_id, filters.block_id, handleApiError])
+  }, [filters, pagination.page, pagination.per_page, sortConfig, handleApiError])
 
   useEffect(() => {
     syncTokenFromStorage()
     loadMasterData()
   }, [loadMasterData])
 
+  // Trigger loadTransactions when filters, page, or sort changes
   useEffect(() => {
     syncTokenFromStorage()
     loadTransactions()
-  }, [loadTransactions])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, pagination.page, pagination.per_page, sortConfig]) // We omit loadTransactions intentionally
 
-  const filteredRows = useMemo(() => {
-    const q = filters.search.trim().toLowerCase()
-    if (!q) return transactions
-    return transactions.filter((t) =>
-      (t.ticket_no || "").toLowerCase().includes(q),
-    )
-  }, [transactions, filters.search])
+  // Reset to page 1 when filters or sort change
+  useEffect(() => {
+    setPagination(prev => ({ ...prev, page: 1 }));
+  }, [filters, sortConfig]);
 
   const openAddModal = () => {
-    setModalMode("add")
-    setSelectedTransaction(null)
-    setFormData(INITIAL_FORM)
-    setModalOpen(true)
+    setAddModalOpen(true)
   }
 
   const openEditModal = (row) => {
-    setModalMode("edit")
-    setSelectedTransaction(row)
-    setFormData({
-      ticket_no: row.ticket_no || "",
-      vendor_id: row.vendor_id || "",
-      block_id: row.block_id || "",
-      vehicle_plate: row.vehicle_plate || "",
-      weight_in: row.weight_in != null ? String(row.weight_in) : "",
-      weight_out: row.weight_out != null ? String(row.weight_out) : "",
-    })
-    setModalOpen(true)
+    setSelectedTransactionId(row.id)
+    setEditModalOpen(true)
   }
 
-  const closeModal = () => {
-    if (submitting) return
-    setModalOpen(false)
-    setSelectedTransaction(null)
-    setFormData(INITIAL_FORM)
+  const openDeleteDialog = (row) => {
+    setSelectedTransactionId(row.id)
+    setSelectedTicketNo(row.ticket_no)
+    setDeleteError(null)
+    setDeleteDialogOpen(true)
   }
 
-  const handleSubmit = async (payload) => {
-    setSubmitting(true)
-    try {
-      if (modalMode === "edit" && selectedTransaction?.id) {
-        await updateHaulingTransaction(selectedTransaction.id, payload)
-        showToast?.("Transaksi berhasil diperbarui", "success")
-      } else {
-        await createHaulingTransaction(payload)
-        showToast?.("Transaksi berhasil ditambahkan", "success")
-      }
-      setModalOpen(false)
-      setSelectedTransaction(null)
-      setFormData(INITIAL_FORM)
-      await loadTransactions()
-    } catch (err) {
-      handleApiError(err)
-      throw err
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const handleDelete = async (row) => {
-    if (
-      !window.confirm(
-        `Hapus transaksi "${row.ticket_no}"? Tindakan ini tidak dapat dibatalkan.`,
-      )
-    ) {
-      return
-    }
+  const handleAddSubmit = async (payload) => {
     setActionLoading(true)
     try {
-      await deleteHaulingTransaction(row.id)
-      showToast?.("Transaksi berhasil dihapus", "success")
-      await loadTransactions()
+      await createHaulingTransaction(payload)
+      showToast?.("Transaksi berhasil ditambahkan", "success")
+      setAddModalOpen(false)
+      loadTransactions()
     } catch (err) {
-      handleApiError(err)
+      throw err // Handled by modal
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleEditSubmit = async (id, payload) => {
+    setActionLoading(true)
+    try {
+      await updateHaulingTransaction(id, payload)
+      showToast?.("Transaksi berhasil diperbarui", "success")
+      setEditModalOpen(false)
+      loadTransactions()
+    } catch (err) {
+      throw err // Handled by modal
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleDeleteConfirm = async () => {
+    setActionLoading(true)
+    setDeleteError(null)
+    try {
+      await deleteHaulingTransaction(selectedTransactionId)
+      showToast?.("Transaksi berhasil dihapus", "success")
+      setDeleteDialogOpen(false)
+      loadTransactions()
+    } catch (err) {
+      if (err.message === "UNAUTHORIZED") {
+        handleUnauthorized()
+        return
+      }
+      setDeleteError(err.message || "Gagal menghapus transaksi")
     } finally {
       setActionLoading(false)
     }
@@ -281,19 +330,14 @@ function ActualHauling() {
     setFilters((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleResetFilters = async () => {
-    setFilters({ search: "", vendor_id: "", block_id: "" })
-    setLoading(true)
-    setError(null)
-    try {
-      const data = await fetchHaulingTransactions({})
-      setTransactions(data.transactions || [])
-    } catch (err) {
-      handleApiError(err)
-      setTransactions([])
-    } finally {
-      setLoading(false)
-    }
+  const handleResetFilters = () => {
+    setFilters({ ticket_no: "", vendor_id: "", block_id: "", date_from: "", date_to: "" })
+    setSortConfig({ sort_by: "", sort_dir: "" })
+    setPagination(prev => ({ ...prev, page: 1 }))
+  }
+
+  const handleSort = (sort_by, sort_dir) => {
+    setSortConfig({ sort_by, sort_dir })
   }
 
   return (
@@ -302,110 +346,38 @@ function ActualHauling() {
         <div className="blk-page__titles">
           <h1>Actual Hauling</h1>
           <p>
-            PalmTrack Cloud — pencatatan transaksi pengangkutan TBS. Data dari{" "}
-            <code style={{ fontSize: "0.8em" }}>/api/hauling-transactions</code>.
+            PalmTrack Cloud — pencatatan transaksi pengangkutan TBS.
           </p>
         </div>
-        <div className="blk-page__actions">
+        <div className="blk-page__actions" style={{ display: "flex", gap: "0.5rem" }}>
+          <ExportButton filters={filters} loading={loading} />
+          
           <button
             type="button"
             className="blk-btn-add"
             onClick={openAddModal}
-            disabled={loading || actionLoading || submitting}
+            disabled={loading || actionLoading}
           >
-            Add Transaction
+            + Add Transaction
           </button>
         </div>
       </div>
 
-      <div
-        className="ahl-filters"
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "0.75rem",
-          padding: "1rem 2rem",
-          borderBottom: "1px solid var(--border-color)",
-          alignItems: "flex-end",
-          background: "var(--card-bg)",
-        }}
-      >
-        <div style={{ flex: "1 1 180px", minWidth: 160 }}>
-          <label
-            htmlFor="ahl-search"
-            style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, marginBottom: 4 }}
-          >
-            Cari Ticket No
-          </label>
-          <input
-            id="ahl-search"
-            type="search"
-            className="blk-search"
-            style={{ width: "100%" }}
-            placeholder="Ticket no…"
-            value={filters.search}
-            onChange={(e) => handleFilterChange("search", e.target.value)}
-          />
-        </div>
-        <div style={{ flex: "1 1 160px", minWidth: 140 }}>
-          <label
-            htmlFor="ahl-vendor"
-            style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, marginBottom: 4 }}
-          >
-            Filter Vendor
-          </label>
-          <select
-            id="ahl-vendor"
-            className="blk-search"
-            style={{ width: "100%" }}
-            value={filters.vendor_id}
-            onChange={(e) => handleFilterChange("vendor_id", e.target.value)}
-          >
-            <option value="">Semua vendor</option>
-            {vendors.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div style={{ flex: "1 1 160px", minWidth: 140 }}>
-          <label
-            htmlFor="ahl-block"
-            style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, marginBottom: 4 }}
-          >
-            Filter Block
-          </label>
-          <select
-            id="ahl-block"
-            className="blk-search"
-            style={{ width: "100%" }}
-            value={filters.block_id}
-            onChange={(e) => handleFilterChange("block_id", e.target.value)}
-          >
-            <option value="">Semua blok</option>
-            {blocks.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.block_code}
-              </option>
-            ))}
-          </select>
-        </div>
-        <button
-          type="button"
-          className="blk-page-btn"
-          onClick={handleResetFilters}
-          disabled={loading}
-        >
-          Reset Filters
-        </button>
-      </div>
+      <HaulingFilterBar 
+        filters={filters}
+        onChange={handleFilterChange}
+        onReset={handleResetFilters}
+        vendors={vendors}
+        blocks={blocks}
+        loading={loading}
+        masterLoading={masterLoading}
+      />
 
       {error && !loading && (
         <div
           role="alert"
           style={{
-            margin: "0 2rem",
+            margin: "1rem 2rem",
             padding: "0.75rem 1rem",
             background: "#f8d7da",
             color: "#721c24",
@@ -419,24 +391,46 @@ function ActualHauling() {
       )}
 
       <HaulingTable
-        rows={filteredRows}
+        rows={transactions}
         vendors={vendors}
         blocks={blocks}
-        loading={loading || actionLoading}
+        loading={loading}
         onEdit={openEditModal}
-        onDelete={handleDelete}
+        onDelete={openDeleteDialog}
+        sortConfig={sortConfig}
+        onSort={handleSort}
+        pagination={pagination}
+        onPageChange={(page) => setPagination(prev => ({ ...prev, page }))}
+        onPerPageChange={(per_page) => setPagination(prev => ({ ...prev, per_page, page: 1 }))}
+        hasActiveFilters={hasActiveFilters}
       />
 
-      <HaulingModal
-        open={modalOpen}
-        mode={modalMode}
-        formData={formData}
-        onFormChange={setFormData}
+      {/* Modals & Dialogs */}
+      <AddTransactionModal
+        open={addModalOpen}
         vendors={activeVendors}
         blocks={blocks}
-        onSubmit={handleSubmit}
-        onClose={closeModal}
-        submitting={submitting}
+        onSubmit={handleAddSubmit}
+        onClose={() => setAddModalOpen(false)}
+        submitting={actionLoading}
+      />
+
+      <EditTransactionModal
+        transactionId={selectedTransactionId}
+        open={editModalOpen}
+        vendors={activeVendors}
+        blocks={blocks}
+        onSubmit={handleEditSubmit}
+        onClose={() => setEditModalOpen(false)}
+      />
+
+      <DeleteConfirmDialog 
+        open={deleteDialogOpen}
+        ticketNo={selectedTicketNo}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteDialogOpen(false)}
+        loading={actionLoading}
+        error={deleteError}
       />
     </div>
   )

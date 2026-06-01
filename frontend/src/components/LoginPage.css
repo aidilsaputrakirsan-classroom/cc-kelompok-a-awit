@@ -1,0 +1,351 @@
+/* LoginPage.css */
+.coal-login-wrapper {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    overflow: hidden;
+}
+
+/* Background Shapes */
+.bg-pattern-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.bg-shape {
+    position: absolute;
+    background-color: #ececec;
+}
+
+.circle-1 {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    border: 30px solid #ececec;
+    background: transparent;
+    top: -50px;
+    right: -50px;
+}
+.circle-2 {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: #ececec;
+    bottom: 20%;
+    right: 5%;
+}
+.circle-3 {
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    border: 40px solid #ececec;
+    background: transparent;
+    bottom: -150px;
+    left: -100px;
+}
+.triangle-1 {
+    width: 0;
+    height: 0;
+    border-left: 100px solid transparent;
+    border-right: 100px solid transparent;
+    border-bottom: 173px solid #ececec;
+    background: transparent;
+    top: 5%;
+    left: 30%;
+    transform: rotate(15deg);
+}
+.cross-1 {
+    width: 100px;
+    height: 30px;
+    background: #ececec;
+    top: 40%;
+    left: 10%;
+    transform: rotate(45deg);
+}
+.cross-1::after {
+    content: '';
+    position: absolute;
+    width: 30px;
+    height: 100px;
+    background: #ececec;
+    top: -35px;
+    left: 35px;
+}
+.dots-1 {
+    background-image: radial-gradient(#d0d0d0 2px, transparent 2px);
+    background-size: 20px 20px;
+    width: 200px;
+    height: 200px;
+    top: 10%;
+    left: 5%;
+    background-color: transparent;
+}
+.dots-2 {
+    background-image: radial-gradient(#d0d0d0 2px, transparent 2px);
+    background-size: 20px 20px;
+    width: 200px;
+    height: 200px;
+    bottom: 5%;
+    right: 15%;
+    background-color: transparent;
+}
+
+/* Card Layout */
+.coal-login-card {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    width: 100%;
+    max-width: 900px;
+    height: 550px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+@media (max-width: 768px) {
+    .coal-login-card {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        border-radius: 0;
+    }
+}
+
+/* Left Side */
+.coal-login-left {
+    flex: 1;
+    background-color: #222222;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 60px;
+    position: relative;
+}
+
+.coal-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2;
+}
+
+.coal-brand h1 {
+    color: #ffffff;
+    font-size: 32px;
+    font-weight: 700;
+    margin-top: 15px;
+    margin-bottom: 0;
+    letter-spacing: 0.5px;
+}
+
+.mining-illustration {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60%;
+}
+
+/* Right Side */
+.coal-login-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    position: relative;
+}
+
+
+
+.coal-login-form-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 80px;
+}
+
+@media (max-width: 900px) {
+    .coal-login-form-container {
+        padding: 0 40px;
+    }
+}
+
+.coal-login-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #111;
+    margin-top: 0;
+    margin-bottom: 25px;
+    text-align: left;
+    align-self: flex-start;
+}
+
+.coal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.coal-input-group {
+    display: flex;
+    align-items: center;
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    background-color: #ffffff !important;
+    transition: border-color 0.2s;
+}
+
+.coal-input-group:focus-within {
+    border-color: #9ca3af;
+}
+
+.coal-input-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    color: #333;
+}
+
+.coal-login-wrapper .coal-input-group input {
+    flex: 1;
+    border: none !important;
+    padding: 12px 15px 12px 5px !important;
+    font-size: 15px !important;
+    color: #333 !important;
+    outline: none !important;
+    background: transparent !important;
+}
+
+.coal-login-wrapper .coal-input-group input::placeholder {
+    color: #7c8b99;
+}
+
+/* Fix for Chrome autofill background */
+.coal-login-wrapper .coal-input-group input:-webkit-autofill,
+.coal-login-wrapper .coal-input-group input:-webkit-autofill:hover, 
+.coal-login-wrapper .coal-input-group input:-webkit-autofill:focus, 
+.coal-login-wrapper .coal-input-group input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: #333 !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.coal-login-wrapper .coal-pw-toggle {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 15px;
+    color: #999;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.coal-login-wrapper .coal-pw-toggle:hover {
+    color: #666;
+    background: transparent;
+}
+
+.coal-login-wrapper .coal-submit-btn {
+    margin-top: 10px !important;
+    background-color: #c0392b !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 14px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s !important;
+}
+
+.coal-login-wrapper .coal-submit-btn:hover {
+    background-color: #a93226 !important;
+}
+
+.coal-login-wrapper .coal-download-btn {
+    margin-top: 50px !important;
+    align-self: center !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
+    background-color: #ffffff !important;
+    color: #333 !important;
+    border: 1px solid #f0f0f0 !important;
+    border-radius: 8px !important;
+    padding: 10px 20px !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.04) !important;
+    transition: transform 0.2s, box-shadow 0.2s !important;
+    width: max-content !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.coal-login-wrapper .coal-download-divider {
+    width: 1px;
+    height: 35px;
+    background-color: #eee;
+}
+
+.coal-login-wrapper .coal-download-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08) !important;
+    background-color: #ffffff !important;
+}
+
+.coal-download-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.coal-download-text .small-text {
+    font-size: 10px;
+    color: #666;
+}
+
+.coal-download-text .large-text {
+    font-size: 13px;
+    font-weight: 700;
+    color: #333;
+}
+
+.coal-login-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 20px;
+}
+
+.coal-login-footer p {
+    margin: 2px 0;
+    font-size: 11px;
+    color: #999;
+}
+
+.coal-login-error {
+    color: #c0392b;
+    font-size: 13px;
+    margin-bottom: 15px;
+    padding: 8px 12px;
+    background: #fadbd8;
+    border-radius: 4px;
+}

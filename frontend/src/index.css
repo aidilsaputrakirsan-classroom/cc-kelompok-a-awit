@@ -113,8 +113,8 @@ h1 {
 }
 
 button {
+button {
   border: 1px solid var(--border-color);
-button {var(--border-color);
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
@@ -128,18 +128,19 @@ button {var(--border-color);
 button:hover {
   background-color: var(--accent-color);
   color: white;
-  color: white
-button:hover {
   border-color: #646cff;
 }
 
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}dark) {
+}
+
+@media (prefers-color-scheme: dark) {
   :root {
     color: var(--text-primary);
-    background-color: var(--bg-primary)
+    background-color: var(--bg-primary);
+  }
   button {
     background-color: #f9f9f9;
   }
