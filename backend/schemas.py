@@ -297,6 +297,13 @@ class ItemListResponse(BaseModel):
     items: List[ItemResponse]
 
 
+class ItemStatsResponse(BaseModel):
+    """Schema untuk response statistik item"""
+    total_items: int
+    total_categories: int
+    items_by_category: dict[str, int]
+
+
 # ============================================================
 # DASHBOARD SCHEMAS
 # ============================================================

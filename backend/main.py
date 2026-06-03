@@ -21,7 +21,7 @@ from schemas import (
     HaulingTransactionEnvelope,
     DashboardResponse, DashboardTodayStats, DashboardMTDStats,
     UserCreate, UserResponse, LoginRequest, TokenResponse,
-    ItemCreate, ItemUpdate, ItemResponse, ItemListResponse,
+    ItemCreate, ItemUpdate, ItemResponse, ItemListResponse, ItemStatsResponse,
 )
 from auth import create_access_token, get_current_user, require_roles
 import crud
@@ -708,6 +708,15 @@ def list_items(
     - **status**: Filter by active status
     """
     return crud.get_items(db=db, skip=skip, limit=limit, search=search, category=category, status=status)
+
+
+@app.get("/api/items/stats", response_model=ItemStatsResponse)
+def get_item_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Ambil statistik item berdasarkan kategori. **Membutuhkan autentikasi.**"""
+    return crud.get_item_stats(db=db)
 
 
 @app.get("/api/items/{item_id}", response_model=ItemResponse)

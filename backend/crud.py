@@ -623,6 +623,24 @@ def delete_item(db: Session, item_id: uuid.UUID) -> bool:
     return True
 
 
+def get_item_stats(db: Session) -> dict:
+    """Dapatkan statistik ringkas untuk items berdasarkan kategori."""
+    total_items = db.query(func.count(Item.id)).scalar() or 0
+    category_rows = (
+        db.query(Item.category, func.count(Item.id))
+        .filter(Item.category.isnot(None))
+        .group_by(Item.category)
+        .all()
+    )
+    items_by_category = {category: count for category, count in category_rows if category}
+
+    return {
+        "total_items": int(total_items),
+        "total_categories": len(items_by_category),
+        "items_by_category": items_by_category,
+    }
+
+
 # ==================== DASHBOARD STATS ====================
 
 def get_hauling_stats_today(db: Session) -> dict:
