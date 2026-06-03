@@ -1,4 +1,20 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
+// VITE_API_URL bisa berupa:
+//   - "https://cc-kelompok-a-awit.akhzafachrozy.my.id/api"  (set oleh CD workflow)
+//   - "http://localhost:8000"                                (dev lokal)
+//   - ""                                                     (relative URL)
+//
+// Backend routes:
+//   /auth/register, /auth/login, /auth/me   → tidak pakai prefix /api
+//   /api/items, /api/vendors, /api/blocks   → pakai prefix /api
+//   /health
+//
+// Agar konsisten, kita strip trailing "/api" dari VITE_API_URL
+// sehingga BASE_URL selalu menunjuk ke root backend.
+
+const _raw = import.meta.env.VITE_API_URL ?? ""
+// Hapus trailing /api agar tidak double: .../api/api/items
+const BASE_URL = _raw.replace(/\/api\/?$/, "").replace(/\/$/, "")
+
 const TOKEN_STORAGE_KEY = "palmtrack_access_token"
 
 // ==================== TOKEN MANAGEMENT ====================
@@ -53,7 +69,7 @@ async function handleResponse(response) {
   }
   if (!response.ok) {
     const error = await response.json().catch(() => ({}))
-    
+
     // Handle validation errors (array of error objects from Pydantic)
     if (Array.isArray(error.detail)) {
       const messages = error.detail
@@ -66,12 +82,12 @@ async function handleResponse(response) {
         .join("; ")
       throw new Error(messages || `Validation error (${response.status})`)
     }
-    
+
     // Handle single error message
     if (typeof error.detail === 'string') {
       throw new Error(error.detail)
     }
-    
+
     // Fallback
     throw new Error(`Request gagal (${response.status})`)
   }
@@ -81,9 +97,10 @@ async function handleResponse(response) {
 }
 
 // ==================== AUTH API ====================
+// Backend routes: /auth/register, /auth/login, /auth/me (tanpa prefix /api)
 
 export async function register(userData) {
-  const response = await fetch(`${API_URL}/auth/register`, {
+  const response = await fetch(`${BASE_URL}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(userData),
@@ -92,7 +109,7 @@ export async function register(userData) {
 }
 
 export async function login(email, password) {
-  const response = await fetch(`${API_URL}/auth/login`, {
+  const response = await fetch(`${BASE_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -108,13 +125,14 @@ export async function login(email, password) {
 }
 
 export async function getMe() {
-  const response = await fetch(`${API_URL}/auth/me`, {
+  const response = await fetch(`${BASE_URL}/auth/me`, {
     headers: authHeaders(),
   })
   return handleResponse(response)
 }
 
 // ==================== ITEMS API ====================
+// Backend routes: /api/items (dengan prefix /api)
 
 export async function fetchItems(search = "", skip = 0, limit = 20) {
   const params = new URLSearchParams()
@@ -122,14 +140,14 @@ export async function fetchItems(search = "", skip = 0, limit = 20) {
   params.append("skip", skip)
   params.append("limit", limit)
 
-  const response = await fetch(`${API_URL}/api/items?${params}`, {
+  const response = await fetch(`${BASE_URL}/api/items?${params}`, {
     headers: authHeaders(),
   })
   return handleResponse(response)
 }
 
 export async function createItem(itemData) {
-  const response = await fetch(`${API_URL}/api/items`, {
+  const response = await fetch(`${BASE_URL}/api/items`, {
     method: "POST",
     headers: {
       ...authHeaders(),
@@ -141,7 +159,7 @@ export async function createItem(itemData) {
 }
 
 export async function updateItem(id, itemData) {
-  const response = await fetch(`${API_URL}/api/items/${id}`, {
+  const response = await fetch(`${BASE_URL}/api/items/${id}`, {
     method: "PUT",
     headers: {
       ...authHeaders(),
@@ -153,7 +171,7 @@ export async function updateItem(id, itemData) {
 }
 
 export async function deleteItem(id) {
-  const response = await fetch(`${API_URL}/api/items/${id}`, {
+  const response = await fetch(`${BASE_URL}/api/items/${id}`, {
     method: "DELETE",
     headers: authHeaders(),
   })
@@ -161,11 +179,64 @@ export async function deleteItem(id) {
 }
 
 // ==================== VENDORS (CONTRACTORS) API ====================
+// Backend routes: /api/vendors (dengan prefix /api)
 
 /**
  * Daftar vendor / kontraktor (GET /api/vendors).
  * @returns {{ total: number, vendors: Array }}
  */
+export async function fetchVendors({ skip = 0, limit = 20, search = "", status = null } = {}) {
+  const params = new URLSearchParams()
+  params.append("skip", String(skip))
+  params.append("limit", String(limit))
+  if (search) params.append("search", search)
+  if (status !== null && status !== undefined && status !== "") {
+    params.append("status", String(status))
+  }
+
+  const response = await fetch(`${BASE_URL}/api/vendors?${params}`, {
+    headers: {
+      ...authHeaders(),
+    },
+  })
+  return handleResponse(response)
+}
+
+export async function createVendor(vendorData) {
+  const response = await fetch(`${BASE_URL}/api/vendors`, {
+    method: "POST",
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(vendorData),
+  })
+  return handleResponse(response)
+}
+
+export async function updateVendor(id, vendorData) {
+  const response = await fetch(`${BASE_URL}/api/vendors/${id}`, {
+    method: "PUT",
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(vendorData),
+  })
+  return handleResponse(response)
+}
+
+export async function deleteVendor(id) {
+  const response = await fetch(`${BASE_URL}/api/vendors/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  })
+  return handleResponse(response)
+}
+
+// ==================== BLOCKS API ====================
+// Backend routes: /api/blocks (dengan prefix /api)
+
 /**
  * Daftar blok (GET /api/blocks).
  * @returns {{ total: number, blocks: Array }}
@@ -178,73 +249,14 @@ export async function fetchBlocks({ skip = 0, limit = 20, search = "", status = 
   if (status !== null && status !== undefined && status !== "") {
     params.append("status", String(status))
   }
-  const response = await fetch(`${API_URL}/api/blocks?${params}`, {
+  const response = await fetch(`${BASE_URL}/api/blocks?${params}`, {
     headers: { ...authHeaders() },
   })
   return handleResponse(response)
 }
-
-/** Ringkasan dashboard (GET /api/dashboard). */
-export async function fetchDashboard() {
-  const response = await fetch(`${API_URL}/api/dashboard`, {
-    headers: { ...authHeaders() },
-  })
-  return handleResponse(response)
-}
-
-export async function fetchVendors({ skip = 0, limit = 20, search = "", status = null } = {}) {
-  const params = new URLSearchParams()
-  params.append("skip", String(skip))
-  params.append("limit", String(limit))
-  if (search) params.append("search", search)
-  if (status !== null && status !== undefined && status !== "") {
-    params.append("status", String(status))
-  }
-
-  const response = await fetch(`${API_URL}/api/vendors?${params}`, {
-    headers: {
-      ...authHeaders(),
-    },
-  })
-  return handleResponse(response)
-}
-
-export async function createVendor(vendorData) {
-  const response = await fetch(`${API_URL}/api/vendors`, {
-    method: "POST",
-    headers: {
-      ...authHeaders(),
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(vendorData),
-  })
-  return handleResponse(response)
-}
-
-export async function updateVendor(id, vendorData) {
-  const response = await fetch(`${API_URL}/api/vendors/${id}`, {
-    method: "PUT",
-    headers: {
-      ...authHeaders(),
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(vendorData),
-  })
-  return handleResponse(response)
-}
-
-export async function deleteVendor(id) {
-  const response = await fetch(`${API_URL}/api/vendors/${id}`, {
-    method: "DELETE",
-    headers: authHeaders(),
-  })
-  return handleResponse(response)
-}
-
-// ==================== BLOCKS API ====================
 
 export async function createBlock(blockData) {
-  const response = await fetch(`${API_URL}/api/blocks`, {
+  const response = await fetch(`${BASE_URL}/api/blocks`, {
     method: "POST",
     headers: {
       ...authHeaders(),
@@ -256,7 +268,7 @@ export async function createBlock(blockData) {
 }
 
 export async function updateBlock(id, blockData) {
-  const response = await fetch(`${API_URL}/api/blocks/${id}`, {
+  const response = await fetch(`${BASE_URL}/api/blocks/${id}`, {
     method: "PUT",
     headers: {
       ...authHeaders(),
@@ -268,16 +280,28 @@ export async function updateBlock(id, blockData) {
 }
 
 export async function deleteBlock(id) {
-  const response = await fetch(`${API_URL}/api/blocks/${id}`, {
+  const response = await fetch(`${BASE_URL}/api/blocks/${id}`, {
     method: "DELETE",
     headers: authHeaders(),
   })
   return handleResponse(response)
 }
 
+// ==================== DASHBOARD API ====================
+
+/** Ringkasan dashboard (GET /api/dashboard). */
+export async function fetchDashboard() {
+  const response = await fetch(`${BASE_URL}/api/dashboard`, {
+    headers: { ...authHeaders() },
+  })
+  return handleResponse(response)
+}
+
+// ==================== HEALTH CHECK ====================
+
 export async function checkHealth() {
   try {
-    const response = await fetch(`${API_URL}/health`)
+    const response = await fetch(`${BASE_URL}/health`)
     const data = await response.json()
     return data.status === "healthy"
   } catch {
