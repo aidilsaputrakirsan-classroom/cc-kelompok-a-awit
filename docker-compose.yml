@@ -51,7 +51,7 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: 60
       
       # CORS configuration
-      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:5173,http://frontend
+      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:5173,http://frontend,https://cc-kelompok-a-awit.akhzafachrozy.my.id
     ports:
       - "8000:8000"
     networks:

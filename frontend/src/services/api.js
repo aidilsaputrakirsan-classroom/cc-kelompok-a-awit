@@ -122,14 +122,14 @@ export async function fetchItems(search = "", skip = 0, limit = 20) {
   params.append("skip", skip)
   params.append("limit", limit)
 
-  const response = await fetch(`${API_URL}/items?${params}`, {
+  const response = await fetch(`${API_URL}/api/items?${params}`, {
     headers: authHeaders(),
   })
   return handleResponse(response)
 }
 
 export async function createItem(itemData) {
-  const response = await fetch(`${API_URL}/items`, {
+  const response = await fetch(`${API_URL}/api/items`, {
     method: "POST",
     headers: {
       ...authHeaders(),
@@ -141,7 +141,7 @@ export async function createItem(itemData) {
 }
 
 export async function updateItem(id, itemData) {
-  const response = await fetch(`${API_URL}/items/${id}`, {
+  const response = await fetch(`${API_URL}/api/items/${id}`, {
     method: "PUT",
     headers: {
       ...authHeaders(),
@@ -153,7 +153,7 @@ export async function updateItem(id, itemData) {
 }
 
 export async function deleteItem(id) {
-  const response = await fetch(`${API_URL}/items/${id}`, {
+  const response = await fetch(`${API_URL}/api/items/${id}`, {
     method: "DELETE",
     headers: authHeaders(),
   })
