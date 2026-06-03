@@ -64,6 +64,9 @@ app = FastAPI(
     title="PalmChain API",
     description="REST API untuk Palm Oil Supply Chain Monitoring System (PalmChain)",
     version="1.0.0",
+    docs_url="/docs",
+    openapi_url="/openapi.json",
+    root_path="/api"
 )
 
 # ==================== CORS (FIXED) ====================
