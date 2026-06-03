@@ -26,7 +26,6 @@ function MainLayout() {
     setSidebarCollapsed((c) => !c)
   }, [])
 
-  const { toggleDarkMode } = useTheme()
 
   return (
     <div className={`pt-shell${sidebarCollapsed ? " pt-shell--collapsed" : ""}`}>
@@ -35,14 +34,7 @@ function MainLayout() {
         <header className="pt-topbar">
           <h1 className="pt-topbar__title">Command Center</h1>
           <div className="pt-topbar__right">
-            <button 
-              type="button" 
-              className="pt-topbar__theme-toggle"
-              onClick={toggleDarkMode}
-              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            >
-              {isDarkMode ? "☀️ Light" : "🌙 Dark"}
-            </button>
+
             {user && (
               <span className="pt-topbar__user">{user.name}</span>
             )}

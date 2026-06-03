@@ -21,9 +21,7 @@ function Header({ totalItems, isConnected, user, onLogout }) {
           }}>
             {isConnected ? "🟢 Connected" : "🔴 Disconnected"}
           </span>
-          <button onClick={toggleDarkMode} style={styles.btnToggle(isDarkMode)}>
-            {isDarkMode ? "☀️ Light" : "🌙 Dark"}
-          </button>
+
         </div>
         {user && (
           <div style={styles.user}>
