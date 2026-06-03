@@ -1,351 +1,403 @@
-/* LoginPage.css */
-.coal-login-wrapper {
-    position: relative;
-    width: 100%;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f8f9fa;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
-    overflow: hidden;
+/* ─── Google Fonts ─── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ─── Root ─── */
+.lp-root {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #0a0f1e;
+  overflow: hidden;
+  position: relative;
 }
 
-/* Background Shapes */
-.bg-pattern-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    pointer-events: none;
-    overflow: hidden;
+/* ─── Animated background blobs ─── */
+.lp-blobs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.lp-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+  animation: blobFloat 12s ease-in-out infinite alternate;
+}
+.lp-blob-1 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, #16a34a, #064e3b);
+  top: -120px; left: -80px;
+  animation-duration: 14s;
+}
+.lp-blob-2 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, #0d9488, #0f172a);
+  bottom: -100px; right: 200px;
+  animation-duration: 10s;
+  animation-delay: -4s;
+}
+.lp-blob-3 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, #15803d, #166534);
+  top: 40%; left: 40%;
+  animation-duration: 16s;
+  animation-delay: -8s;
+}
+.lp-blob-4 {
+  width: 250px; height: 250px;
+  background: radial-gradient(circle, #0891b2, #1e3a5f);
+  top: 60%; right: 5%;
+  animation-duration: 11s;
+  animation-delay: -2s;
+}
+@keyframes blobFloat {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(30px, -40px) scale(1.08); }
+  100% { transform: translate(-20px, 20px) scale(0.96); }
 }
 
-.bg-shape {
-    position: absolute;
-    background-color: #ececec;
+/* ─── Left hero panel ─── */
+.lp-hero {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 48px;
+  position: relative;
+  z-index: 1;
 }
-
-.circle-1 {
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    border: 30px solid #ececec;
-    background: transparent;
-    top: -50px;
-    right: -50px;
-}
-.circle-2 {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    background: #ececec;
-    bottom: 20%;
-    right: 5%;
-}
-.circle-3 {
-    width: 400px;
-    height: 400px;
-    border-radius: 50%;
-    border: 40px solid #ececec;
-    background: transparent;
-    bottom: -150px;
-    left: -100px;
-}
-.triangle-1 {
-    width: 0;
-    height: 0;
-    border-left: 100px solid transparent;
-    border-right: 100px solid transparent;
-    border-bottom: 173px solid #ececec;
-    background: transparent;
-    top: 5%;
-    left: 30%;
-    transform: rotate(15deg);
-}
-.cross-1 {
-    width: 100px;
-    height: 30px;
-    background: #ececec;
-    top: 40%;
-    left: 10%;
-    transform: rotate(45deg);
-}
-.cross-1::after {
-    content: '';
-    position: absolute;
-    width: 30px;
-    height: 100px;
-    background: #ececec;
-    top: -35px;
-    left: 35px;
-}
-.dots-1 {
-    background-image: radial-gradient(#d0d0d0 2px, transparent 2px);
-    background-size: 20px 20px;
-    width: 200px;
-    height: 200px;
-    top: 10%;
-    left: 5%;
-    background-color: transparent;
-}
-.dots-2 {
-    background-image: radial-gradient(#d0d0d0 2px, transparent 2px);
-    background-size: 20px 20px;
-    width: 200px;
-    height: 200px;
-    bottom: 5%;
-    right: 15%;
-    background-color: transparent;
-}
-
-/* Card Layout */
-.coal-login-card {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    width: 100%;
-    max-width: 900px;
-    height: 550px;
-    background: #ffffff;
-    border-radius: 20px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.1);
-    overflow: hidden;
-}
-
 @media (max-width: 768px) {
-    .coal-login-card {
-        flex-direction: column;
-        height: auto;
-        min-height: 100vh;
-        border-radius: 0;
-    }
+  .lp-hero { display: none; }
+}
+.lp-hero-inner {
+  max-width: 440px;
 }
 
-/* Left Side */
-.coal-login-left {
-    flex: 1;
-    background-color: #222222;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding-top: 60px;
-    position: relative;
+/* Logo */
+.lp-logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 48px;
+}
+.lp-logo-icon {
+  width: 48px; height: 48px;
+  background: linear-gradient(135deg, #16a34a, #0d9488);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.4);
+}
+.lp-logo-text {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #f0fdf4;
+  letter-spacing: -0.5px;
 }
 
-.coal-brand {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    z-index: 2;
+/* Hero title */
+.lp-hero-title {
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 800;
+  line-height: 1.15;
+  color: #f0fdf4;
+  letter-spacing: -1px;
+  margin: 0 0 20px;
+}
+.lp-hero-sub {
+  font-size: 1.05rem;
+  color: #86efac;
+  line-height: 1.7;
+  margin: 0 0 48px;
 }
 
-.coal-brand h1 {
-    color: #ffffff;
-    font-size: 32px;
-    font-weight: 700;
-    margin-top: 15px;
-    margin-bottom: 0;
-    letter-spacing: 0.5px;
+/* Stats */
+.lp-stats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 20px 28px;
+  backdrop-filter: blur(12px);
+}
+.lp-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+.lp-stat-num {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #4ade80;
+}
+.lp-stat-label {
+  font-size: 0.75rem;
+  color: #86efac;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.lp-stat-divider {
+  width: 1px;
+  height: 36px;
+  background: rgba(255,255,255,0.15);
+  margin: 0 4px;
 }
 
-.mining-illustration {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 60%;
+/* ─── Right form panel ─── */
+.lp-form-panel {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px;
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 768px) {
+  .lp-form-panel { max-width: 100%; }
 }
 
-/* Right Side */
-.coal-login-right {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background-color: #ffffff;
-    position: relative;
+/* Card */
+.lp-card {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 24px;
+  padding: 36px 32px;
+  backdrop-filter: blur(24px);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05) inset;
+}
+@media (max-width: 480px) {
+  .lp-card { padding: 28px 20px; border-radius: 20px; }
 }
 
-
-
-.coal-login-form-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 0 80px;
+/* ─── Tabs ─── */
+.lp-tabs {
+  display: flex;
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 28px;
+  position: relative;
+}
+.lp-tab {
+  flex: 1;
+  padding: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: color 0.2s;
+  position: relative;
+  z-index: 1;
+}
+.lp-tab--active {
+  color: #f0fdf4;
+}
+.lp-tab-indicator {
+  position: absolute;
+  top: 4px; bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  background: linear-gradient(135deg, #16a34a, #0d9488);
+  border-radius: 9px;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(22, 163, 74, 0.35);
+}
+.lp-tab-indicator--right {
+  transform: translateX(calc(100% + 0px));
 }
 
-@media (max-width: 900px) {
-    .coal-login-form-container {
-        padding: 0 40px;
-    }
+/* ─── Alert ─── */
+.lp-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+  animation: slideIn 0.2s ease;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.coal-login-title {
-    font-size: 28px;
-    font-weight: 700;
-    color: #111;
-    margin-top: 0;
-    margin-bottom: 25px;
-    text-align: left;
-    align-self: flex-start;
+/* ─── Form ─── */
+.lp-form { display: flex; flex-direction: column; gap: 0; }
+
+.lp-greeting {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  margin: 0 0 24px;
 }
 
-.coal-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+/* Fields */
+.lp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.lp-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.lp-label-hint {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: #475569;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.lp-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.lp-input-icon {
+  position: absolute;
+  left: 14px;
+  width: 18px; height: 18px;
+  color: #475569;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+  transition: color 0.2s;
+}
+.lp-input-icon svg { width: 18px; height: 18px; }
+.lp-input {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 13px 14px 13px 42px;
+  font-size: 0.95rem;
+  color: #f1f5f9;
+  font-family: inherit;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+.lp-input::placeholder { color: #334155; }
+.lp-input:focus {
+  border-color: #16a34a;
+  background: rgba(22, 163, 74, 0.06);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+}
+.lp-input:focus ~ .lp-input-icon,
+.lp-input-wrap:focus-within .lp-input-icon { color: #16a34a; }
+.lp-input--pw { padding-right: 46px; }
+.lp-input--error {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.15) !important;
+}
+.lp-pw-toggle {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #475569;
+  display: flex; align-items: center;
+  padding: 4px;
+  border-radius: 6px;
+  transition: color 0.2s;
+}
+.lp-pw-toggle:hover { color: #94a3b8; }
+.lp-pw-toggle svg { width: 18px; height: 18px; }
+.lp-field-error {
+  font-size: 0.78rem;
+  color: #f87171;
+  margin: 0;
 }
 
-.coal-input-group {
-    display: flex;
-    align-items: center;
-    border: 1px solid #d1d5db !important;
-    border-radius: 6px !important;
-    background-color: #ffffff !important;
-    transition: border-color 0.2s;
+/* ─── Submit button ─── */
+.lp-btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  margin-top: 8px;
+  background: linear-gradient(135deg, #16a34a, #0d9488);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.35);
+  letter-spacing: 0.3px;
 }
-
-.coal-input-group:focus-within {
-    border-color: #9ca3af;
+.lp-btn-primary:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 32px rgba(22, 163, 74, 0.45);
 }
+.lp-btn-primary:active:not(:disabled) { transform: translateY(0); }
+.lp-btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
 
-.coal-input-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 45px;
-    height: 45px;
-    color: #333;
+/* Spinner */
+.lp-spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-.coal-login-wrapper .coal-input-group input {
-    flex: 1;
-    border: none !important;
-    padding: 12px 15px 12px 5px !important;
-    font-size: 15px !important;
-    color: #333 !important;
-    outline: none !important;
-    background: transparent !important;
+/* ─── Switch hint ─── */
+.lp-switch-hint {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #475569;
+  margin: 20px 0 0;
 }
-
-.coal-login-wrapper .coal-input-group input::placeholder {
-    color: #7c8b99;
+.lp-link {
+  background: none;
+  border: none;
+  color: #4ade80;
+  font-size: inherit;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s;
 }
+.lp-link:hover { color: #86efac; }
 
-/* Fix for Chrome autofill background */
-.coal-login-wrapper .coal-input-group input:-webkit-autofill,
-.coal-login-wrapper .coal-input-group input:-webkit-autofill:hover, 
-.coal-login-wrapper .coal-input-group input:-webkit-autofill:focus, 
-.coal-login-wrapper .coal-input-group input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px white inset !important;
-    -webkit-text-fill-color: #333 !important;
-    transition: background-color 5000s ease-in-out 0s;
-}
-
-.coal-login-wrapper .coal-pw-toggle {
-    background: transparent !important;
-    border: none !important;
-    padding: 0 15px;
-    color: #999;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.coal-login-wrapper .coal-pw-toggle:hover {
-    color: #666;
-    background: transparent;
-}
-
-.coal-login-wrapper .coal-submit-btn {
-    margin-top: 10px !important;
-    background-color: #c0392b !important;
-    color: #fff !important;
-    border: none !important;
-    border-radius: 6px !important;
-    padding: 14px !important;
-    font-size: 15px !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-    transition: background-color 0.2s !important;
-}
-
-.coal-login-wrapper .coal-submit-btn:hover {
-    background-color: #a93226 !important;
-}
-
-.coal-login-wrapper .coal-download-btn {
-    margin-top: 50px !important;
-    align-self: center !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 15px !important;
-    background-color: #ffffff !important;
-    color: #333 !important;
-    border: 1px solid #f0f0f0 !important;
-    border-radius: 8px !important;
-    padding: 10px 20px !important;
-    cursor: pointer !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04) !important;
-    transition: transform 0.2s, box-shadow 0.2s !important;
-    width: max-content !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
-
-.coal-login-wrapper .coal-download-divider {
-    width: 1px;
-    height: 35px;
-    background-color: #eee;
-}
-
-.coal-login-wrapper .coal-download-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0,0,0,0.08) !important;
-    background-color: #ffffff !important;
-}
-
-.coal-download-text {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-.coal-download-text .small-text {
-    font-size: 10px;
-    color: #666;
-}
-
-.coal-download-text .large-text {
-    font-size: 13px;
-    font-weight: 700;
-    color: #333;
-}
-
-.coal-login-footer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-bottom: 20px;
-}
-
-.coal-login-footer p {
-    margin: 2px 0;
-    font-size: 11px;
-    color: #999;
-}
-
-.coal-login-error {
-    color: #c0392b;
-    font-size: 13px;
-    margin-bottom: 15px;
-    padding: 8px 12px;
-    background: #fadbd8;
-    border-radius: 4px;
+/* ─── Footer ─── */
+.lp-footer {
+  font-size: 0.75rem;
+  color: #1e293b;
+  margin-top: 24px;
+  text-align: center;
 }

@@ -2,257 +2,376 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import "./LoginPage.css";
 
-function UserIcon() {
+/* ── Icons ── */
+function IconMail() {
   return (
-    <svg viewBox="0 0 24 24" fill="#333" width="20px" height="20px">
-      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2"/>
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+    </svg>
+  );
+}
+function IconLock() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>
+  );
+}
+function IconUser() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+  );
+}
+function IconEye() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+  );
+}
+function IconEyeOff() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+      <line x1="1" y1="1" x2="23" y2="23"/>
+    </svg>
+  );
+}
+function IconLeaf() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width:28,height:28}}>
+      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/>
+      <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
     </svg>
   );
 }
 
-function LockIcon() {
+/* ── Background blobs ── */
+function Blobs() {
   return (
-    <svg viewBox="0 0 24 24" fill="#333" width="20px" height="20px">
-      <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-    </svg>
-  );
-}
-
-function EyeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '20px', height: '20px' }}>
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-      <circle cx="12" cy="12" r="4"></circle>
-    </svg>
-  );
-}
-
-function EyeOffIcon() {
-    return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '20px', height: '20px' }}>
-            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-            <line x1="1" y1="1" x2="23" y2="23"></line>
-        </svg>
-    )
-}
-
-function AndroidIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '24px', height: '24px', color: '#666' }}>
-      <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993.0004.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592c.1158-.2018.0468-.4582-.1554-.574-.2026-.1158-.4589-.0464-.5748.1554l-2.0253 3.5076c-1.463-.6668-3.1235-1.037-4.8878-1.037-1.765 0-3.4255.3702-4.8885 1.037l-2.0246-3.5076c-.1158-.2018-.3725-.2712-.5744-.1554-.2018.1158-.2716.3722-.1558.574l1.9976 3.4592C2.6593 10.6698.4552 14.159.2012 18.2198h23.597c-.254-4.0608-2.458-7.55-6.3867-8.8984"/>
-    </svg>
-  );
-}
-
-function CoalChainLogo() {
-  return (
-    <svg width="80" height="80" viewBox="0 0 100 100" fill="none">
-      <circle cx="50" cy="50" r="30" stroke="#c0392b" strokeWidth="8" strokeLinecap="round" strokeDasharray="140 100" transform="rotate(45 50 50)" />
-      <circle cx="50" cy="50" r="16" stroke="#c0392b" strokeWidth="8" strokeLinecap="round" strokeDasharray="70 50" transform="rotate(-45 50 50)" />
-      <circle cx="50" cy="50" r="5" fill="#c0392b" />
-    </svg>
-  );
-}
-
-function MiningIllustration() {
-  return (
-    <div className="mining-illustration">
-        <svg width="100%" height="100%" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet">
-            {/* Background Mountains/Walls */}
-            <path d="M0 100 L50 20 L150 120 L250 50 L350 150 L400 80 L400 300 L0 300 Z" fill="#1c1c1c" />
-            <path d="M50 150 L100 80 L200 180 L300 100 L400 200 L400 300 L0 300 Z" fill="#242424" />
-            <path d="M0 250 Q 200 200 400 250 L400 300 L0 300 Z" fill="#2d2d2d" />
-            {/* Ground Puddles */}
-            <ellipse cx="100" cy="270" rx="40" ry="15" fill="#3a3a3a" opacity="0.5" />
-            <ellipse cx="300" cy="260" rx="60" ry="20" fill="#3a3a3a" opacity="0.5" />
-            
-            {/* Whiteboard */}
-            <g transform="translate(180, 50) rotate(-15) skewX(20) scale(0.8)">
-                <rect x="0" y="0" width="120" height="80" fill="#e0e0e0" rx="4" />
-                <rect x="0" y="0" width="120" height="80" fill="none" stroke="#ccc" strokeWidth="2" rx="4" />
-                <path d="M 10 70 L 10 20 L 50 20 L 50 50 L 90 50 L 90 20 L 110 20" fill="none" stroke="#999" strokeWidth="2" />
-                <path d="M 10 15 L 15 20 L 5 20 Z" fill="#999" />
-                <path d="M 110 25 L 115 20 L 105 20 Z" fill="#999" />
-                <circle cx="70" cy="35" r="12" fill="none" stroke="#c0392b" strokeWidth="2" />
-                <path d="M 65 30 L 75 40 M 75 30 L 65 40" stroke="#c0392b" strokeWidth="2" />
-            </g>
-            
-            {/* Worker 1 - Center Right (Tablet) */}
-            <g transform="translate(240, 160)">
-                <circle cx="10" cy="-30" r="8" fill="#e67e22" /> {/* Helmet */}
-                <path d="M 2 -32 C 10 -35 15 -30 18 -32" stroke="#d35400" strokeWidth="2" fill="none" />
-                <rect x="0" y="-20" width="20" height="35" rx="4" fill="#555" /> {/* Body */}
-                <rect x="0" y="-10" width="20" height="15" fill="#e67e22" opacity="0.8" /> {/* Vest */}
-                <rect x="4" y="10" width="5" height="25" fill="#444" rx="2" /> {/* Leg 1 */}
-                <rect x="11" y="10" width="5" height="25" fill="#444" rx="2" /> {/* Leg 2 */}
-                {/* Arm & Tablet */}
-                <line x1="5" y1="-15" x2="-10" y2="-5" stroke="#555" strokeWidth="5" strokeLinecap="round" />
-                <line x1="-10" y1="-5" x2="0" y2="5" stroke="#555" strokeWidth="5" strokeLinecap="round" />
-                <line x1="15" y1="-15" x2="25" y2="-5" stroke="#555" strokeWidth="5" strokeLinecap="round" />
-                <line x1="25" y1="-5" x2="15" y2="5" stroke="#555" strokeWidth="5" strokeLinecap="round" />
-                <rect x="-5" y="0" width="15" height="20" fill="#2c3e50" transform="rotate(-30 0 0)" rx="1" />
-            </g>
-
-            {/* Worker 2 - Bottom Left (Pickaxe) */}
-            <g transform="translate(100, 200)">
-                <circle cx="10" cy="-30" r="8" fill="#e67e22" />
-                <path d="M 2 -32 C 10 -35 15 -30 18 -32" stroke="#d35400" strokeWidth="2" fill="none" />
-                <rect x="0" y="-20" width="20" height="30" rx="4" fill="#555" />
-                <rect x="0" y="-10" width="20" height="15" fill="#e67e22" opacity="0.8" />
-                <rect x="4" y="10" width="5" height="20" fill="#444" rx="2" transform="rotate(-15 4 10)" />
-                <rect x="11" y="10" width="5" height="20" fill="#444" rx="2" transform="rotate(15 11 10)" />
-                {/* Pickaxe */}
-                <line x1="10" y1="-15" x2="30" y2="-30" stroke="#555" strokeWidth="5" strokeLinecap="round" />
-                <line x1="30" y1="-30" x2="40" y2="-20" stroke="#8b4513" strokeWidth="3" />
-                <line x1="35" y1="-35" x2="45" y2="-15" stroke="#95a5a6" strokeWidth="4" strokeLinecap="round" />
-                <path d="M 33 -33 C 40 -40 48 -25 47 -13" stroke="#95a5a6" strokeWidth="3" fill="none" />
-            </g>
-
-            {/* Worker 3 - Bottom Right (Cart) */}
-            <g transform="translate(280, 220)">
-                <circle cx="10" cy="-30" r="8" fill="#e67e22" />
-                <path d="M 2 -32 C 10 -35 15 -30 18 -32" stroke="#d35400" strokeWidth="2" fill="none" />
-                <rect x="0" y="-20" width="20" height="30" rx="4" fill="#555" />
-                <rect x="0" y="-10" width="20" height="15" fill="#e67e22" opacity="0.8" />
-                <rect x="4" y="10" width="5" height="20" fill="#444" rx="2" />
-                <rect x="11" y="10" width="5" height="20" fill="#444" rx="2" />
-                {/* Cart */}
-                <rect x="-40" y="10" width="35" height="20" fill="#34495e" rx="2" />
-                <circle cx="-30" cy="30" r="5" fill="#2c3e50" />
-                <circle cx="-10" cy="30" r="5" fill="#2c3e50" />
-                <line x1="5" y1="-15" x2="-20" y2="10" stroke="#555" strokeWidth="5" strokeLinecap="round" />
-                {/* Coal */}
-                <circle cx="-35" cy="8" r="4" fill="#111" />
-                <circle cx="-25" cy="5" r="5" fill="#222" />
-                <circle cx="-15" cy="7" r="4" fill="#111" />
-            </g>
-        </svg>
+    <div className="lp-blobs" aria-hidden="true">
+      <div className="lp-blob lp-blob-1"/>
+      <div className="lp-blob lp-blob-2"/>
+      <div className="lp-blob lp-blob-3"/>
+      <div className="lp-blob lp-blob-4"/>
     </div>
-  )
+  );
 }
 
-
-
-function BackgroundPattern() {
-    return (
-        <div className="bg-pattern-container">
-            <div className="bg-shape circle-1"></div>
-            <div className="bg-shape circle-2"></div>
-            <div className="bg-shape circle-3"></div>
-            <div className="bg-shape triangle-1"></div>
-            <div className="bg-shape cross-1"></div>
-            <div className="bg-shape dots-1"></div>
-            <div className="bg-shape dots-2"></div>
-        </div>
-    )
-}
-
-function LoginPage() {
-  const { login } = useAuth();
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-  });
-  const [error, setError] = useState("");
+/* ── Main Component ── */
+export default function LoginPage() {
+  const { login, registerAndLogin } = useAuth();
+  const [mode, setMode] = useState("login"); // "login" | "register"
+  const [showPw, setShowPw] = useState(false);
+  const [showPw2, setShowPw2] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  /* login fields */
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  /* register extra fields */
+  const [name, setName] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+
+  const switchMode = (m) => {
+    setMode(m);
+    setError("");
   };
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+    if (!email || !password) { setError("Email dan password wajib diisi."); return; }
     setLoading(true);
-
     try {
-      // The context login likely takes email and password, 
-      // but if we only have a username field as per design, we pass it as the first argument.
-      // E-TrashHub or PalmTrack context may have specific needs.
-      await login(formData.username, formData.password);
+      await login(email, password);
     } catch (err) {
-      setError(err.message);
+      setError(err.message === "UNAUTHORIZED"
+        ? "Email atau password salah."
+        : err.message || "Login gagal, coba lagi.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (!name || !email || !password || !confirmPw) {
+      setError("Semua field wajib diisi."); return;
+    }
+    if (password !== confirmPw) {
+      setError("Konfirmasi password tidak cocok."); return;
+    }
+    if (password.length < 8) {
+      setError("Password minimal 8 karakter."); return;
+    }
+    setLoading(true);
+    try {
+      await registerAndLogin({ name, email, password });
+    } catch (err) {
+      setError(err.message || "Registrasi gagal, coba lagi.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="coal-login-wrapper">
-      <BackgroundPattern />
-      <div className="coal-login-card">
-        {/* Left Side */}
-        <div className="coal-login-left">
-          <div className="coal-brand">
-            <CoalChainLogo />
-            <h1>Palm Chain</h1>
+    <div className="lp-root">
+      <Blobs />
+
+      {/* ── Left panel ── */}
+      <div className="lp-hero">
+        <div className="lp-hero-inner">
+          <div className="lp-logo-wrap">
+            <div className="lp-logo-icon">
+              <IconLeaf />
+            </div>
+            <span className="lp-logo-text">PalmChain</span>
           </div>
-          <MiningIllustration />
+          <h1 className="lp-hero-title">
+            Palm Oil<br />Supply Chain<br />Monitoring
+          </h1>
+          <p className="lp-hero-sub">
+            Kelola hauling, vendor, dan transaksi<br />
+            perkebunan kelapa sawit dalam satu platform.
+          </p>
+          <div className="lp-stats">
+            <div className="lp-stat"><span className="lp-stat-num">99.9%</span><span className="lp-stat-label">Uptime</span></div>
+            <div className="lp-stat-divider"/>
+            <div className="lp-stat"><span className="lp-stat-num">Real-time</span><span className="lp-stat-label">Monitoring</span></div>
+            <div className="lp-stat-divider"/>
+            <div className="lp-stat"><span className="lp-stat-num">Secure</span><span className="lp-stat-label">JWT Auth</span></div>
+          </div>
         </div>
+      </div>
 
-        {/* Right Side */}
-        <div className="coal-login-right">
-          <div className="coal-login-form-container">
-            <h2 className="coal-login-title">Login</h2>
-            
-            {error && <div className="coal-login-error">{error}</div>}
-
-            <form onSubmit={handleSubmit} className="coal-form">
-              <div className="coal-input-group">
-                <div className="coal-input-icon">
-                    <UserIcon />
-                </div>
-                <input
-                  type="text"
-                  name="username"
-                  placeholder="Username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <div className="coal-input-group">
-                <div className="coal-input-icon">
-                    <LockIcon />
-                </div>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-                <button
-                  type="button"
-                  className="coal-pw-toggle"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                </button>
-              </div>
-
-              <button type="submit" className="coal-submit-btn" disabled={loading}>
-                {loading ? "Logging in..." : "Login"}
-              </button>
-            </form>
-
-            <button className="coal-download-btn" type="button">
-                <AndroidIcon />
-                <div className="coal-download-divider"></div>
-                <div className="coal-download-text">
-                    <span className="small-text">Download</span>
-                    <span className="large-text">Android Apps</span>
-                </div>
+      {/* ── Right panel ── */}
+      <div className="lp-form-panel">
+        <div className="lp-card">
+          {/* Tab switcher */}
+          <div className="lp-tabs">
+            <button
+              id="tab-login"
+              className={`lp-tab ${mode === "login" ? "lp-tab--active" : ""}`}
+              onClick={() => switchMode("login")}
+              type="button"
+            >
+              Masuk
             </button>
+            <button
+              id="tab-register"
+              className={`lp-tab ${mode === "register" ? "lp-tab--active" : ""}`}
+              onClick={() => switchMode("register")}
+              type="button"
+            >
+              Daftar
+            </button>
+            <div className={`lp-tab-indicator ${mode === "register" ? "lp-tab-indicator--right" : ""}`}/>
           </div>
+
+          {/* Error alert */}
+          {error && (
+            <div className="lp-alert" role="alert">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{width:16,height:16,flexShrink:0}}>
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* ── LOGIN FORM ── */}
+          {mode === "login" && (
+            <form id="form-login" className="lp-form" onSubmit={handleLogin} noValidate>
+              <p className="lp-greeting">Selamat datang kembali 👋</p>
+
+              <div className="lp-field">
+                <label htmlFor="login-email" className="lp-label">Email</label>
+                <div className="lp-input-wrap">
+                  <span className="lp-input-icon"><IconMail /></span>
+                  <input
+                    id="login-email"
+                    type="email"
+                    className="lp-input"
+                    placeholder="nama@email.com"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    autoComplete="email"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="lp-field">
+                <label htmlFor="login-password" className="lp-label">Password</label>
+                <div className="lp-input-wrap">
+                  <span className="lp-input-icon"><IconLock /></span>
+                  <input
+                    id="login-password"
+                    type={showPw ? "text" : "password"}
+                    className="lp-input lp-input--pw"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="lp-pw-toggle"
+                    onClick={() => setShowPw(v => !v)}
+                    aria-label={showPw ? "Sembunyikan password" : "Tampilkan password"}
+                  >
+                    {showPw ? <IconEyeOff /> : <IconEye />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                id="btn-login"
+                type="submit"
+                className="lp-btn-primary"
+                disabled={loading}
+              >
+                {loading ? <span className="lp-spinner"/> : null}
+                {loading ? "Memproses…" : "Masuk"}
+              </button>
+
+              <p className="lp-switch-hint">
+                Belum punya akun?{" "}
+                <button type="button" className="lp-link" onClick={() => switchMode("register")}>
+                  Daftar sekarang
+                </button>
+              </p>
+            </form>
+          )}
+
+          {/* ── REGISTER FORM ── */}
+          {mode === "register" && (
+            <form id="form-register" className="lp-form" onSubmit={handleRegister} noValidate>
+              <p className="lp-greeting">Buat akun baru ✨</p>
+
+              <div className="lp-field">
+                <label htmlFor="reg-name" className="lp-label">Nama Lengkap</label>
+                <div className="lp-input-wrap">
+                  <span className="lp-input-icon"><IconUser /></span>
+                  <input
+                    id="reg-name"
+                    type="text"
+                    className="lp-input"
+                    placeholder="Nama kamu"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    autoComplete="name"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="lp-field">
+                <label htmlFor="reg-email" className="lp-label">Email</label>
+                <div className="lp-input-wrap">
+                  <span className="lp-input-icon"><IconMail /></span>
+                  <input
+                    id="reg-email"
+                    type="email"
+                    className="lp-input"
+                    placeholder="nama@email.com"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    autoComplete="email"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="lp-field">
+                <label htmlFor="reg-password" className="lp-label">
+                  Password
+                  <span className="lp-label-hint">min. 8 karakter + angka + simbol</span>
+                </label>
+                <div className="lp-input-wrap">
+                  <span className="lp-input-icon"><IconLock /></span>
+                  <input
+                    id="reg-password"
+                    type={showPw ? "text" : "password"}
+                    className="lp-input lp-input--pw"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    autoComplete="new-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="lp-pw-toggle"
+                    onClick={() => setShowPw(v => !v)}
+                    aria-label={showPw ? "Sembunyikan password" : "Tampilkan password"}
+                  >
+                    {showPw ? <IconEyeOff /> : <IconEye />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="lp-field">
+                <label htmlFor="reg-confirm" className="lp-label">Konfirmasi Password</label>
+                <div className="lp-input-wrap">
+                  <span className="lp-input-icon"><IconLock /></span>
+                  <input
+                    id="reg-confirm"
+                    type={showPw2 ? "text" : "password"}
+                    className={`lp-input lp-input--pw ${confirmPw && confirmPw !== password ? "lp-input--error" : ""}`}
+                    placeholder="••••••••"
+                    value={confirmPw}
+                    onChange={e => setConfirmPw(e.target.value)}
+                    autoComplete="new-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="lp-pw-toggle"
+                    onClick={() => setShowPw2(v => !v)}
+                    aria-label={showPw2 ? "Sembunyikan password" : "Tampilkan password"}
+                  >
+                    {showPw2 ? <IconEyeOff /> : <IconEye />}
+                  </button>
+                </div>
+                {confirmPw && confirmPw !== password && (
+                  <p className="lp-field-error">Password tidak cocok</p>
+                )}
+              </div>
+
+              <button
+                id="btn-register"
+                type="submit"
+                className="lp-btn-primary"
+                disabled={loading}
+              >
+                {loading ? <span className="lp-spinner"/> : null}
+                {loading ? "Mendaftar…" : "Buat Akun"}
+              </button>
+
+              <p className="lp-switch-hint">
+                Sudah punya akun?{" "}
+                <button type="button" className="lp-link" onClick={() => switchMode("login")}>
+                  Masuk
+                </button>
+              </p>
+            </form>
+          )}
         </div>
+
+        <p className="lp-footer">© 2025 PalmChain · Kelompok A AWIT</p>
       </div>
     </div>
   );
 }
-
-export default LoginPage;
