@@ -1,6 +1,6 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, date
 import re
 import uuid
 
@@ -50,8 +50,23 @@ class VendorResponse(VendorBase):
 
 class VendorListResponse(BaseModel):
     """Schema untuk response list vendors"""
-    total: int
-    vendors: List[VendorResponse]
+    success: bool = True
+    data: Optional[List["VendorOption"]] = None
+    total: Optional[int] = None
+    vendors: Optional[List[VendorResponse]] = None
+
+
+class VendorOption(BaseModel):
+    """Schema ringan untuk dropdown vendor"""
+    id: uuid.UUID
+    name: str
+    code: str
+
+
+class VendorOptionListResponse(BaseModel):
+    """Schema untuk response dropdown vendor"""
+    success: bool = True
+    data: List[VendorOption]
 
 
 # ============================================================
@@ -92,8 +107,24 @@ class BlockResponse(BlockBase):
 
 class BlockListResponse(BaseModel):
     """Schema untuk response list blocks"""
-    total: int
-    blocks: List[BlockResponse]
+    success: bool = True
+    data: Optional[List["BlockOption"]] = None
+    total: Optional[int] = None
+    blocks: Optional[List[BlockResponse]] = None
+
+
+class BlockOption(BaseModel):
+    """Schema ringan untuk dropdown block"""
+    id: uuid.UUID
+    name: str
+    code: str
+    area_ha: Optional[float] = None
+
+
+class BlockOptionListResponse(BaseModel):
+    """Schema untuk response dropdown block"""
+    success: bool = True
+    data: List[BlockOption]
 
 
 # ============================================================
@@ -102,45 +133,126 @@ class BlockListResponse(BaseModel):
 
 class HaulingTransactionBase(BaseModel):
     """Base schema untuk Hauling Transaction"""
-    ticket_no: str = Field(..., min_length=1, max_length=20)
-    vehicle_plate: str = Field(..., min_length=1, max_length=15)
-    weight_in: float = Field(..., gt=0)
+    ticket_no: str = Field(..., min_length=1, max_length=100)
+    vehicle_plate: str = Field(..., min_length=1, max_length=20)
+    weight_in: float = Field(..., ge=0, le=9999.999)
     weight_out: float = Field(..., ge=0)
+    transaction_date: date = Field(...)
+    notes: Optional[str] = Field(None, max_length=500)
+
+
+class HaulingTransactionVendorRef(BaseModel):
+    id: uuid.UUID
+    name: str
+    code: str
+
+
+class HaulingTransactionBlockRef(BaseModel):
+    id: uuid.UUID
+    name: str
+    code: str
 
 
 class HaulingTransactionCreate(HaulingTransactionBase):
     """Schema untuk create hauling transaction"""
-    vendor_id: Optional[uuid.UUID] = None
-    block_id: Optional[uuid.UUID] = None
+    vendor_id: uuid.UUID
+    block_id: uuid.UUID
     status: str = Field(default="completed")
+
+    @field_validator("ticket_no")
+    @classmethod
+    def normalize_ticket_no(cls, value):
+        return value.strip()
+
+    @field_validator("vehicle_plate")
+    @classmethod
+    def normalize_vehicle_plate(cls, value):
+        return value.strip().upper()
+
+    @model_validator(mode="after")
+    def validate_business_rules(self):
+        if self.transaction_date > date.today():
+            raise ValueError("Tanggal tidak boleh masa depan")
+        if self.weight_out > self.weight_in:
+            raise ValueError("Weight Out tidak boleh melebihi Weight In")
+        return self
 
 
 class HaulingTransactionUpdate(BaseModel):
     """Schema untuk update hauling transaction"""
+    ticket_no: Optional[str] = Field(None, max_length=100)
+    vehicle_plate: Optional[str] = Field(None, max_length=20)
+    vendor_id: Optional[uuid.UUID] = None
+    block_id: Optional[uuid.UUID] = None
+    weight_in: Optional[float] = Field(None, ge=0, le=9999.999)
+    weight_out: Optional[float] = Field(None, ge=0)
+    transaction_date: Optional[date] = None
+    notes: Optional[str] = Field(None, max_length=500)
     status: Optional[str] = None
     gate_out_time: Optional[datetime] = None
 
+    @field_validator("ticket_no")
+    @classmethod
+    def normalize_ticket_no(cls, value):
+        return value.strip() if value else value
 
-class HaulingTransactionResponse(HaulingTransactionBase):
+    @field_validator("vehicle_plate")
+    @classmethod
+    def normalize_vehicle_plate(cls, value):
+        return value.strip().upper() if value else value
+
+    @model_validator(mode="after")
+    def validate_weight_pair(self):
+        if self.transaction_date is not None and self.transaction_date > date.today():
+            raise ValueError("Tanggal tidak boleh masa depan")
+        if self.weight_in is not None and self.weight_out is not None and self.weight_out > self.weight_in:
+            raise ValueError("Weight Out tidak boleh melebihi Weight In")
+        return self
+
+
+class HaulingTransactionResponse(BaseModel):
     """Schema untuk response hauling transaction"""
     id: uuid.UUID
-    vendor_id: Optional[uuid.UUID] = None
-    block_id: Optional[uuid.UUID] = None
+    ticket_no: str
+    vehicle_plate: str
+    vendor: Optional[HaulingTransactionVendorRef] = None
+    block: Optional[HaulingTransactionBlockRef] = None
+    weight_in: float
+    weight_out: float
     net_weight: float
-    gate_in_time: datetime
-    gate_out_time: Optional[datetime] = None
-    status: str
+    transaction_date: date
+    notes: Optional[str] = None
     created_at: datetime
+    created_by: Optional[str] = None
     updated_at: Optional[datetime] = None
+    updated_by: Optional[str] = None
+    deleted_at: Optional[datetime] = None
+    deleted_by: Optional[str] = None
+    status: Optional[str] = None
+    gate_in_time: Optional[datetime] = None
+    gate_out_time: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+
+class HaulingTransactionMeta(BaseModel):
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
+
+
+class HaulingTransactionEnvelope(BaseModel):
+    success: bool = True
+    data: HaulingTransactionResponse
 
 
 class HaulingTransactionListResponse(BaseModel):
     """Schema untuk response list hauling transactions"""
-    total: int
-    transactions: List[HaulingTransactionResponse]
+    success: bool = True
+    data: List[HaulingTransactionResponse]
+    meta: HaulingTransactionMeta
+
+    class Config:
+        from_attributes = True
 
 
 # ============================================================
@@ -260,6 +372,7 @@ class UserResponse(BaseModel):
     id: int
     email: str
     name: str
+    role: str
     is_active: bool
     created_at: datetime
 

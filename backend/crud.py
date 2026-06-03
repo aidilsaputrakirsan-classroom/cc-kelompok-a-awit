@@ -1,8 +1,9 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_, func, and_
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date, timezone
 import uuid
-from models import MasterVendor, MasterBlock, HaulingTransaction, User, Item
+from fastapi.encoders import jsonable_encoder
+from models import MasterVendor, MasterBlock, HaulingTransaction, HaulingTransactionLog, User, Item
 from schemas import (
     VendorCreate, VendorUpdate, BlockCreate, BlockUpdate,
     HaulingTransactionCreate, HaulingTransactionUpdate, UserCreate,
@@ -120,6 +121,20 @@ def delete_vendor(db: Session, vendor_id: uuid.UUID) -> bool:
     return True
 
 
+def get_vendor_options(db: Session):
+    """Ambil vendor aktif dalam format ringkas untuk dropdown."""
+    vendors = (
+        db.query(MasterVendor)
+        .filter(MasterVendor.status.is_(True))
+        .order_by(MasterVendor.name.asc())
+        .all()
+    )
+    return [
+        {"id": vendor.id, "name": vendor.name, "code": vendor.code}
+        for vendor in vendors
+    ]
+
+
 # ==================== BLOCK CRUD ====================
 
 def create_block(db: Session, block_data: BlockCreate) -> MasterBlock:
@@ -198,91 +213,329 @@ def delete_block(db: Session, block_id: uuid.UUID) -> bool:
     return True
 
 
+def get_block_options(db: Session):
+    """Ambil block aktif dalam format ringkas untuk dropdown."""
+    blocks = (
+        db.query(MasterBlock)
+        .filter(MasterBlock.status.is_(True))
+        .order_by(MasterBlock.block_code.asc())
+        .all()
+    )
+    return [
+        {"id": block.id, "name": block.division or block.block_code, "code": block.block_code, "area_ha": block.hectarage}
+        for block in blocks
+    ]
+
+
 # ==================== HAULING TRANSACTION CRUD ====================
 
-def create_hauling_transaction(db: Session, hauling_data: HaulingTransactionCreate) -> HaulingTransaction:
-    """Buat hauling transaction baru di database."""
-    # Check if ticket_no already exists
-    existing = db.query(HaulingTransaction).filter(HaulingTransaction.ticket_no == hauling_data.ticket_no).first()
-    if existing:
+def _normalize_ticket_no(value: str) -> str:
+    return value.strip()
+
+
+def _normalize_vehicle_plate(value: str) -> str:
+    return value.strip().upper()
+
+
+def _get_user_name(db: Session, user_id: int | None) -> str | None:
+    if user_id is None:
         return None
-    
+    user = db.query(User).filter(User.id == user_id).first()
+    return user.name if user else None
+
+
+def _serialize_hauling(db: Session, hauling: HaulingTransaction) -> dict:
+    return {
+        "id": hauling.id,
+        "ticket_no": hauling.ticket_no,
+        "vehicle_plate": hauling.vehicle_plate,
+        "vendor": None if hauling.vendor is None else {
+            "id": hauling.vendor.id,
+            "name": hauling.vendor.name,
+            "code": hauling.vendor.code,
+        },
+        "block": None if hauling.block is None else {
+            "id": hauling.block.id,
+            "name": hauling.block.division or hauling.block.block_code,
+            "code": hauling.block.block_code,
+        },
+        "weight_in": hauling.weight_in,
+        "weight_out": hauling.weight_out,
+        "net_weight": hauling.net_weight,
+        "transaction_date": hauling.transaction_date,
+        "notes": hauling.notes,
+        "created_at": hauling.created_at,
+        "created_by": _get_user_name(db, hauling.created_by),
+        "updated_at": hauling.updated_at,
+        "updated_by": _get_user_name(db, hauling.updated_by),
+        "deleted_at": hauling.deleted_at,
+        "deleted_by": _get_user_name(db, hauling.deleted_by),
+        "status": hauling.status,
+        "gate_in_time": hauling.gate_in_time,
+        "gate_out_time": hauling.gate_out_time,
+    }
+
+
+def _audit_hauling_change(
+    db: Session,
+    hauling_id: uuid.UUID,
+    action: str,
+    performed_by: int,
+    changed_fields: dict | None = None,
+    old_values: dict | None = None,
+    new_values: dict | None = None,
+    ip_address: str | None = None,
+    user_agent: str | None = None,
+) -> None:
+    db_log = HaulingTransactionLog(
+        transaction_id=hauling_id,
+        action=action,
+        changed_fields=jsonable_encoder(changed_fields) if changed_fields is not None else None,
+        old_values=jsonable_encoder(old_values) if old_values is not None else None,
+        new_values=jsonable_encoder(new_values) if new_values is not None else None,
+        performed_by=performed_by,
+        ip_address=ip_address,
+        user_agent=user_agent,
+    )
+    db.add(db_log)
+
+
+def _base_hauling_query(db: Session):
+    return db.query(HaulingTransaction).options(
+        joinedload(HaulingTransaction.vendor),
+        joinedload(HaulingTransaction.block),
+    ).filter(HaulingTransaction.deleted_at.is_(None))
+
+
+def _validate_ticket_unique(db: Session, ticket_no: str, hauling_id: uuid.UUID | None = None) -> bool:
+    query = db.query(HaulingTransaction).filter(
+        func.lower(HaulingTransaction.ticket_no) == ticket_no.lower(),
+        HaulingTransaction.deleted_at.is_(None),
+    )
+    if hauling_id is not None:
+        query = query.filter(HaulingTransaction.id != hauling_id)
+    return query.first() is None
+
+
+def _validate_vendor_block(db: Session, vendor_id: uuid.UUID, block_id: uuid.UUID) -> tuple[MasterVendor | None, MasterBlock | None]:
+    vendor = db.query(MasterVendor).filter(MasterVendor.id == vendor_id, MasterVendor.status.is_(True)).first()
+    block = db.query(MasterBlock).filter(MasterBlock.id == block_id, MasterBlock.status.is_(True)).first()
+    return vendor, block
+
+
+def create_hauling_transaction(
+    db: Session,
+    hauling_data: HaulingTransactionCreate,
+    created_by: User,
+    ip_address: str | None = None,
+    user_agent: str | None = None,
+):
+    """Buat hauling transaction baru di database."""
+    ticket_no = _normalize_ticket_no(hauling_data.ticket_no)
+    vehicle_plate = _normalize_vehicle_plate(hauling_data.vehicle_plate)
+
+    if not _validate_ticket_unique(db, ticket_no):
+        return None, "duplicate_ticket"
+
+    vendor, block = _validate_vendor_block(db, hauling_data.vendor_id, hauling_data.block_id)
+    if vendor is None:
+        return None, "invalid_vendor"
+    if block is None:
+        return None, "invalid_block"
+
+    if hauling_data.weight_out > hauling_data.weight_in:
+        return None, "invalid_weight"
+
     db_hauling = HaulingTransaction(
-        **hauling_data.model_dump()
+        ticket_no=ticket_no,
+        vehicle_plate=vehicle_plate,
+        vendor_id=hauling_data.vendor_id,
+        block_id=hauling_data.block_id,
+        weight_in=hauling_data.weight_in,
+        weight_out=hauling_data.weight_out,
+        net_weight=round(hauling_data.weight_in - hauling_data.weight_out, 3),
+        transaction_date=hauling_data.transaction_date,
+        notes=hauling_data.notes,
+        status=hauling_data.status,
+        gate_in_time=datetime.combine(hauling_data.transaction_date, datetime.min.time()).replace(tzinfo=timezone.utc),
+        created_by=created_by.id,
+        updated_by=created_by.id,
     )
     db.add(db_hauling)
+    db.flush()
+    _audit_hauling_change(
+        db,
+        db_hauling.id,
+        "CREATE",
+        created_by.id,
+        new_values=_serialize_hauling(db, db_hauling),
+        ip_address=ip_address,
+        user_agent=user_agent,
+    )
     db.commit()
     db.refresh(db_hauling)
-    return db_hauling
+    return _serialize_hauling(db, db_hauling), None
 
 
-def get_hauling_transactions(db: Session, skip: int = 0, limit: int = 20, 
-                            vendor_id: uuid.UUID = None, block_id: uuid.UUID = None,
-                            status: str = None, search: str = None):
-    """
-    Ambil daftar hauling transactions dengan pagination & filter.
-    - skip: jumlah data yang di-skip
-    - limit: jumlah data per halaman
-    - vendor_id: filter by vendor
-    - block_id: filter by block
-    - status: filter by transaction status
-    - search: cari berdasarkan ticket_no atau vehicle_plate
-    """
-    query = db.query(HaulingTransaction)
-    
+def get_hauling_transactions(
+    db: Session,
+    page: int = 1,
+    per_page: int = 20,
+    ticket_no: str | None = None,
+    vendor_id: uuid.UUID | None = None,
+    block_id: uuid.UUID | None = None,
+    date_from: date | None = None,
+    date_to: date | None = None,
+    sort_by: str = "transaction_date",
+    sort_dir: str = "desc",
+):
+    """Ambil daftar hauling transactions dengan pagination, filter, dan sort."""
+    query = _base_hauling_query(db)
+
+    if ticket_no:
+        query = query.filter(HaulingTransaction.ticket_no.ilike(f"%{ticket_no.strip()}%"))
     if vendor_id:
         query = query.filter(HaulingTransaction.vendor_id == vendor_id)
-    
     if block_id:
         query = query.filter(HaulingTransaction.block_id == block_id)
-    
-    if status:
-        query = query.filter(HaulingTransaction.status == status)
-    
-    if search:
-        query = query.filter(
-            or_(
-                HaulingTransaction.ticket_no.ilike(f"%{search}%"),
-                HaulingTransaction.vehicle_plate.ilike(f"%{search}%")
-            )
-        )
-    
+    if date_from:
+        query = query.filter(HaulingTransaction.transaction_date >= date_from)
+    if date_to:
+        query = query.filter(HaulingTransaction.transaction_date <= date_to)
+
+    sort_map = {
+        "ticket_no": HaulingTransaction.ticket_no,
+        "vendor_name": MasterVendor.name,
+        "block_code": MasterBlock.block_code,
+        "weight_in": HaulingTransaction.weight_in,
+        "weight_out": HaulingTransaction.weight_out,
+        "net_weight": HaulingTransaction.net_weight,
+        "transaction_date": HaulingTransaction.transaction_date,
+    }
+    sort_column = sort_map.get(sort_by, HaulingTransaction.transaction_date)
+    if sort_by in {"vendor_name", "block_code"}:
+        query = query.join(HaulingTransaction.vendor).join(HaulingTransaction.block)
+
+    if sort_dir.lower() == "asc":
+        query = query.order_by(sort_column.asc())
+    else:
+        query = query.order_by(sort_column.desc())
+
     total = query.count()
-    transactions = query.order_by(HaulingTransaction.gate_in_time.desc()).offset(skip).limit(limit).all()
-    
-    return {"total": total, "transactions": transactions}
+    offset = max(page - 1, 0) * per_page
+    transactions = query.offset(offset).limit(per_page).all()
+    total_pages = max((total + per_page - 1) // per_page, 1) if total else 0
+
+    return {
+        "success": True,
+        "data": [_serialize_hauling(db, hauling) for hauling in transactions],
+        "meta": {
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "total_pages": total_pages,
+        },
+    }
 
 
-def get_hauling_transaction(db: Session, hauling_id: uuid.UUID) -> HaulingTransaction | None:
+def get_hauling_transaction(db: Session, hauling_id: uuid.UUID):
     """Ambil satu hauling transaction berdasarkan ID."""
-    return db.query(HaulingTransaction).filter(HaulingTransaction.id == hauling_id).first()
+    hauling = _base_hauling_query(db).filter(HaulingTransaction.id == hauling_id).first()
+    return None if hauling is None else _serialize_hauling(db, hauling)
 
 
-def update_hauling_transaction(db: Session, hauling_id: uuid.UUID, 
-                               hauling_data: HaulingTransactionUpdate) -> HaulingTransaction | None:
+def update_hauling_transaction(
+    db: Session,
+    hauling_id: uuid.UUID,
+    hauling_data: HaulingTransactionUpdate,
+    updated_by: User,
+    ip_address: str | None = None,
+    user_agent: str | None = None,
+):
     """Update hauling transaction berdasarkan ID."""
-    db_hauling = db.query(HaulingTransaction).filter(HaulingTransaction.id == hauling_id).first()
-    
+    db_hauling = _base_hauling_query(db).filter(HaulingTransaction.id == hauling_id).first()
     if not db_hauling:
-        return None
-    
+        return None, "not_found"
+
     update_data = hauling_data.model_dump(exclude_unset=True)
+    if "ticket_no" in update_data:
+        update_data["ticket_no"] = _normalize_ticket_no(update_data["ticket_no"])
+        if not _validate_ticket_unique(db, update_data["ticket_no"], hauling_id=hauling_id):
+            return None, "duplicate_ticket"
+    if "vehicle_plate" in update_data:
+        update_data["vehicle_plate"] = _normalize_vehicle_plate(update_data["vehicle_plate"])
+
+    if "vendor_id" in update_data or "block_id" in update_data:
+        vendor_id = update_data.get("vendor_id", db_hauling.vendor_id)
+        block_id = update_data.get("block_id", db_hauling.block_id)
+        vendor, block = _validate_vendor_block(db, vendor_id, block_id)
+        if vendor is None:
+            return None, "invalid_vendor"
+        if block is None:
+            return None, "invalid_block"
+
+    old_values = {}
+    changed_fields = {}
     for field, value in update_data.items():
-        setattr(db_hauling, field, value)
-    
+        current_value = getattr(db_hauling, field)
+        if current_value != value:
+            old_values[field] = current_value
+            changed_fields[field] = value
+            setattr(db_hauling, field, value)
+
+    if "weight_in" in update_data or "weight_out" in update_data:
+        weight_in = update_data.get("weight_in", db_hauling.weight_in)
+        weight_out = update_data.get("weight_out", db_hauling.weight_out)
+        if weight_out > weight_in:
+            return None, "invalid_weight"
+        db_hauling.net_weight = round(weight_in - weight_out, 3)
+        changed_fields["net_weight"] = db_hauling.net_weight
+
+    if "transaction_date" in update_data:
+        db_hauling.gate_in_time = datetime.combine(update_data["transaction_date"], datetime.min.time()).replace(tzinfo=timezone.utc)
+        changed_fields["gate_in_time"] = db_hauling.gate_in_time
+
+    db_hauling.updated_by = updated_by.id
+
+    _audit_hauling_change(
+        db,
+        db_hauling.id,
+        "UPDATE",
+        updated_by.id,
+        changed_fields=changed_fields or None,
+        old_values=old_values or None,
+        new_values=update_data,
+        ip_address=ip_address,
+        user_agent=user_agent,
+    )
     db.commit()
     db.refresh(db_hauling)
-    return db_hauling
+    return _serialize_hauling(db, db_hauling), None
 
 
-def delete_hauling_transaction(db: Session, hauling_id: uuid.UUID) -> bool:
-    """Hapus hauling transaction berdasarkan ID. Return True jika berhasil."""
-    db_hauling = db.query(HaulingTransaction).filter(HaulingTransaction.id == hauling_id).first()
-    
+def delete_hauling_transaction(
+    db: Session,
+    hauling_id: uuid.UUID,
+    deleted_by: User,
+    ip_address: str | None = None,
+    user_agent: str | None = None,
+) -> bool:
+    """Soft delete hauling transaction berdasarkan ID."""
+    db_hauling = _base_hauling_query(db).filter(HaulingTransaction.id == hauling_id).first()
     if not db_hauling:
         return False
-    
-    db.delete(db_hauling)
+
+    db_hauling.deleted_at = datetime.now(timezone.utc)
+    db_hauling.deleted_by = deleted_by.id
+    _audit_hauling_change(
+        db,
+        db_hauling.id,
+        "DELETE",
+        deleted_by.id,
+        old_values=_serialize_hauling(db, db_hauling),
+        ip_address=ip_address,
+        user_agent=user_agent,
+    )
     db.commit()
     return True
 
@@ -370,35 +623,6 @@ def delete_item(db: Session, item_id: uuid.UUID) -> bool:
     return True
 
 
-def get_item_stats(db: Session) -> dict:
-    """
-    Dapatkan statistik items.
-    - total_items: total semua items (aktif)
-    - total_categories: jumlah kategori unik
-    - items_by_category: breakdown items per kategori
-    """
-    # Total items aktif
-    total_items = db.query(Item).filter(Item.status == True).count()
-    
-    # Total kategori unik
-    total_categories = db.query(Item.category).filter(Item.status == True).distinct().count()
-    
-    # Items per kategori
-    items_by_category = db.query(Item.category, func.count(Item.id)).filter(
-        Item.status == True
-    ).group_by(Item.category).all()
-    
-    category_breakdown = {
-        cat or "Uncategorized": count for cat, count in items_by_category
-    }
-    
-    return {
-        "total_items": total_items,
-        "total_categories": total_categories,
-        "items_by_category": category_breakdown
-    }
-
-
 # ==================== DASHBOARD STATS ====================
 
 def get_hauling_stats_today(db: Session) -> dict:
@@ -408,21 +632,23 @@ def get_hauling_stats_today(db: Session) -> dict:
     - total_tonage: Total net_weight hari ini
     - avg_tonage: Rata-rata net_weight hari ini
     """
-    today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_start = datetime.now().date()
     today_end = today_start + timedelta(days=1)
     
     query = db.query(HaulingTransaction).filter(
         and_(
-            HaulingTransaction.gate_in_time >= today_start,
-            HaulingTransaction.gate_in_time < today_end
+            HaulingTransaction.deleted_at.is_(None),
+            HaulingTransaction.transaction_date >= today_start,
+            HaulingTransaction.transaction_date < today_end
         )
     )
     
     total_transactions = query.count()
     total_tonage = db.query(func.sum(HaulingTransaction.net_weight)).filter(
         and_(
-            HaulingTransaction.gate_in_time >= today_start,
-            HaulingTransaction.gate_in_time < today_end
+            HaulingTransaction.deleted_at.is_(None),
+            HaulingTransaction.transaction_date >= today_start,
+            HaulingTransaction.transaction_date < today_end
         )
     ).scalar() or 0
     
@@ -444,17 +670,19 @@ def get_hauling_stats_mtd(db: Session, target_tonage: float = 500.0) -> dict:
     - achievement_percentage: Persentase achievement (actual/target * 100)
     """
     now = datetime.now()
-    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    month_start = now.date().replace(day=1)
     
     query = db.query(HaulingTransaction).filter(
-        HaulingTransaction.gate_in_time >= month_start,
-        HaulingTransaction.gate_in_time <= now
+        HaulingTransaction.deleted_at.is_(None),
+        HaulingTransaction.transaction_date >= month_start,
+        HaulingTransaction.transaction_date <= now.date()
     )
     
     total_transactions = query.count()
     total_tonage = db.query(func.sum(HaulingTransaction.net_weight)).filter(
-        HaulingTransaction.gate_in_time >= month_start,
-        HaulingTransaction.gate_in_time <= now
+        HaulingTransaction.deleted_at.is_(None),
+        HaulingTransaction.transaction_date >= month_start,
+        HaulingTransaction.transaction_date <= now.date()
     ).scalar() or 0
     
     achievement_percentage = (total_tonage / target_tonage * 100) if target_tonage > 0 else 0

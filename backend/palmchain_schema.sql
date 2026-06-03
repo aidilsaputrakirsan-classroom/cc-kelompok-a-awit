@@ -30,25 +30,56 @@ CREATE TABLE IF NOT EXISTS master_blocks (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 3. Tabel Transaksi Hauling
+-- 3. Tabel Users
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'operator',
+    hashed_password VARCHAR(255) NOT NULL,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 4. Tabel Transaksi Hauling
 -- Menampung log setiap pengangkutan TBS dari blok ke PKS
 CREATE TABLE IF NOT EXISTS hauling_transactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    ticket_no VARCHAR(20) UNIQUE NOT NULL,
+    ticket_no VARCHAR(100) UNIQUE NOT NULL,
     vendor_id UUID REFERENCES master_vendors(id) ON DELETE SET NULL,
     block_id UUID REFERENCES master_blocks(id) ON DELETE SET NULL,
-    vehicle_plate VARCHAR(15) NOT NULL,
+    vehicle_plate VARCHAR(20) NOT NULL,
     weight_in DECIMAL(10,2) NOT NULL,
     weight_out DECIMAL(10,2) NOT NULL,
     net_weight DECIMAL(10,2) GENERATED ALWAYS AS (weight_in - weight_out) STORED,
+    transaction_date DATE,
+    notes TEXT,
     gate_in_time TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     gate_out_time TIMESTAMP WITH TIME ZONE,
     status VARCHAR(20) DEFAULT 'completed',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_by INTEGER REFERENCES users(id),
+    updated_by INTEGER REFERENCES users(id),
+    deleted_at TIMESTAMP WITH TIME ZONE,
+    deleted_by INTEGER REFERENCES users(id)
 );
 
--- 4. Tabel Items
+-- 5. Tabel Audit Log Transaksi Hauling
+CREATE TABLE IF NOT EXISTS hauling_transaction_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    transaction_id UUID NOT NULL REFERENCES hauling_transactions(id),
+    action VARCHAR(20) NOT NULL,
+    changed_fields JSONB,
+    old_values JSONB,
+    new_values JSONB,
+    performed_by INTEGER NOT NULL REFERENCES users(id),
+    performed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    ip_address INET,
+    user_agent TEXT
+);
+
+-- 6. Tabel Items
 -- Menampung master data item dengan kategori
 CREATE TABLE IF NOT EXISTS items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -70,6 +101,10 @@ CREATE INDEX IF NOT EXISTS idx_hauling_date ON hauling_transactions(gate_in_time
 CREATE INDEX IF NOT EXISTS idx_hauling_vendor ON hauling_transactions(vendor_id);
 CREATE INDEX IF NOT EXISTS idx_hauling_block ON hauling_transactions(block_id);
 CREATE INDEX IF NOT EXISTS idx_hauling_status ON hauling_transactions(status);
+CREATE INDEX IF NOT EXISTS idx_hauling_transaction_date ON hauling_transactions(transaction_date);
+CREATE INDEX IF NOT EXISTS idx_hauling_deleted_at ON hauling_transactions(deleted_at);
+CREATE INDEX IF NOT EXISTS idx_hauling_ticket_no ON hauling_transactions(ticket_no);
+CREATE INDEX IF NOT EXISTS idx_hauling_transaction_logs_transaction_id ON hauling_transaction_logs(transaction_id);
 
 -- Index untuk items
 CREATE INDEX IF NOT EXISTS idx_items_category ON items(category);

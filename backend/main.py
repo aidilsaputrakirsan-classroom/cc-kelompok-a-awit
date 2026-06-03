@@ -1,8 +1,15 @@
 import os
+from io import BytesIO
+from datetime import date, datetime, timedelta
+from collections import defaultdict, deque
 from dotenv import load_dotenv
-from fastapi import FastAPI, Depends, HTTPException, Query, Form
+from fastapi import FastAPI, Depends, HTTPException, Query, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.responses import StreamingResponse
+from fastapi.exceptions import RequestValidationError
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 from database import engine, get_db
 from models import Base, User, MasterVendor, MasterBlock, HaulingTransaction, Item
@@ -11,17 +18,47 @@ from schemas import (
     VendorCreate, VendorUpdate, VendorResponse, VendorListResponse,
     BlockCreate, BlockUpdate, BlockResponse, BlockListResponse,
     HaulingTransactionCreate, HaulingTransactionUpdate, HaulingTransactionResponse, HaulingTransactionListResponse,
+    HaulingTransactionEnvelope,
     DashboardResponse, DashboardTodayStats, DashboardMTDStats,
     UserCreate, UserResponse, LoginRequest, TokenResponse,
     ItemCreate, ItemUpdate, ItemResponse, ItemListResponse,
 )
-from auth import create_access_token, get_current_user
+from auth import create_access_token, get_current_user, require_roles
 import crud
 
 load_dotenv()
 
 # Buat semua tabel
 Base.metadata.create_all(bind=engine)
+
+
+def ensure_hauling_schema() -> None:
+    """Tambahkan kolom/objek hauling baru jika database sudah terlanjur ada."""
+    ddl_statements = [
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'operator'",
+        "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS transaction_date DATE",
+        "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS notes TEXT",
+        "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS created_by INTEGER",
+        "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS updated_by INTEGER",
+        "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE",
+        "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS deleted_by INTEGER",
+        "ALTER TABLE hauling_transactions ALTER COLUMN ticket_no TYPE VARCHAR(100)",
+        "ALTER TABLE hauling_transactions ALTER COLUMN vehicle_plate TYPE VARCHAR(20)",
+    ]
+
+    with engine.begin() as connection:
+        for statement in ddl_statements:
+            try:
+                connection.execute(text(statement))
+            except Exception:
+                pass
+
+
+ensure_hauling_schema()
+
+EXPORT_RATE_LIMIT_WINDOW_SECONDS = 60
+EXPORT_RATE_LIMIT_MAX_REQUESTS = 10
+export_request_history: dict[int, deque[datetime]] = defaultdict(deque)
 
 app = FastAPI(
     title="PalmChain API",
@@ -40,6 +77,43 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def _error_payload(status_code: int, message: str, code: str | None = None, errors: dict | None = None):
+    payload = {"success": False, "message": message}
+    if code:
+        payload["code"] = code
+    if errors:
+        payload["errors"] = errors
+    return JSONResponse(status_code=status_code, content=payload)
+
+
+@app.exception_handler(HTTPException)
+def http_exception_handler(request: Request, exc: HTTPException):
+    code_map = {
+        400: "BAD_REQUEST",
+        401: "UNAUTHORIZED",
+        403: "FORBIDDEN",
+        404: "NOT_FOUND",
+        429: "TOO_MANY_REQUESTS",
+    }
+    code = code_map.get(exc.status_code, "BAD_REQUEST" if exc.status_code < 500 else "INTERNAL_ERROR")
+    return _error_payload(exc.status_code, str(exc.detail), code=code)
+
+
+@app.exception_handler(RequestValidationError)
+def validation_exception_handler(request: Request, exc: RequestValidationError):
+    field_errors: dict[str, list[str]] = {}
+    for error in exc.errors():
+        location = error.get("loc", [])
+        field_name = location[-1] if location else "detail"
+        field_errors.setdefault(str(field_name), []).append(error.get("msg", "Validasi gagal"))
+    return _error_payload(422, "Validasi gagal", errors=field_errors)
+
+
+@app.exception_handler(Exception)
+def unhandled_exception_handler(request: Request, exc: Exception):
+    return _error_payload(500, "Terjadi kesalahan pada server", code="INTERNAL_ERROR")
 
 
 # ==================== HEALTH CHECK ====================
@@ -163,15 +237,24 @@ def create_vendor(
 
 @app.get("/api/vendors", response_model=VendorListResponse)
 def list_vendors(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=1000),
+    skip: int | None = Query(None, ge=0),
+    limit: int | None = Query(None, ge=1, le=1000),
     search: str = Query(None),
     status: bool = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Ambil daftar vendors dengan pagination. **Membutuhkan autentikasi.**"""
-    return crud.get_vendors(db=db, skip=skip, limit=limit, search=search, status=status)
+    """Ambil daftar vendors dengan pagination atau mode dropdown. **Membutuhkan autentikasi.**"""
+    if skip is None and limit is None:
+        vendors = crud.get_vendors(db=db, skip=0, limit=10000, search=search, status=True if status is None else status)
+        return {
+            "success": True,
+            "data": [{"id": vendor.id, "name": vendor.name, "code": vendor.code} for vendor in vendors["vendors"]],
+            "total": vendors["total"],
+            "vendors": vendors["vendors"],
+        }
+
+    return crud.get_vendors(db=db, skip=skip or 0, limit=limit or 20, search=search, status=status)
 
 
 @app.get("/api/vendors/{vendor_id}", response_model=VendorResponse)
@@ -245,15 +328,27 @@ def create_block(
 
 @app.get("/api/blocks", response_model=BlockListResponse)
 def list_blocks(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=1000),
+    skip: int | None = Query(None, ge=0),
+    limit: int | None = Query(None, ge=1, le=1000),
     search: str = Query(None),
     status: bool = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Ambil daftar blocks dengan pagination. **Membutuhkan autentikasi.**"""
-    return crud.get_blocks(db=db, skip=skip, limit=limit, search=search, status=status)
+    """Ambil daftar blocks dengan pagination atau mode dropdown. **Membutuhkan autentikasi.**"""
+    if skip is None and limit is None:
+        blocks = crud.get_blocks(db=db, skip=0, limit=10000, search=search, status=True if status is None else status)
+        return {
+            "success": True,
+            "data": [
+                {"id": block.id, "name": block.division or block.block_code, "code": block.block_code, "area_ha": block.hectarage}
+                for block in blocks["blocks"]
+            ],
+            "total": blocks["total"],
+            "blocks": blocks["blocks"],
+        }
+
+    return crud.get_blocks(db=db, skip=skip or 0, limit=limit or 20, search=search, status=status)
 
 
 @app.get("/api/blocks/{block_id}", response_model=BlockResponse)
@@ -312,27 +407,38 @@ def delete_block(
 
 # ==================== HAULING TRANSACTION ENDPOINTS (PROTECTED) ====================
 
-@app.post("/api/hauling-transactions", response_model=HaulingTransactionResponse, status_code=201)
+@app.post("/api/hauling-transactions", response_model=HaulingTransactionEnvelope, status_code=201)
 def create_hauling_transaction(
     hauling: HaulingTransactionCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles("admin", "supervisor", "operator")),
 ):
     """Buat hauling transaction baru. **Membutuhkan autentikasi.**"""
-    db_hauling = crud.create_hauling_transaction(db=db, hauling_data=hauling)
+    db_hauling, error_code = crud.create_hauling_transaction(db=db, hauling_data=hauling, created_by=current_user)
     if not db_hauling:
-        raise HTTPException(status_code=400, detail="Ticket number sudah terdaftar")
-    return db_hauling
+        if error_code == "duplicate_ticket":
+            raise HTTPException(status_code=400, detail="Ticket number sudah terdaftar")
+        if error_code == "invalid_vendor":
+            raise HTTPException(status_code=400, detail="Vendor tidak ditemukan atau tidak aktif")
+        if error_code == "invalid_block":
+            raise HTTPException(status_code=400, detail="Block tidak ditemukan atau tidak aktif")
+        if error_code == "invalid_weight":
+            raise HTTPException(status_code=400, detail="Weight Out tidak boleh melebihi Weight In")
+        raise HTTPException(status_code=400, detail="Gagal menyimpan transaksi hauling")
+    return {"success": True, "data": db_hauling}
 
 
 @app.get("/api/hauling-transactions", response_model=HaulingTransactionListResponse)
 def list_hauling_transactions(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=100),
+    ticket_no: str = Query(None, max_length=100),
     vendor_id: str = Query(None),
     block_id: str = Query(None),
-    status: str = Query(None),
-    search: str = Query(None),
+    date_from: date = Query(None),
+    date_to: date = Query(None),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=5, le=100),
+    sort_by: str = Query("transaction_date"),
+    sort_dir: str = Query("desc"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -353,13 +459,20 @@ def list_hauling_transactions(
             raise HTTPException(status_code=400, detail="Invalid block ID format")
     
     return crud.get_hauling_transactions(
-        db=db, skip=skip, limit=limit,
-        vendor_id=vendor_uuid, block_id=block_uuid,
-        status=status, search=search
+        db=db,
+        vendor_id=vendor_uuid,
+        block_id=block_uuid,
+        ticket_no=ticket_no,
+        date_from=date_from,
+        date_to=date_to,
+        page=page,
+        per_page=per_page,
+        sort_by=sort_by,
+        sort_dir=sort_dir,
     )
 
 
-@app.get("/api/hauling-transactions/{hauling_id}", response_model=HaulingTransactionResponse)
+@app.get("/api/hauling-transactions/{hauling_id}", response_model=HaulingTransactionEnvelope)
 def get_hauling_transaction(
     hauling_id: str,
     db: Session = Depends(get_db),
@@ -374,15 +487,15 @@ def get_hauling_transaction(
     hauling = crud.get_hauling_transaction(db=db, hauling_id=hauling_uuid)
     if not hauling:
         raise HTTPException(status_code=404, detail="Hauling transaction tidak ditemukan")
-    return hauling
+    return {"success": True, "data": hauling}
 
 
-@app.put("/api/hauling-transactions/{hauling_id}", response_model=HaulingTransactionResponse)
+@app.put("/api/hauling-transactions/{hauling_id}", response_model=HaulingTransactionEnvelope)
 def update_hauling_transaction(
     hauling_id: str,
     hauling: HaulingTransactionUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles("admin", "supervisor", "operator")),
 ):
     """Update hauling transaction. **Membutuhkan autentikasi.**"""
     try:
@@ -390,17 +503,25 @@ def update_hauling_transaction(
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid hauling ID format")
     
-    updated = crud.update_hauling_transaction(db=db, hauling_id=hauling_uuid, hauling_data=hauling)
+    updated, error_code = crud.update_hauling_transaction(db=db, hauling_id=hauling_uuid, hauling_data=hauling, updated_by=current_user)
     if not updated:
+        if error_code == "duplicate_ticket":
+            raise HTTPException(status_code=400, detail="Ticket number sudah terdaftar")
+        if error_code == "invalid_vendor":
+            raise HTTPException(status_code=400, detail="Vendor tidak ditemukan atau tidak aktif")
+        if error_code == "invalid_block":
+            raise HTTPException(status_code=400, detail="Block tidak ditemukan atau tidak aktif")
+        if error_code == "invalid_weight":
+            raise HTTPException(status_code=400, detail="Weight Out tidak boleh melebihi Weight In")
         raise HTTPException(status_code=404, detail="Hauling transaction tidak ditemukan")
-    return updated
+    return {"success": True, "data": updated}
 
 
-@app.delete("/api/hauling-transactions/{hauling_id}", status_code=204)
+@app.delete("/api/hauling-transactions/{hauling_id}", status_code=200)
 def delete_hauling_transaction(
     hauling_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles("admin", "supervisor")),
 ):
     """Hapus hauling transaction. **Membutuhkan autentikasi.**"""
     try:
@@ -408,9 +529,149 @@ def delete_hauling_transaction(
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid hauling ID format")
     
-    success = crud.delete_hauling_transaction(db=db, hauling_id=hauling_uuid)
+    success = crud.delete_hauling_transaction(db=db, hauling_id=hauling_uuid, deleted_by=current_user)
     if not success:
         raise HTTPException(status_code=404, detail="Hauling transaction tidak ditemukan")
+
+    return {"success": True, "message": "Transaksi berhasil dihapus"}
+
+
+def _enforce_export_rate_limit(user_id: int) -> None:
+    now = datetime.now()
+    history = export_request_history[user_id]
+    window_start = now - timedelta(seconds=EXPORT_RATE_LIMIT_WINDOW_SECONDS)
+
+    while history and history[0] < window_start:
+        history.popleft()
+
+    if len(history) >= EXPORT_RATE_LIMIT_MAX_REQUESTS:
+        raise HTTPException(status_code=429, detail="Terlalu banyak request export. Coba lagi sebentar lagi.")
+
+    history.append(now)
+
+
+@app.get("/api/hauling-transactions/export")
+def export_hauling_transactions(
+    format: str = Query(..., pattern="^(xlsx|pdf)$"),
+    ticket_no: str = Query(None, max_length=100),
+    vendor_id: str = Query(None),
+    block_id: str = Query(None),
+    date_from: date = Query(None),
+    date_to: date = Query(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("admin", "supervisor", "manager")),
+):
+    """Export hauling transactions sesuai filter aktif."""
+    _enforce_export_rate_limit(current_user.id)
+
+    vendor_uuid = None
+    block_uuid = None
+
+    if vendor_id:
+        try:
+            vendor_uuid = uuid.UUID(vendor_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid vendor ID format")
+
+    if block_id:
+        try:
+            block_uuid = uuid.UUID(block_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid block ID format")
+
+    result = crud.get_hauling_transactions(
+        db=db,
+        page=1,
+        per_page=10000,
+        ticket_no=ticket_no,
+        vendor_id=vendor_uuid,
+        block_id=block_uuid,
+        date_from=date_from,
+        date_to=date_to,
+        sort_by="transaction_date",
+        sort_dir="desc",
+    )
+
+    if result["meta"]["total"] > 10000:
+        raise HTTPException(status_code=400, detail="Data terlalu banyak, gunakan filter untuk mempersempit hasil")
+
+    rows = result["data"]
+    export_date = datetime.now().strftime("%Y-%m-%d")
+
+    if format == "xlsx":
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill
+
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = "Hauling Transactions"
+        headers = ["No.", "Ticket No", "Vehicle Plate", "Vendor", "Block Code", "Weight In", "Weight Out", "Net Weight", "Tanggal", "Catatan"]
+        sheet.append(headers)
+        for cell in sheet[1]:
+            cell.font = Font(bold=True)
+            cell.fill = PatternFill("solid", fgColor="D9D9D9")
+
+        for index, row in enumerate(rows, start=1):
+            sheet.append([
+                index,
+                row["ticket_no"],
+                row["vehicle_plate"],
+                None if row["vendor"] is None else row["vendor"]["name"],
+                None if row["block"] is None else row["block"]["code"],
+                row["weight_in"],
+                row["weight_out"],
+                row["net_weight"],
+                row["transaction_date"],
+                row["notes"],
+            ])
+
+        buffer = BytesIO()
+        workbook.save(buffer)
+        buffer.seek(0)
+        return StreamingResponse(
+            buffer,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f'attachment; filename="hauling-transactions-{export_date}.xlsx"'},
+        )
+
+    try:
+        from reportlab.lib import colors
+        from reportlab.lib.pagesizes import landscape, A4
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.units import mm
+    except Exception:
+        raise HTTPException(status_code=500, detail="PDF export dependency belum tersedia")
+
+    buffer = BytesIO()
+    document = SimpleDocTemplate(buffer, pagesize=landscape(A4), leftMargin=10 * mm, rightMargin=10 * mm, topMargin=10 * mm, bottomMargin=10 * mm)
+    styles = getSampleStyleSheet()
+    story = [Paragraph("Laporan Hauling TBS", styles["Title"]), Spacer(1, 8)]
+    table_data = [["No.", "Ticket No", "Vehicle Plate", "Vendor", "Block Code", "Weight In", "Weight Out", "Net Weight", "Tanggal", "Catatan"]]
+    for index, row in enumerate(rows, start=1):
+        table_data.append([
+            index,
+            row["ticket_no"],
+            row["vehicle_plate"],
+            "" if row["vendor"] is None else row["vendor"]["name"],
+            "" if row["block"] is None else row["block"]["code"],
+            f"{row['weight_in']:.3f}",
+            f"{row['weight_out']:.3f}",
+            f"{row['net_weight']:.3f}",
+            row["transaction_date"].strftime("%d/%m/%Y") if row["transaction_date"] else "",
+            row["notes"] or "",
+        ])
+    table = Table(table_data, repeatRows=1)
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+        ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.whitesmoke, colors.white]),
+    ]))
+    story.append(table)
+    document.build(story)
+    buffer.seek(0)
+    return StreamingResponse(buffer, media_type="application/pdf", headers={"Content-Disposition": f'attachment; filename="hauling-transactions-{export_date}.pdf"'})
 
 
 # ==================== ITEM ENDPOINTS (PROTECTED) ====================
@@ -447,16 +708,6 @@ def list_items(
     - **status**: Filter by active status
     """
     return crud.get_items(db=db, skip=skip, limit=limit, search=search, category=category, status=status)
-
-
-@app.get("/api/items/stats")
-def get_items_stats(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """Get item statistics. **Membutuhkan autentikasi.**"""
-    stats = crud.get_item_stats(db=db)
-    return stats
 
 
 @app.get("/api/items/{item_id}", response_model=ItemResponse)
