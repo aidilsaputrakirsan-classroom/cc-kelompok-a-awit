@@ -61,7 +61,7 @@ EXPORT_RATE_LIMIT_MAX_REQUESTS = 10
 export_request_history: dict[int, deque[datetime]] = defaultdict(deque)
 
 app = FastAPI(
-    title="PalmChain API",
+    title="PalmChain API v2",
     description="REST API untuk Palm Oil Supply Chain Monitoring System (PalmChain)",
     version="1.0.0",
     docs_url="/docs",
