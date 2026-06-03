@@ -1,4 +1,5 @@
 """Test CRUD item endpoints."""
+from main import app
 
 
 def test_create_item(client, auth_headers):
