@@ -1,8 +1,6 @@
-import os
 from io import BytesIO
 from datetime import date, datetime, timedelta
 from collections import defaultdict, deque
-from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, HTTPException, Query, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -25,8 +23,9 @@ from schemas import (
 )
 from auth import create_access_token, get_current_user, require_roles
 import crud
+from config import configure_logging, settings
 
-load_dotenv()
+configure_logging()
 
 # Buat semua tabel
 Base.metadata.create_all(bind=engine)
@@ -66,15 +65,13 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     openapi_url="/openapi.json",
+    debug=settings.debug,
 )
 
 # ==================== CORS (FIXED) ====================
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
-origins_list = [origin.strip() for origin in allowed_origins.split(",")]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins_list,
+    allow_origins=list(settings.cors_origins),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

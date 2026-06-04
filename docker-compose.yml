@@ -42,6 +42,10 @@ services:
       dockerfile: Dockerfile
     container_name: backend
     environment:
+      APP_ENV: development
+      DEBUG: "true"
+      LOG_LEVEL: INFO
+
       # Database connection — gunakan hostname 'db' (nama service)
       DATABASE_URL: postgresql://postgres:postgres123@db:5432/cloudapp
       
@@ -51,7 +55,7 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: 60
       
       # CORS configuration
-      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:5173,http://frontend,https://cc-kelompok-a-awit.akhzafachrozy.my.id
+      CORS_ORIGINS: http://localhost:3000,http://localhost:5173,http://frontend,https://cc-kelompok-a-awit.akhzafachrozy.my.id
     ports:
       - "8000:8000"
     networks:

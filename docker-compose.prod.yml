@@ -4,7 +4,9 @@
 services:
   backend:
     environment:
+      - APP_ENV=production
       - DEBUG=false
+      - LOG_LEVEL=WARNING
       - CORS_ORIGINS=${PROD_CORS_ORIGINS}
     restart: unless-stopped
 

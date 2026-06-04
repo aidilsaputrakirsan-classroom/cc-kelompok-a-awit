@@ -1,16 +1,13 @@
-import os
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# Load environment variables dari .env
-load_dotenv()
+from config import settings
 
 # Ambil DATABASE_URL dari environment
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./fallback.db")
+DATABASE_URL = settings.database_url
 
-if os.getenv("DATABASE_URL") is None:
+if DATABASE_URL == "sqlite:///./fallback.db":
     import warnings
     warnings.warn(
         "DATABASE_URL tidak ditemukan di .env! Menggunakan SQLite fallback untuk development/testing.",
