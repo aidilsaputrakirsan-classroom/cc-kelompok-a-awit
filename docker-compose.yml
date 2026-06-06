@@ -1,10 +1,10 @@
 version: '3.8'
 
-# ============================================================
-# Docker Compose — Arsitektur Microservices (6-Container)
+# =====================================================================
+# Docker Compose — Arsitektur Microservices (Resilience & Hardening)
 # Proyek: PalmTrack Cloud — PalmChain
 # Peran: Lead DevOps (Varrel)
-# ============================================================
+# =====================================================================
 
 services:
   # ============================================================
@@ -13,6 +13,7 @@ services:
   auth-db:
     image: postgres:16-alpine
     container_name: auth-db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
@@ -28,11 +29,17 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-    restart: unless-stopped
+    # ── [TUGAS DEVOPS MODUL 13: HARDENING RESOURCE LIMITS] ──
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
 
   item-db:
     image: postgres:16-alpine
     container_name: item-db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
@@ -48,7 +55,12 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-    restart: unless-stopped
+    # ── [TUGAS DEVOPS MODUL 13: HARDENING RESOURCE LIMITS] ──
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
 
   # ============================================================
   # BACKEND MICROSERVICES
@@ -58,6 +70,7 @@ services:
       context: ./services/auth-service
       dockerfile: Dockerfile
     container_name: auth-service
+    restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://postgres:postgres123@auth-db:5432/auth_db
       SECRET_KEY: ${SECRET_KEY:-your-secret-key-here-change-in-production}
@@ -67,20 +80,25 @@ services:
     depends_on:
       auth-db:
         condition: service_healthy
-    # ── [TUGAS DEVOPS: HEALTHCHECK AUTH SERVICE] ──
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health').getcode()"]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 15s
-    restart: unless-stopped
+    # ── [TUGAS DEVOPS MODUL 13: HARDENING RESOURCE LIMITS] ──
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
 
   item-service:
     build:
       context: ./services/item-service
       dockerfile: Dockerfile
     container_name: item-service
+    restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://postgres:postgres123@item-db:5432/item_db
       AUTH_SERVICE_URL: http://auth-service:8001
@@ -92,14 +110,18 @@ services:
         condition: service_healthy
       auth-service:
         condition: service_healthy
-    # ── [TUGAS DEVOPS: HEALTHCHECK ITEM SERVICE] ──
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health').getcode()"]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 15s
-    restart: unless-stopped
+    # ── [TUGAS DEVOPS MODUL 13: HARDENING RESOURCE LIMITS] ──
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
 
   # ============================================================
   # FRONTEND SERVICE
@@ -109,9 +131,15 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: frontend
+    restart: unless-stopped
     networks:
       - cloudnet
-    restart: unless-stopped
+    # ── [TUGAS DEVOPS MODUL 13: HARDENING RESOURCE LIMITS] ──
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
 
   # ============================================================
   # API GATEWAY (Pintu Masuk Utama Tunggal)
@@ -119,11 +147,11 @@ services:
   gateway:
     image: nginx:alpine
     container_name: gateway
+    restart: unless-stopped
     ports:
       - "80:80"
     volumes:
       - ./services/gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    # ── [TUGAS DEVOPS: MENGUNCI URUTAN NYALA GATEWAY] ──
     depends_on:
       auth-service:
         condition: service_healthy
@@ -131,7 +159,12 @@ services:
         condition: service_healthy
       frontend:
         condition: service_started
-    restart: unless-stopped
+    # ── [TUGAS DEVOPS MODUL 13: HARDENING RESOURCE LIMITS] ──
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
 
 # ============================================================
 # Networks & Volumes Configuration
