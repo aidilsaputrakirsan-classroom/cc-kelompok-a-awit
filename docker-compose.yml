@@ -86,12 +86,17 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
-    # ── [TUGAS DEVOPS MODUL 13: HARDENING RESOURCE LIMITS] ──
     deploy:
       resources:
         limits:
           cpus: '0.50'
           memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "auth-service"
 
   item-service:
     build:
@@ -116,12 +121,17 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
-    # ── [TUGAS DEVOPS MODUL 13: HARDENING RESOURCE LIMITS] ──
     deploy:
       resources:
         limits:
           cpus: '0.50'
           memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "item-service"
 
   # ============================================================
   # FRONTEND SERVICE

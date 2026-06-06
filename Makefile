@@ -1,10 +1,24 @@
-.PHONY: up down build logs ps clean restart lint test pr-check
+.PHONY: dev prod up down build logs status ps clean restart lint test pr-check
 
-# Start semua services (Menggunakan mode detached)
+# ── [TUGAS DEVOPS MODUL 14: ENVIRONMENT TARGETS] ──
+# Start lingkungan DEVELOPMENT lokal
+dev:
+	docker compose up --build -d
+
+# Start lingkungan PRODUCTION (menggabungkan file override prod)
+prod:
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+
+# Lihat status kesehatan kontainer (Memantau indikator healthy)
+status:
+	docker compose ps
+
+# ── [PERINTAH UTILITY REGULER] ──
+# Start semua services biasa
 up:
 	docker compose up -d
 
-# Start dengan rebuild total (Sangat berguna saat ada perubahan kode)
+# Start dengan rebuild total
 build:
 	docker compose up --build -d
 
@@ -25,7 +39,7 @@ restart:
 logs:
 	docker compose logs -f
 
-# Lihat status kesehatan kontainer (Memantau indikator healthy)
+# Alias untuk melihat status
 ps:
 	docker compose ps
 	
