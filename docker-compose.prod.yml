@@ -1,18 +1,40 @@
-# Production overrides — gunakan dengan:
+version: '3.8'
+
+# =====================================================================
+# OVERRIDE: Production Environment
+# Digunakan bersamaan dengan docker-compose.yml utama menggunakan perintah:
 # docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# =====================================================================
 
 services:
-  backend:
+  auth-db:
+    restart: always
+    # Menutup total akses port dari luar kontainer demi keamanan data
+    ports: !reset []
+
+  item-db:
+    restart: always
+    # Menutup total akses port dari luar kontainer demi keamanan data
+    ports: !reset []
+
+  auth-service:
     environment:
+      - LOG_LEVEL=WARNING  # Kurangi noise log (hanya catat warning & error)
       - DEBUG=false
-      - CORS_ORIGINS=${PROD_CORS_ORIGINS}
-    restart: unless-stopped
+    restart: always
+
+  item-service:
+    environment:
+      - LOG_LEVEL=WARNING
+      - DEBUG=false
+    restart: always
 
   frontend:
-    restart: unless-stopped
+    restart: always
 
-  db:
-    restart: unless-stopped
-    # Tidak expose port ke host di production demi keamanan
-    ports: !reset []
-    
+  gateway:
+    restart: always
+    # Gateway adalah satu-satunya pintu masuk aplikasi di server production
+    ports:
+      - "80:80"
+      - "443:443" # Persiapan HTTPS/SSL
