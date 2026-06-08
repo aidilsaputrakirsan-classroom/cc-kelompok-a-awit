@@ -80,6 +80,7 @@ services:
     depends_on:
       auth-db:
         condition: service_healthy
+    # ── [TUGAS DEVOPS: HEALTHCHECK AUTH SERVICE] ──
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health').getcode()"]
       interval: 10s
