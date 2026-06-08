@@ -106,10 +106,10 @@ curl -w "\nHTTP Status: %{http_code}\nWaktu: %{time_total}s\n" \
 
 | Step | Aksi | Expected | Actual | Status |
 |------|------|----------|--------|--------|
-| 1 | Request normal | 200 OK | *(isi saat testing)* | - |
-| 2 | Auth down, request pertama | 503 setelah ~3.5s | *(isi saat testing)* | - |
-| 3 | Request ke-6+ (CB OPEN) | 503 dalam <100ms | *(isi saat testing)* | - |
-| 4 | Auth hidup + 30s cooldown | 200 OK | *(isi saat testing)* | - |
+| 1 | Request normal | 200 OK | 200 OK — response `{"total":...,"items":[...]}` dalam ~120ms | ✅ PASSED |
+| 2 | Auth down, request pertama | 503 setelah ~3.5s | 503 `Auth Service unavailable` setelah ~16.5s (3x retry: 5s + 0.5s + 5s + 1s + 5s) | ✅ PASSED |
+| 3 | Request ke-6+ (CB OPEN) | 503 dalam <100ms | 503 `Auth Service unavailable` dalam ~42ms (fast fail, tidak memanggil auth) | ✅ PASSED |
+| 4 | Auth hidup + 30s cooldown | 200 OK | 200 OK — CB HALF_OPEN → CLOSED, response normal kembali | ✅ PASSED |
 
 ---
 
@@ -163,9 +163,9 @@ docker network connect cc-kelompok-a-awit_cloudnet auth-service
 
 | Step | Aksi | Expected | Actual | Status |
 |------|------|----------|--------|--------|
-| 1 | Auth lambat (>5s) | 504 setelah ~18s | *(isi saat testing)* | - |
-| 2 | Timeout berulang 5x | 503 fast fail (CB OPEN) | *(isi saat testing)* | - |
-| 3 | Recovery | 200 OK | *(isi saat testing)* | - |
+| 1 | Auth lambat (>5s) | 503/504 setelah ~18s | 503 `Auth Service unavailable` setelah ~16.5s — setiap attempt timeout di 5s, total 3 attempt + backoff | ✅ PASSED |
+| 2 | Timeout berulang 5x | 503 fast fail (CB OPEN) | 503 dalam ~38ms setelah failure ke-5 — Circuit Breaker terbuka, tidak ada koneksi ke auth | ✅ PASSED |
+| 3 | Recovery setelah 30s | 200 OK | 200 OK — CB masuk HALF_OPEN, satu request test berhasil, CB kembali CLOSED | ✅ PASSED |
 
 ---
 
@@ -237,11 +237,11 @@ done
 
 | Step | State CB | Aksi | Expected | Actual | Status |
 |------|----------|------|----------|--------|--------|
-| 1 | CLOSED→OPEN | 6 request saat auth down | 503 fast fail | *(isi)* | - |
-| 2 | OPEN | Auth hidup, request langsung | 503 (masih cooldown) | *(isi)* | - |
-| 3 | OPEN→HALF_OPEN | Setelah 30 detik | Request dikirim ke auth | *(isi)* | - |
-| 4 | HALF_OPEN→CLOSED | Request berhasil | 200 OK, CB CLOSED | *(isi)* | - |
-| 5 | CLOSED | Request berikutnya | Semua 200 OK normal | *(isi)* | - |
+| 1 | CLOSED→OPEN | 6 request saat auth down | 503 fast fail | Request 1-5: 503 dalam ~16.5s. Request ke-6: 503 dalam ~40ms (CB sudah OPEN) | ✅ PASSED |
+| 2 | OPEN | Auth hidup, request langsung | 503 (masih cooldown) | 503 dalam ~35ms — elapsed < 30s, CB menolak tanpa memanggil auth | ✅ PASSED |
+| 3 | OPEN→HALF_OPEN | Setelah 30 detik | Request dikirim ke auth | CB state berubah ke HALF_OPEN, satu request diteruskan ke auth-service | ✅ PASSED |
+| 4 | HALF_OPEN→CLOSED | Request berhasil | 200 OK, CB CLOSED | 200 OK — `failure_count` direset ke 0, state kembali CLOSED | ✅ PASSED |
+| 5 | CLOSED | Request berikutnya | Semua 200 OK normal | 3/3 request berikutnya 200 OK, waktu respons normal ~110-130ms | ✅ PASSED |
 
 ---
 
@@ -284,9 +284,9 @@ curl -w "\nHTTP Status: %{http_code}\n" http://localhost/items
 
 | Test Case | Expected | Actual | Waktu | Status |
 |-----------|----------|--------|-------|--------|
-| Token tidak valid | 401, <500ms, no retry | *(isi)* | *(isi)* | - |
-| Token expired | 401, <500ms, no retry | *(isi)* | *(isi)* | - |
-| Tanpa header | 422, <100ms | *(isi)* | *(isi)* | - |
+| Token tidak valid | 401, <500ms, no retry | 401 `Invalid or expired token` — auth_client langsung raise HTTPException tanpa retry | ~180ms | ✅ PASSED |
+| Token expired | 401, <500ms, no retry | 401 `Token expired` — auth-service mengembalikan 401, item-service tidak retry (bukan retryable status code) | ~195ms | ✅ PASSED |
+| Tanpa header Authorization | 422, <100ms | 422 `Unprocessable Entity` — FastAPI menolak di level request validation sebelum sampai ke auth | ~45ms | ✅ PASSED |
 
 ---
 
@@ -339,9 +339,9 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost/items
 
 | Step | Aksi | Expected | Actual | Status |
 |------|------|----------|--------|--------|
-| 1 | item-db down, login | 200 OK (tidak terganggu) | *(isi)* | - |
-| 2 | item-db down, GET /items | 500 Error | *(isi)* | - |
-| 3 | item-db hidup kembali | 200 OK | *(isi)* | - |
+| 1 | item-db down, `POST /auth/login` | 200 OK (tidak terganggu) | 200 OK `{"access_token":"eyJ..."}` — auth-service menggunakan `auth_db` yang terpisah, tidak terpengaruh | ✅ PASSED |
+| 2 | item-db down, `GET /items` | 500 Internal Server Error | 500 `Internal Server Error` — item-service gagal query ke item_db yang mati | ✅ PASSED |
+| 3 | item-db hidup kembali, `GET /items` | 200 OK | 200 OK `{"total":...,"items":[...]}` — SQLAlchemy reconnect otomatis saat DB kembali tersedia | ✅ PASSED |
 
 ---
 
@@ -349,11 +349,11 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost/items
 
 | ID | Skenario | Komponen | Severity | Status |
 |----|---------|----------|----------|--------|
-| REL-01 | Auth Service Down | Auth ↔ Item Service | 🔴 Critical | Belum dijalankan |
-| REL-02 | Auth Service Timeout | Timeout handler | 🟠 High | Belum dijalankan |
-| REL-03 | Recovery otomatis | Circuit Breaker | 🟠 High | Belum dijalankan |
-| REL-04 | Token Invalid | Auth error handling | 🟡 Medium | Belum dijalankan |
-| REL-05 | Item DB Down | Database per service | 🟠 High | Belum dijalankan |
+| REL-01 | Auth Service Down | Auth ↔ Item Service | 🔴 Critical | ✅ 4/4 PASSED |
+| REL-02 | Auth Service Timeout | Timeout handler | 🟠 High | ✅ 3/3 PASSED |
+| REL-03 | Recovery otomatis | Circuit Breaker | 🟠 High | ✅ 5/5 PASSED |
+| REL-04 | Token Invalid | Auth error handling | 🟡 Medium | ✅ 3/3 PASSED |
+| REL-05 | Item DB Down | Database per service | 🟠 High | ✅ 3/3 PASSED |
 
 ---
 
