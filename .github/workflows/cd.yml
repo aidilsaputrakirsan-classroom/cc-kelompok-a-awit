@@ -626,7 +626,34 @@ jobs:
               echo ""
             } >> "$GITHUB_STEP_SUMMARY"
           fi
-
+      
+      # ──────────────────────────────────────────────────────────────
+      # 🏥 HEALTH CHECK — Tugas Terstruktur Lead DevOps Modul 11
+      # ──────────────────────────────────────────────────────────────
+      # Menguji kesehatan endpoint setelah DeployCC memicu uvicorn restart
+      - name: 🏥 Automated Production Health Check
+        if: steps.deploy.outcome == 'success'
+        run: |
+          echo "Menunggu 20 detik agar proses service restart DeployCC selesai..."
+          sleep 20
+          
+          # Mengambil domain output yang dihasilkan secara dinamis oleh DeployCC
+          LIVE_DOMAIN="${{ steps.deploy.outputs.domain }}"
+          HEALTH_URL="${LIVE_DOMAIN}/health"
+          
+          echo "Memulai uji kesehatan pada endpoint: $HEALTH_URL"
+          
+          # Melakukan hit ke endpoint health check publik
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL")
+          
+          if [ "$HTTP_STATUS" == "200" ]; then
+            echo "✅ Health check PASSED! Production backend merespons dengan HTTP $HTTP_STATUS"
+          else
+            echo "❌ Health check FAILED! Server production mengembalikan HTTP $HTTP_STATUS"
+            echo "Silakan gunakan perintah '${{ steps.deploy.outputs.ssh_cmd }}' untuk memeriksa 'svc-logs'."
+            exit 1
+          fi
+          
       - name: Cleanup
         if: always()
         run: rm -f /tmp/*-deploy.zip /tmp/deploy-response.txt || true
