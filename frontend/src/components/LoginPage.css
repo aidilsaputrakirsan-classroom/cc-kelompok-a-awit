@@ -292,3 +292,64 @@
   color: #1f2937;
   line-height: 1.2;
 }
+
+/* ─── Tab Switcher Login / Daftar ─── */
+.login-tabs {
+  display: flex;
+  position: relative;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 3px;
+  margin-bottom: -8px;
+}
+.login-tab {
+  flex: 1;
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.2s;
+  position: relative;
+  z-index: 1;
+  font-family: inherit;
+}
+.login-tab--active {
+  color: #1f2937;
+}
+.login-tab-bar {
+  position: absolute;
+  top: 3px; bottom: 3px; left: 3px;
+  width: calc(50% - 3px);
+  background: #ffffff;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.login-tab-bar--right {
+  transform: translateX(100%);
+}
+
+/* ─── Switch hint link ─── */
+.switch-hint {
+  text-align: center;
+  font-size: 11px;
+  color: #6b7280;
+  margin: 0;
+}
+.switch-link {
+  background: none;
+  border: none;
+  color: #C8372D;
+  font-size: inherit;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.switch-link:hover { color: #b02e25; }
