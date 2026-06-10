@@ -101,6 +101,7 @@ class Item(Base):
     name = Column(String(100), nullable=False)
     description = Column(String(255), nullable=True)
     category = Column(String(50), nullable=True, index=True)  # Optional field untuk kategori
+    price = Column(Float, default=0.0)
     status = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
