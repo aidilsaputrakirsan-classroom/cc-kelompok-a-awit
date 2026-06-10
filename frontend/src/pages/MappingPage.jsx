@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import './MappingPage.css';
 
 // Fix for default marker icon in react-leaflet when using webpack/vite
 import L from 'leaflet';
@@ -23,15 +22,6 @@ const handleSaveBlock = async (geoJsonData) => {
   console.log('New block drawn:', geoJsonData);
   try {
     // SKELETON: Fetch / Axios POST Request
-    // const response = await fetch('/api/blocks', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json'
-    //   },
-    //   body: JSON.stringify(geoJsonData)
-    // });
-    // const result = await response.json();
-    // console.log('Saved:', result);
   } catch (error) {
     console.error('Failed to save block', error);
   }
@@ -61,7 +51,7 @@ function GeomanControl() {
 
     // Styling Poligon Default
     map.pm.setPathOptions({
-      color: '#3388ff',
+      color: '#10b981', // emerald-500
       weight: 2,
       fillOpacity: 0.2,
     });
@@ -89,16 +79,17 @@ export default function MappingPage() {
   const position = [-6.200000, 106.816666];
 
   return (
-    <div className="pt-mapping-page">
-      <div className="pt-mapping-header">
-        <h2 className="pt-mapping-title">Block / Area Mapping</h2>
+    <div className="flex flex-col h-full gap-4">
+      <div className="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 m-0">Block / Area Mapping</h2>
       </div>
       
-      <div className="pt-mapping-container">
+      <div className="flex-1 w-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden min-h-[500px] z-0">
         <MapContainer 
           center={position} 
           zoom={13} 
           scrollWheelZoom={true}
+          style={{ height: '100%', width: '100%', zIndex: 0 }}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

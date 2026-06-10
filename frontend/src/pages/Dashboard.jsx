@@ -13,14 +13,21 @@ import {
 import { useOutletContext } from "react-router-dom"
 import { fetchBlocks, fetchDashboard, fetchVendors } from "../services/api"
 import { useDarkMode } from "../context/ThemeContext"
-import "./Dashboard.css"
 
 function StatCard({ title, value, hint }) {
   return (
-    <div className="pt-dash-card">
-      <h3 className="pt-dash-card__head">{title}</h3>
-      <p className="pt-dash-card__value">{value}</p>
-      {hint && <p className="pt-dash-card__hint">{hint}</p>}
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm transition-shadow hover:shadow-md">
+      <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+        {title}
+      </h3>
+      <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
+        {value}
+      </p>
+      {hint && (
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-3 font-mono">
+          {hint}
+        </p>
+      )}
     </div>
   )
 }
@@ -35,16 +42,13 @@ function Dashboard() {
   const [barData, setBarData] = useState([])
   const [lineData, setLineData] = useState([])
 
-  // Get CSS variables for chart styling
   const getChartColors = () => {
-    const root = document.documentElement
-    const style = getComputedStyle(root)
     return {
-      textColor: style.getPropertyValue('--text-secondary').trim(),
-      gridColor: style.getPropertyValue('--border-color').trim(),
-      barColor: style.getPropertyValue('--accent-primary').trim(),
-      tooltipBg: style.getPropertyValue('--bg-card').trim(),
-      tooltipBorder: style.getPropertyValue('--border-color').trim(),
+      textColor: isDarkMode ? '#9ca3af' : '#6b7280',
+      gridColor: isDarkMode ? '#374151' : '#e5e7eb',
+      barColor: '#10b981', // Tailwind Emerald 500
+      tooltipBg: isDarkMode ? '#1f2937' : '#ffffff',
+      tooltipBorder: isDarkMode ? '#374151' : '#e5e7eb',
     }
   }
 
@@ -111,15 +115,17 @@ function Dashboard() {
   const colors = getChartColors()
 
   return (
-    <div className="pt-dash">
-      <div className="pt-dash__intro">
-        <h2 className="pt-dash__title">Dashboard</h2>
-        <p className="pt-dash__sub">
+    <div className="flex flex-col gap-8 pb-10">
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-1">
+          Dashboard
+        </h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Ringkasan operasional PalmTrack Cloud — data agregat dari API.
         </p>
       </div>
 
-      <section className="pt-dash__stats" aria-label="Quick stats">
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6" aria-label="Quick stats">
         <StatCard
           title="Total Contractors"
           value={loading ? "…" : String(contractorTotal)}
@@ -137,53 +143,61 @@ function Dashboard() {
         />
       </section>
 
-      <section className="pt-dash__charts" aria-label="Charts">
-        <div className="pt-dash-chart">
-          <h3 className="pt-dash-chart__head">Hauling Achievement Today</h3>
-          <p className="pt-dash-chart__sub">Perbandingan hari ini, MTD, dan target tonase</p>
-          <div className="pt-dash-chart__frame">
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={barData} margin={{ top: 16, right: 16, left: 0, bottom: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={colors.gridColor} />
-                <XAxis dataKey="name" tick={{ fill: colors.textColor, fontSize: 12 }} />
-                <YAxis tick={{ fill: colors.textColor, fontSize: 12 }} />
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6" aria-label="Charts">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 lg:p-6 shadow-sm">
+          <div className="mb-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">Hauling Achievement Today</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Perbandingan hari ini, MTD, dan target tonase</p>
+          </div>
+          <div className="w-full h-[280px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={barData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={colors.gridColor} vertical={false} />
+                <XAxis dataKey="name" tick={{ fill: colors.textColor, fontSize: 12 }} axisLine={false} tickLine={false} dy={10} />
+                <YAxis tick={{ fill: colors.textColor, fontSize: 12 }} axisLine={false} tickLine={false} dx={-10} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: colors.tooltipBg,
                     border: `1px solid ${colors.tooltipBorder}`,
                     borderRadius: 8,
-                    color: 'var(--text-primary)',
+                    color: isDarkMode ? '#f3f4f6' : '#111827',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                   }}
+                  cursor={{ fill: isDarkMode ? '#374151' : '#f3f4f6' }}
                 />
-                <Bar dataKey="value" fill={colors.barColor} radius={[6, 6, 0, 0]} name="Ton" />
+                <Bar dataKey="value" fill={colors.barColor} radius={[4, 4, 0, 0]} name="Ton" maxBarSize={60} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="pt-dash-chart">
-          <h3 className="pt-dash-chart__head">Monthly Production Trend</h3>
-          <p className="pt-dash-chart__sub">Ilustrasi tren mingguan (derivasi dari ringkasan MTD)</p>
-          <div className="pt-dash-chart__frame">
-            <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={lineData} margin={{ top: 16, right: 16, left: 0, bottom: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={colors.gridColor} />
-                <XAxis dataKey="name" tick={{ fill: colors.textColor, fontSize: 12 }} />
-                <YAxis tick={{ fill: colors.textColor, fontSize: 12 }} />
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 lg:p-6 shadow-sm">
+          <div className="mb-6">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">Monthly Production Trend</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Ilustrasi tren mingguan (derivasi dari ringkasan MTD)</p>
+          </div>
+          <div className="w-full h-[280px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={lineData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={colors.gridColor} vertical={false} />
+                <XAxis dataKey="name" tick={{ fill: colors.textColor, fontSize: 12 }} axisLine={false} tickLine={false} dy={10} />
+                <YAxis tick={{ fill: colors.textColor, fontSize: 12 }} axisLine={false} tickLine={false} dx={-10} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: colors.tooltipBg,
                     border: `1px solid ${colors.tooltipBorder}`,
                     borderRadius: 8,
-                    color: 'var(--text-primary)',
+                    color: isDarkMode ? '#f3f4f6' : '#111827',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                   }}
                 />
                 <Line
                   type="monotone"
                   dataKey="ton"
                   stroke={colors.barColor}
-                  strokeWidth={2.5}
-                  dot={{ fill: colors.barColor, r: 4 }}
+                  strokeWidth={3}
+                  dot={{ fill: colors.tooltipBg, stroke: colors.barColor, strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, fill: colors.barColor }}
                   name="Ton (idx)"
                 />
               </LineChart>

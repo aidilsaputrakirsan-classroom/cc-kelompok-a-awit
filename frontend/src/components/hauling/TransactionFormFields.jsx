@@ -13,30 +13,30 @@ function TransactionFormFields({ formData, onFormChange, vendors, blocks, submit
   const isNetWeightWarning = netWeight !== null && netWeight <= 0;
 
   return (
-    <div style={styles.form}>
-      <div style={styles.field}>
-        <label style={styles.label}>Ticket No *</label>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Ticket No <span className="text-red-500">*</span></label>
         <input
           type="text"
           name="ticket_no"
           value={formData.ticket_no || ""}
           onChange={handleChange}
           placeholder="e.g. TKT-YYYYMMDD-001"
-          style={styles.input}
+          className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:bg-gray-50"
           disabled={submitting}
           maxLength={100}
         />
-        <span style={styles.hint}>Maksimal 100 karakter</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">Maksimal 100 karakter</span>
       </div>
 
-      <div style={styles.row}>
-        <div style={styles.field}>
-          <label style={styles.label}>Vendor *</label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Vendor <span className="text-red-500">*</span></label>
           <select
             name="vendor_id"
             value={formData.vendor_id || ""}
             onChange={handleChange}
-            style={styles.select}
+            className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm shadow-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:bg-gray-50"
             disabled={submitting}
           >
             <option value="">Pilih vendor…</option>
@@ -47,13 +47,13 @@ function TransactionFormFields({ formData, onFormChange, vendors, blocks, submit
             ))}
           </select>
         </div>
-        <div style={styles.field}>
-          <label style={styles.label}>Block / Area *</label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Block / Area <span className="text-red-500">*</span></label>
           <select
             name="block_id"
             value={formData.block_id || ""}
             onChange={handleChange}
-            style={styles.select}
+            className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm shadow-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:bg-gray-50"
             disabled={submitting}
           >
             <option value="">Pilih blok…</option>
@@ -66,57 +66,57 @@ function TransactionFormFields({ formData, onFormChange, vendors, blocks, submit
         </div>
       </div>
 
-      <div style={styles.row}>
-        <div style={styles.field}>
-          <label style={styles.label}>Vehicle Plate *</label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Vehicle Plate <span className="text-red-500">*</span></label>
           <input
             type="text"
             name="vehicle_plate"
             value={formData.vehicle_plate || ""}
             onChange={handleChange}
             placeholder="Contoh: KT 1234 AB"
-            style={{ ...styles.input, textTransform: "uppercase" }}
+            className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:bg-gray-50 uppercase"
             disabled={submitting}
             maxLength={20}
           />
         </div>
-        <div style={styles.field}>
-          <label style={styles.label}>Tanggal Transaksi *</label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Tanggal Transaksi <span className="text-red-500">*</span></label>
           <input
             type="date"
             name="transaction_date"
             value={formData.transaction_date || ""}
             onChange={handleChange}
-            style={styles.input}
+            className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm shadow-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:bg-gray-50"
             disabled={submitting}
-            max={new Date().toISOString().split("T")[0]} // Tidak boleh masa depan
+            max={new Date().toISOString().split("T")[0]} 
           />
         </div>
       </div>
 
-      <div style={styles.row}>
-        <div style={styles.field}>
-          <label style={styles.label}>Weight In (ton) *</label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Weight In (ton) <span className="text-red-500">*</span></label>
           <input
             type="number"
             name="weight_in"
             value={formData.weight_in !== undefined ? formData.weight_in : ""}
             onChange={handleChange}
-            style={styles.input}
+            className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:bg-gray-50"
             disabled={submitting}
             min={0}
             max={9999.999}
             step={0.001}
           />
         </div>
-        <div style={styles.field}>
-          <label style={styles.label}>Weight Out (ton) *</label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Weight Out (ton) <span className="text-red-500">*</span></label>
           <input
             type="number"
             name="weight_out"
             value={formData.weight_out !== undefined ? formData.weight_out : ""}
             onChange={handleChange}
-            style={styles.input}
+            className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:bg-gray-50"
             disabled={submitting}
             min={0}
             max={9999.999}
@@ -125,32 +125,31 @@ function TransactionFormFields({ formData, onFormChange, vendors, blocks, submit
         </div>
       </div>
 
-      <div style={styles.field}>
-        <label style={styles.label}>Net Weight (ton)</label>
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Net Weight (ton)</label>
         <div
-          style={{
-            ...styles.netWeight,
-            background: isNetWeightWarning ? "#fff3cd" : "rgba(186, 53, 44, 0.06)",
-            color: isNetWeightWarning ? "#856404" : "var(--accent-color, #ba352c)",
-            borderColor: isNetWeightWarning ? "#ffeeba" : "var(--border-color, rgba(50, 50, 50, 0.25))",
-          }}
+          className={`w-full px-3 py-2 rounded-md text-lg font-bold border-2 border-dashed ${
+            isNetWeightWarning 
+              ? "bg-yellow-50 text-yellow-800 border-yellow-300 dark:bg-yellow-900/20 dark:text-yellow-500 dark:border-yellow-700" 
+              : "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-500 dark:border-emerald-800"
+          }`}
         >
           {netWeight === null ? "—" : netWeight.toFixed(3)}
         </div>
         {isNetWeightWarning && (
-          <span style={{ fontSize: "0.8rem", color: "#856404", marginTop: "4px" }}>
+          <span className="text-xs text-yellow-600 dark:text-yellow-500 mt-1">
             ⚠️ Periksa kembali berat timbang
           </span>
         )}
       </div>
 
-      <div style={styles.field}>
-        <label style={styles.label}>Catatan</label>
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Catatan</label>
         <textarea
           name="notes"
           value={formData.notes || ""}
           onChange={handleChange}
-          style={{ ...styles.input, minHeight: "80px", resize: "vertical" }}
+          className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:bg-gray-50 min-h-[80px] resize-y"
           disabled={submitting}
           maxLength={500}
           placeholder="Catatan opsional..."
@@ -159,57 +158,5 @@ function TransactionFormFields({ formData, onFormChange, vendors, blocks, submit
     </div>
   );
 }
-
-const styles = {
-  form: {
-    display: "grid",
-    gap: "1rem",
-  },
-  row: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "1rem",
-  },
-  field: {
-    display: "grid",
-    gap: "0.35rem",
-  },
-  label: {
-    color: "var(--text-primary, #323232)",
-    fontWeight: 700,
-    fontSize: "0.9rem",
-  },
-  hint: {
-    fontSize: "0.78rem",
-    color: "var(--text-secondary, #666)",
-  },
-  input: {
-    width: "100%",
-    padding: "0.9rem 1rem",
-    borderRadius: "10px",
-    border: "1px solid var(--border-color, rgba(50, 50, 50, 0.18))",
-    fontSize: "0.95rem",
-    outline: "none",
-    background: "var(--bg-secondary, #fff)",
-    color: "var(--text-primary, #323232)",
-  },
-  select: {
-    width: "100%",
-    padding: "0.9rem 1rem",
-    borderRadius: "10px",
-    border: "1px solid var(--border-color, rgba(50, 50, 50, 0.18))",
-    fontSize: "0.95rem",
-    backgroundColor: "var(--bg-secondary, white)",
-    color: "var(--text-primary, #323232)",
-    outline: "none",
-  },
-  netWeight: {
-    padding: "0.9rem 1rem",
-    borderRadius: "10px",
-    border: "1px dashed var(--border-color, rgba(50, 50, 50, 0.25))",
-    fontSize: "1.1rem",
-    fontWeight: 800,
-  },
-};
 
 export default TransactionFormFields;

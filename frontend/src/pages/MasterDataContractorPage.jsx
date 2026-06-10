@@ -4,11 +4,7 @@ import { fetchVendors, createVendor, updateVendor, deleteVendor } from "../servi
 import ContractorTable from "../components/ContractorTable"
 import ContractorPagination from "../components/ContractorPagination"
 import ContractorForm from "../components/ContractorForm"
-import "./MasterDataContractorPage.css"
 
-/**
- * Master Data Contractor — data dari GET /api/vendors (Contractors).
- */
 function MasterDataContractorPage({ onUnauthorized: onUnauthorizedProp, onNotify: onNotifyProp }) {
   const outlet = useOutletContext()
   const onUnauthorized = onUnauthorizedProp ?? outlet?.onUnauthorized
@@ -126,21 +122,19 @@ function MasterDataContractorPage({ onUnauthorized: onUnauthorizedProp, onNotify
   }
 
   return (
-    <div className="mdc-page">
-      <div className="mdc-page__toolbar">
-        <div className="mdc-page__titles">
-          <h1>Master Data Contractor</h1>
-          <p>
-            PalmTrack Cloud — kelola data kontraktor / vendor transport. Data diambil dari endpoint
-            {" "}
-            <code style={{ fontSize: "0.8em" }}>/api/vendors</code>.
+    <div className="flex flex-col gap-6 pb-10">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Master Data Contractor</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            PalmTrack Cloud — kelola data kontraktor / vendor transport.
           </p>
         </div>
-        <div className="mdc-page__actions">
-          <form onSubmit={handleSearchSubmit}>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <form onSubmit={handleSearchSubmit} className="flex-1 sm:flex-none">
             <input
               type="search"
-              className="mdc-search"
+              className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
               placeholder="Cari code / nama…"
               value={searchDraft}
               onChange={(e) => setSearchDraft(e.target.value)}
@@ -149,7 +143,7 @@ function MasterDataContractorPage({ onUnauthorized: onUnauthorizedProp, onNotify
           </form>
           <button
             type="button"
-            className="mdc-btn-add"
+            className="px-4 py-2 bg-gray-900 hover:bg-gray-800 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap"
             onClick={openModal}
             disabled={actionLoading}
           >
@@ -159,46 +153,51 @@ function MasterDataContractorPage({ onUnauthorized: onUnauthorizedProp, onNotify
       </div>
 
       {isModalOpen && (
-        <div className="mdc-modal-overlay">
-          <div className="mdc-modal" role="dialog" aria-modal="true">
-            <div className="mdc-modal__header">
-              <h2 className="mdc-modal__title">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 w-full max-w-lg rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200" role="dialog" aria-modal="true">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {editingContractor ? "Edit Contractor" : "Add Contractor"}
               </h2>
               <button
                 type="button"
-                className="mdc-modal__close"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1"
                 onClick={closeModal}
                 aria-label="Close modal"
               >
-                ×
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            <ContractorForm
-              onSubmit={handleSubmit}
-              editingContractor={editingContractor}
-              onCancel={closeModal}
-              loading={actionLoading}
-            />
+            <div className="p-6">
+              <ContractorForm
+                onSubmit={handleSubmit}
+                editingContractor={editingContractor}
+                onCancel={closeModal}
+                loading={actionLoading}
+              />
+            </div>
           </div>
         </div>
       )}
 
-      <ContractorTable
-        contractors={contractors}
-        loading={loading || actionLoading}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
-
-      <ContractorPagination
-        total={total}
-        skip={skip}
-        limit={limit}
-        disabled={loading || actionLoading}
-        onPageChange={handlePageChange}
-        onLimitChange={handleLimitChange}
-      />
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+        <ContractorTable
+          contractors={contractors}
+          loading={loading || actionLoading}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+        <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 bg-gray-50/50 dark:bg-gray-800/50">
+          <ContractorPagination
+            total={total}
+            skip={skip}
+            limit={limit}
+            disabled={loading || actionLoading}
+            onPageChange={handlePageChange}
+            onLimitChange={handleLimitChange}
+          />
+        </div>
+      </div>
     </div>
   )
 }

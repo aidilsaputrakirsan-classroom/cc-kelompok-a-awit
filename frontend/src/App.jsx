@@ -1,5 +1,4 @@
 import { Navigate, Route, Routes } from "react-router-dom"
-import "./App.css"
 import { AuthProvider } from "./context/AuthContext"
 import { ThemeProvider } from "./context/ThemeContext"
 import LoginPage from "./components/LoginPage"
@@ -12,6 +11,9 @@ import BlocksPage from "./pages/BlocksPage"
 import MappingPage from "./pages/MappingPage"
 import ActualHauling from "./pages/ActualHauling"
 import ItemsPage from "./pages/ItemsPage"
+import MobileLayout from "./layouts/MobileLayout"
+import DriverTripListPage from "./pages/driver/DriverTripListPage"
+import DriverTripDetailPage from "./pages/driver/DriverTripDetailPage"
 
 export default function App() {
   return (
@@ -35,6 +37,12 @@ export default function App() {
               <Route path="master-data/mapping" element={<MappingPage />} />
               <Route path="transactions/hauling" element={<ActualHauling />} />
               <Route path="items" element={<ItemsPage />} />
+            </Route>
+          </Route>
+          <Route path="/driver" element={<ProtectedRoute />}>
+            <Route element={<MobileLayout />}>
+              <Route path="trips" element={<DriverTripListPage />} />
+              <Route path="trips/:id" element={<DriverTripDetailPage />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

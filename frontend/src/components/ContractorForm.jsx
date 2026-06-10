@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react"
+import { UploadCloud } from "lucide-react"
 
 function ContractorForm({ onSubmit, editingContractor, onCancel, loading }) {
   const [formData, setFormData] = useState({
@@ -80,13 +81,22 @@ function ContractorForm({ onSubmit, editingContractor, onCancel, loading }) {
   }
 
   return (
-    <div style={styles.container}>
-      {error && <div style={styles.error}>{error}</div>}
+    <div className="flex flex-col gap-6">
+      {error && (
+        <div className="p-4 rounded-md bg-red-50 text-red-700 text-sm border border-red-200">
+          {error}
+        </div>
+      )}
 
-      <div style={styles.uploadCard} onClick={() => fileInputRef.current?.click()}>
-        <div style={styles.uploadIcon}>+</div>
-        <div style={styles.uploadTitle}>Contractor Logo</div>
-        <div style={styles.uploadSubtitle}>
+      <div 
+        className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <div className="w-12 h-12 rounded-full border-2 border-gray-200 dark:border-gray-600 flex items-center justify-center mb-3 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 shadow-sm">
+          <UploadCloud size={20} />
+        </div>
+        <div className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Contractor Logo</div>
+        <div className="text-sm text-gray-500 dark:text-gray-400">
           {fileName || "Drag & drop atau klik untuk memilih file"}
         </div>
         <input
@@ -94,46 +104,46 @@ function ContractorForm({ onSubmit, editingContractor, onCancel, loading }) {
           accept="image/*"
           ref={fileInputRef}
           onChange={handleFileChange}
-          style={styles.fileInput}
+          className="hidden"
         />
       </div>
 
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <div style={styles.field}>
-          <label style={styles.label}>Contractor Code</label>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Contractor Code</label>
           <input
             type="text"
             name="code"
             value={formData.code}
             onChange={handleChange}
             placeholder="Contoh: IWA"
-            style={styles.input}
+            className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:bg-gray-50"
             disabled={loading || !!editingContractor}
             maxLength="10"
           />
         </div>
 
-        <div style={styles.field}>
-          <label style={styles.label}>Contractor Name</label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Contractor Name</label>
           <input
             type="text"
             name="name"
             value={formData.name}
             onChange={handleChange}
             placeholder="Contoh: PT. IWACO Jaya Abadi"
-            style={styles.input}
+            className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:bg-gray-50"
             disabled={loading}
             maxLength="100"
           />
         </div>
 
-        <div style={styles.field}>
-          <label style={styles.label}>Contractor Type</label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Contractor Type</label>
           <select
             name="type"
             value={formData.type}
             onChange={handleChange}
-            style={styles.select}
+            className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm shadow-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:bg-gray-50"
             disabled={loading}
           >
             <option value="">Select Contractor Type...</option>
@@ -143,142 +153,42 @@ function ContractorForm({ onSubmit, editingContractor, onCancel, loading }) {
           </select>
         </div>
 
-        <div style={styles.field}>
-          <label style={styles.label}>Status</label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Status</label>
           <select
             name="status"
             value={formData.status}
             onChange={handleChange}
-            style={styles.select}
+            className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm shadow-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:bg-gray-50"
             disabled={loading}
           >
-            <option value="active" style={styles.option}>Active</option>
-            <option value="inactive" style={styles.option}>Inactive</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
           </select>
         </div>
 
-        <div style={styles.actions}>
-          <button type="button" onClick={onCancel} style={styles.btnCancel} disabled={loading}>
+        <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <button 
+            type="button" 
+            onClick={onCancel} 
+            className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md text-sm font-medium transition-colors shadow-sm disabled:opacity-50" 
+            disabled={loading}
+          >
             Cancel
           </button>
-          <button type="submit" style={styles.btnSubmit} disabled={loading}>
-            {loading ? "⏳ Saving..." : editingContractor ? "Save Changes" : "Save"}
+          <button 
+            type="submit" 
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white border border-transparent rounded-md text-sm font-medium transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center min-w-[100px]" 
+            disabled={loading}
+          >
+            {loading ? (
+              <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            ) : editingContractor ? "Save Changes" : "Save"}
           </button>
         </div>
       </form>
     </div>
   )
-}
-
-const styles = {
-  container: {
-    display: "grid",
-    gap: "1rem",
-  },
-  uploadCard: {
-    border: "2px dashed rgba(50, 50, 50, 0.3)",
-    borderRadius: "16px",
-    padding: "1.5rem",
-    minHeight: "180px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    textAlign: "center",
-    color: "#323232",
-    cursor: "pointer",
-    backgroundColor: "#fafafa",
-  },
-  uploadIcon: {
-    width: "44px",
-    height: "44px",
-    borderRadius: "50%",
-    border: "2px solid rgba(50, 50, 50, 0.25)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "1.5rem",
-    marginBottom: "0.75rem",
-    color: "#323232",
-  },
-  uploadTitle: {
-    fontWeight: 700,
-    marginBottom: "0.35rem",
-    color: "#323232",
-  },
-  uploadSubtitle: {
-    color: "rgba(50, 50, 50, 0.7)",
-    fontSize: "0.9rem",
-  },
-  fileInput: {
-    display: "none",
-  },
-  form: {
-    display: "grid",
-    gap: "1rem",
-  },
-  field: {
-    display: "grid",
-    gap: "0.35rem",
-  },
-  label: {
-    color: "#323232",
-    fontWeight: 700,
-    fontSize: "0.9rem",
-  },
-  input: {
-    width: "100%",
-    padding: "0.9rem 1rem",
-    borderRadius: "10px",
-    border: "1px solid rgba(50, 50, 50, 0.18)",
-    fontSize: "0.95rem",
-    outline: "none",
-  },
-  select: {
-    width: "100%",
-    padding: "0.9rem 1rem",
-    borderRadius: "10px",
-    border: "1px solid rgba(50, 50, 50, 0.18)",
-    fontSize: "0.95rem",
-    backgroundColor: "white",
-    color: "#323232",
-    outline: "none",
-  },
-  option: {
-    color: "#323232",
-    backgroundColor: "white",
-  },
-  actions: {
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: "0.75rem",
-    marginTop: "0.25rem",
-  },
-  btnSubmit: {
-    padding: "0.75rem 1.35rem",
-    backgroundColor: "#ba352c",
-    color: "white",
-    border: "none",
-    borderRadius: "10px",
-    cursor: "pointer",
-    fontWeight: 700,
-  },
-  btnCancel: {
-    padding: "0.75rem 1.35rem",
-    backgroundColor: "transparent",
-    color: "#323232",
-    border: "1px solid #323232",
-    borderRadius: "10px",
-    cursor: "pointer",
-    fontWeight: 700,
-  },
-  error: {
-    backgroundColor: "#FBE5D6",
-    color: "#C00000",
-    padding: "0.9rem 1rem",
-    borderRadius: "8px",
-    fontSize: "0.9rem",
-  },
 }
 
 export default ContractorForm

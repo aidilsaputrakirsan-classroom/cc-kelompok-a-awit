@@ -15,53 +15,36 @@ function DeleteConfirmDialog({ open, ticketNo, onConfirm, onCancel, loading, err
   if (!open) return null;
 
   return (
-    <div className="blk-modal-overlay" onClick={onCancel} role="presentation">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm" onClick={onCancel} role="presentation">
       <div
-        className="blk-modal"
+        className="bg-white dark:bg-gray-800 w-full max-w-md rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-center p-8"
         role="dialog"
         aria-modal="true"
         aria-labelledby="delete-dialog-title"
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: "450px", width: "95%", textAlign: "center", padding: "2rem" }}
       >
-        <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>⚠️</div>
+        <div className="text-5xl mb-4">⚠️</div>
         
-        <h2 id="delete-dialog-title" style={{ marginTop: 0, marginBottom: "1rem", color: "var(--text-primary)" }}>
+        <h2 id="delete-dialog-title" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
           Konfirmasi Hapus
         </h2>
         
-        <p style={{ color: "var(--text-secondary)", marginBottom: "2rem", lineHeight: 1.5 }}>
-          Hapus transaksi tiket <strong>{ticketNo}</strong>? Tindakan ini tidak dapat dibatalkan.
+        <p className="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
+          Hapus transaksi tiket <strong className="font-semibold text-gray-900 dark:text-gray-100">{ticketNo}</strong>? Tindakan ini tidak dapat dibatalkan.
         </p>
 
         {error && (
-          <div style={{
-            backgroundColor: "#FBE5D6",
-            color: "#C00000",
-            padding: "0.9rem 1rem",
-            borderRadius: "8px",
-            fontSize: "0.9rem",
-            marginBottom: "1.5rem",
-            textAlign: "left"
-          }}>
+          <div className="mb-6 p-4 rounded-md bg-red-50 text-red-700 text-sm border border-red-200 text-left">
             {error}
           </div>
         )}
 
-        <div style={{ display: "flex", justifyContent: "center", gap: "1rem" }}>
+        <div className="flex justify-center gap-4">
           <button
             type="button"
             onClick={onCancel}
             disabled={loading}
-            style={{
-              padding: "0.75rem 1.5rem",
-              backgroundColor: "transparent",
-              color: "var(--text-primary, #323232)",
-              border: "1px solid var(--border-color, #323232)",
-              borderRadius: "10px",
-              cursor: "pointer",
-              fontWeight: 700,
-            }}
+            className="px-6 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md text-sm font-medium transition-colors shadow-sm disabled:opacity-50 min-w-[100px]"
           >
             Batal
           </button>
@@ -69,17 +52,11 @@ function DeleteConfirmDialog({ open, ticketNo, onConfirm, onCancel, loading, err
             type="button"
             onClick={onConfirm}
             disabled={loading}
-            style={{
-              padding: "0.75rem 1.5rem",
-              backgroundColor: "#ba352c",
-              color: "white",
-              border: "none",
-              borderRadius: "10px",
-              cursor: "pointer",
-              fontWeight: 700,
-            }}
+            className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white border border-transparent rounded-md text-sm font-medium transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center min-w-[120px]"
           >
-            {loading ? "⏳ Menghapus..." : "Ya, Hapus"}
+            {loading ? (
+              <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            ) : "Ya, Hapus"}
           </button>
         </div>
       </div>

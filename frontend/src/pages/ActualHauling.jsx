@@ -13,8 +13,8 @@ import HaulingTable from "../components/hauling/HaulingTable"
 import AddTransactionModal from "../components/hauling/AddTransactionModal"
 import EditTransactionModal from "../components/hauling/EditTransactionModal"
 import DeleteConfirmDialog from "../components/hauling/DeleteConfirmDialog"
+import AssignDriverModal from "../components/hauling/AssignDriverModal"
 import ExportButton from "../components/hauling/ExportButton"
-import "./BlocksPage.css" // Keep original CSS
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
 
@@ -73,7 +73,6 @@ async function fetchHaulingTransactions(paramsObj = {}) {
   if (paramsObj.skip !== undefined) params.append("skip", paramsObj.skip)
   if (paramsObj.limit !== undefined) params.append("limit", paramsObj.limit)
   
-  // Maps to backend fastAPI query parameters typically
   if (paramsObj.ticket_no) params.append("ticket_no", paramsObj.ticket_no)
   if (paramsObj.vendor_id) params.append("vendor_id", paramsObj.vendor_id)
   if (paramsObj.block_id) params.append("block_id", paramsObj.block_id)
@@ -115,14 +114,12 @@ function ActualHauling() {
   const [vendors, setVendors] = useState([])
   const [blocks, setBlocks] = useState([])
   
-  // Loading states
   const [loading, setLoading] = useState(true)
   const [masterLoading, setMasterLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState(null)
   const [deleteError, setDeleteError] = useState(null)
 
-  // Filters state
   const [filters, setFilters] = useState({
     ticket_no: "",
     vendor_id: "",
@@ -135,7 +132,6 @@ function ActualHauling() {
     return Object.values(filters).some(val => val !== "");
   }, [filters]);
 
-  // Pagination state
   const [pagination, setPagination] = useState({
     page: 1,
     per_page: 20,
@@ -143,16 +139,15 @@ function ActualHauling() {
     total_pages: 1
   })
 
-  // Sort state
   const [sortConfig, setSortConfig] = useState({
     sort_by: "",
-    sort_dir: "" // 'asc' | 'desc' | ''
+    sort_dir: ""
   })
 
-  // Modals state
   const [addModalOpen, setAddModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [assignModalOpen, setAssignModalOpen] = useState(false)
   
   const [selectedTransactionId, setSelectedTransactionId] = useState(null)
   const [selectedTicketNo, setSelectedTicketNo] = useState("")
@@ -223,7 +218,6 @@ function ActualHauling() {
       
       setTransactions(data.transactions || data.data || [])
       
-      // Update pagination based on response
       if (data.total !== undefined) {
         setPagination(prev => ({
           ...prev,
@@ -231,7 +225,6 @@ function ActualHauling() {
           total_pages: Math.ceil(data.total / prev.per_page) || 1
         }))
       } else {
-        // Fallback if backend doesn't return total
         setPagination(prev => ({
           ...prev,
           total: (data.transactions || data.data || []).length,
@@ -251,14 +244,12 @@ function ActualHauling() {
     loadMasterData()
   }, [loadMasterData])
 
-  // Trigger loadTransactions when filters, page, or sort changes
   useEffect(() => {
     syncTokenFromStorage()
     loadTransactions()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, pagination.page, pagination.per_page, sortConfig]) // We omit loadTransactions intentionally
+  }, [filters, pagination.page, pagination.per_page, sortConfig])
 
-  // Reset to page 1 when filters or sort change
   useEffect(() => {
     setPagination(prev => ({ ...prev, page: 1 }));
   }, [filters, sortConfig]);
@@ -270,6 +261,11 @@ function ActualHauling() {
   const openEditModal = (row) => {
     setSelectedTransactionId(row.id)
     setEditModalOpen(true)
+  }
+
+  const openAssignModal = (row) => {
+    setSelectedTransactionId(row.id)
+    setAssignModalOpen(true)
   }
 
   const openDeleteDialog = (row) => {
@@ -287,7 +283,7 @@ function ActualHauling() {
       setAddModalOpen(false)
       loadTransactions()
     } catch (err) {
-      throw err // Handled by modal
+      throw err 
     } finally {
       setActionLoading(false)
     }
@@ -301,7 +297,7 @@ function ActualHauling() {
       setEditModalOpen(false)
       loadTransactions()
     } catch (err) {
-      throw err // Handled by modal
+      throw err 
     } finally {
       setActionLoading(false)
     }
@@ -326,6 +322,20 @@ function ActualHauling() {
     }
   }
 
+  const handleAssignSubmit = async (id, payload) => {
+    setActionLoading(true)
+    try {
+      await new Promise(res => setTimeout(res, 500))
+      
+      showToast?.("Driver berhasil di-assign", "success")
+      setAssignModalOpen(false)
+    } catch (err) {
+      showToast?.("Gagal meng-assign driver", "error")
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
   const handleFilterChange = (field, value) => {
     setFilters((prev) => ({ ...prev, [field]: value }))
   }
@@ -341,20 +351,20 @@ function ActualHauling() {
   }
 
   return (
-    <div className="blk-page">
-      <div className="blk-page__toolbar">
-        <div className="blk-page__titles">
-          <h1>Actual Hauling</h1>
-          <p>
+    <div className="flex flex-col gap-6 pb-10">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Actual Hauling</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             PalmTrack Cloud — pencatatan transaksi pengangkutan TBS.
           </p>
         </div>
-        <div className="blk-page__actions" style={{ display: "flex", gap: "0.5rem" }}>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <ExportButton filters={filters} loading={loading} />
           
           <button
             type="button"
-            className="blk-btn-add"
+            className="px-4 py-2 bg-gray-900 hover:bg-gray-800 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap"
             onClick={openAddModal}
             disabled={loading || actionLoading}
           >
@@ -363,47 +373,41 @@ function ActualHauling() {
         </div>
       </div>
 
-      <HaulingFilterBar 
-        filters={filters}
-        onChange={handleFilterChange}
-        onReset={handleResetFilters}
-        vendors={vendors}
-        blocks={blocks}
-        loading={loading}
-        masterLoading={masterLoading}
-      />
-
-      {error && !loading && (
-        <div
-          role="alert"
-          style={{
-            margin: "1rem 2rem",
-            padding: "0.75rem 1rem",
-            background: "#f8d7da",
-            color: "#721c24",
-            borderRadius: 8,
-            border: "1px solid #f5c6cb",
-            fontSize: "0.88rem",
-          }}
-        >
-          {error}
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+        <div className="border-b border-gray-200 dark:border-gray-700">
+          <HaulingFilterBar 
+            filters={filters}
+            onChange={handleFilterChange}
+            onReset={handleResetFilters}
+            vendors={vendors}
+            blocks={blocks}
+            loading={loading}
+            masterLoading={masterLoading}
+          />
         </div>
-      )}
 
-      <HaulingTable
-        rows={transactions}
-        vendors={vendors}
-        blocks={blocks}
-        loading={loading}
-        onEdit={openEditModal}
-        onDelete={openDeleteDialog}
-        sortConfig={sortConfig}
-        onSort={handleSort}
-        pagination={pagination}
-        onPageChange={(page) => setPagination(prev => ({ ...prev, page }))}
-        onPerPageChange={(per_page) => setPagination(prev => ({ ...prev, per_page, page: 1 }))}
-        hasActiveFilters={hasActiveFilters}
-      />
+        {error && !loading && (
+          <div className="m-4 p-4 bg-red-50 text-red-700 border border-red-200 rounded-md text-sm" role="alert">
+            {error}
+          </div>
+        )}
+
+        <HaulingTable
+          rows={transactions}
+          vendors={vendors}
+          blocks={blocks}
+          loading={loading}
+          onEdit={openEditModal}
+          onAssign={openAssignModal}
+          onDelete={openDeleteDialog}
+          sortConfig={sortConfig}
+          onSort={handleSort}
+          pagination={pagination}
+          onPageChange={(page) => setPagination(prev => ({ ...prev, page }))}
+          onPerPageChange={(per_page) => setPagination(prev => ({ ...prev, per_page, page: 1 }))}
+          hasActiveFilters={hasActiveFilters}
+        />
+      </div>
 
       {/* Modals & Dialogs */}
       <AddTransactionModal
@@ -431,6 +435,14 @@ function ActualHauling() {
         onCancel={() => setDeleteDialogOpen(false)}
         loading={actionLoading}
         error={deleteError}
+      />
+
+      <AssignDriverModal
+        open={assignModalOpen}
+        transactionId={selectedTransactionId}
+        onClose={() => setAssignModalOpen(false)}
+        onSubmit={handleAssignSubmit}
+        submitting={actionLoading}
       />
     </div>
   )

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
+import { Download, FileSpreadsheet, FileText } from "lucide-react";
 
 function ExportButton({ filters, loading }) {
   const outlet = useOutletContext() || {};
@@ -30,79 +31,41 @@ function ExportButton({ filters, loading }) {
   };
 
   return (
-    <div style={{ position: "relative" }} ref={dropdownRef}>
+    <div className="relative inline-block text-left" ref={dropdownRef}>
       <button
         type="button"
         onClick={() => setOpen(!open)}
         disabled={loading || exporting}
-        style={{
-          padding: "0.55rem 1rem",
-          backgroundColor: "white",
-          color: "var(--text-primary)",
-          border: "1px solid var(--border-color)",
-          borderRadius: "8px",
-          cursor: "pointer",
-          fontWeight: 600,
-          display: "flex",
-          alignItems: "center",
-          gap: "0.5rem",
-          fontSize: "0.88rem"
-        }}
+        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md text-sm font-medium shadow-sm transition-colors disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap"
       >
-        <span>📥</span> {exporting ? "Exporting..." : "Export"}
+        {exporting ? (
+          <svg className="animate-spin h-4 w-4 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        ) : (
+          <Download size={16} className="text-emerald-600 dark:text-emerald-500" />
+        )}
+        {exporting ? "Exporting..." : "Export"}
       </button>
 
       {open && (
-        <div style={{
-          position: "absolute",
-          top: "100%",
-          right: 0,
-          marginTop: "0.5rem",
-          backgroundColor: "var(--card-bg, white)",
-          border: "1px solid var(--border-color)",
-          borderRadius: "8px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-          zIndex: 10,
-          minWidth: "160px",
-          overflow: "hidden"
-        }}>
-          <button
-            type="button"
-            onClick={() => handleExport("xlsx")}
-            style={{
-              width: "100%",
-              padding: "0.75rem 1rem",
-              textAlign: "left",
-              backgroundColor: "transparent",
-              border: "none",
-              borderBottom: "1px solid var(--border-color)",
-              cursor: "pointer",
-              color: "var(--text-primary)",
-              fontSize: "0.88rem"
-            }}
-            onMouseOver={(e) => e.target.style.backgroundColor = "rgba(0,0,0,0.05)"}
-            onMouseOut={(e) => e.target.style.backgroundColor = "transparent"}
-          >
-            Export Excel (.xlsx)
-          </button>
-          <button
-            type="button"
-            onClick={() => handleExport("pdf")}
-            style={{
-              width: "100%",
-              padding: "0.75rem 1rem",
-              textAlign: "left",
-              backgroundColor: "transparent",
-              border: "none",
-              cursor: "pointer",
-              color: "var(--text-primary)",
-              fontSize: "0.88rem"
-            }}
-            onMouseOver={(e) => e.target.style.backgroundColor = "rgba(0,0,0,0.05)"}
-            onMouseOut={(e) => e.target.style.backgroundColor = "transparent"}
-          >
-            Export PDF
-          </button>
+        <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 dark:ring-white dark:ring-opacity-10 divide-y divide-gray-100 dark:divide-gray-700 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+          <div className="py-1">
+            <button
+              type="button"
+              onClick={() => handleExport("xlsx")}
+              className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors text-left"
+            >
+              <FileSpreadsheet size={16} className="text-green-600 dark:text-green-500" />
+              Export Excel (.xlsx)
+            </button>
+            <button
+              type="button"
+              onClick={() => handleExport("pdf")}
+              className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors text-left"
+            >
+              <FileText size={16} className="text-red-500 dark:text-red-400" />
+              Export PDF
+            </button>
+          </div>
         </div>
       )}
     </div>

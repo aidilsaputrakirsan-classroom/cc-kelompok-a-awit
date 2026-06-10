@@ -13,7 +13,6 @@ function BlockForm({ onSubmit, editingBlock, onCancel, loading }) {
   const [vendors, setVendors] = useState([])
   const [loadingVendors, setLoadingVendors] = useState(false)
 
-  // Fetch vendors filtered by type === "Palm Oil Harvester"
   useEffect(() => {
     const fetchFilteredVendors = async () => {
       setLoadingVendors(true)
@@ -102,60 +101,64 @@ function BlockForm({ onSubmit, editingBlock, onCancel, loading }) {
   }
 
   return (
-    <div style={styles.container}>
-      {error && <div style={styles.error}>{error}</div>}
+    <div className="flex flex-col gap-6">
+      {error && (
+        <div className="p-4 rounded-md bg-red-50 text-red-700 text-sm border border-red-200">
+          {error}
+        </div>
+      )}
 
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <div style={styles.row}>
-          <div style={styles.field}>
-            <label style={styles.label}>Block Code *</label>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Block Code <span className="text-red-500">*</span></label>
             <input
               type="text"
               name="block_code"
               value={formData.block_code}
               onChange={handleChange}
               placeholder="Contoh: BLK-A1"
-              style={styles.input}
+              className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:bg-gray-50"
               disabled={loading || !!editingBlock}
               maxLength="10"
             />
           </div>
-          <div style={styles.field}>
-            <label style={styles.label}>Division / Area Name *</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Division / Area Name <span className="text-red-500">*</span></label>
             <input
               type="text"
               name="division"
               value={formData.division}
               onChange={handleChange}
               placeholder="Contoh: Afdeling 1"
-              style={styles.input}
+              className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:bg-gray-50"
               disabled={loading}
             />
           </div>
         </div>
 
-        <div style={styles.row}>
-          <div style={styles.field}>
-            <label style={styles.label}>Area Size (Ha) *</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Area Size (Ha) <span className="text-red-500">*</span></label>
             <input
               type="number"
               name="hectarage"
               value={formData.hectarage}
               onChange={handleChange}
               placeholder="Contoh: 50.25"
-              style={styles.input}
+              className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:bg-gray-50"
               disabled={loading}
               step="0.01"
               min="0"
             />
           </div>
-          <div style={styles.field}>
-            <label style={styles.label}>Responsible Contractor</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Responsible Contractor</label>
             <select
               name="vendor_id"
               value={formData.vendor_id}
               onChange={handleChange}
-              style={styles.select}
+              className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm shadow-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:bg-gray-50"
               disabled={loading || loadingVendors}
             >
               <option value="">Select Contractor...</option>
@@ -168,113 +171,42 @@ function BlockForm({ onSubmit, editingBlock, onCancel, loading }) {
           </div>
         </div>
 
-        <div style={styles.field}>
-          <label style={styles.label}>Status</label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Status</label>
           <select
             name="status"
             value={formData.status}
             onChange={handleChange}
-            style={styles.select}
+            className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md text-sm shadow-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all disabled:opacity-50 disabled:bg-gray-50"
             disabled={loading}
           >
-            <option value="active" style={styles.option}>
-              Active
-            </option>
-            <option value="inactive" style={styles.option}>
-              Inactive
-            </option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
           </select>
         </div>
 
-        <div style={styles.actions}>
-          <button type="button" onClick={onCancel} style={styles.btnCancel} disabled={loading}>
+        <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <button 
+            type="button" 
+            onClick={onCancel} 
+            className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md text-sm font-medium transition-colors shadow-sm disabled:opacity-50" 
+            disabled={loading}
+          >
             Cancel
           </button>
-          <button type="submit" style={styles.btnSubmit} disabled={loading}>
-            {loading ? "⏳ Saving..." : editingBlock ? "Save Changes" : "Save"}
+          <button 
+            type="submit" 
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white border border-transparent rounded-md text-sm font-medium transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center min-w-[100px]" 
+            disabled={loading}
+          >
+            {loading ? (
+              <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            ) : editingBlock ? "Save Changes" : "Save"}
           </button>
         </div>
       </form>
     </div>
   )
-}
-
-const styles = {
-  container: {
-    display: "grid",
-    gap: "1rem",
-  },
-  form: {
-    display: "grid",
-    gap: "1rem",
-  },
-  row: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "1rem",
-  },
-  field: {
-    display: "grid",
-    gap: "0.35rem",
-  },
-  label: {
-    color: "#323232",
-    fontWeight: 700,
-    fontSize: "0.9rem",
-  },
-  input: {
-    width: "100%",
-    padding: "0.9rem 1rem",
-    borderRadius: "10px",
-    border: "1px solid rgba(50, 50, 50, 0.18)",
-    fontSize: "0.95rem",
-    outline: "none",
-  },
-  select: {
-    width: "100%",
-    padding: "0.9rem 1rem",
-    borderRadius: "10px",
-    border: "1px solid rgba(50, 50, 50, 0.18)",
-    fontSize: "0.95rem",
-    backgroundColor: "white",
-    color: "#323232",
-    outline: "none",
-  },
-  option: {
-    color: "#323232",
-    backgroundColor: "white",
-  },
-  actions: {
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: "0.75rem",
-    marginTop: "0.25rem",
-  },
-  btnSubmit: {
-    padding: "0.75rem 1.35rem",
-    backgroundColor: "#ba352c",
-    color: "white",
-    border: "none",
-    borderRadius: "10px",
-    cursor: "pointer",
-    fontWeight: 700,
-  },
-  btnCancel: {
-    padding: "0.75rem 1.35rem",
-    backgroundColor: "transparent",
-    color: "#323232",
-    border: "1px solid #323232",
-    borderRadius: "10px",
-    cursor: "pointer",
-    fontWeight: 700,
-  },
-  error: {
-    backgroundColor: "#FBE5D6",
-    color: "#C00000",
-    padding: "0.9rem 1rem",
-    borderRadius: "8px",
-    fontSize: "0.9rem",
-  },
 }
 
 export default BlockForm

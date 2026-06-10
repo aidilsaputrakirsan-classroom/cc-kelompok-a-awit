@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router-dom"
 import { fetchBlocks, createBlock, updateBlock, deleteBlock, fetchVendors } from "../services/api"
 import BlockTable from "../components/BlockTable"
 import BlockForm from "../components/BlockForm"
-import "./BlocksPage.css"
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 
 function BlocksPage() {
   const outlet = useOutletContext() || {}
@@ -133,82 +133,87 @@ function BlocksPage() {
     const maxPage = Math.ceil(total / limit)
 
     return (
-      <div className="blk-pagination">
-        <div className="blk-pagination__info">
-          <span className="blk-pagination__label">
-            Showing <strong>{skip + 1}</strong> to <strong>{Math.min(skip + limit, total)}</strong> of{" "}
-            <strong>{total}</strong> blocks
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-3 px-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+        <div className="flex flex-col sm:flex-row items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+          <span>
+            Showing <strong className="font-semibold text-gray-900 dark:text-gray-100">{skip + 1}</strong> to <strong className="font-semibold text-gray-900 dark:text-gray-100">{Math.min(skip + limit, total)}</strong> of{" "}
+            <strong className="font-semibold text-gray-900 dark:text-gray-100">{total}</strong> blocks
           </span>
+          <label className="flex items-center gap-2">
+            <span>Per Page:</span>
+            <select
+              value={limit}
+              onChange={(e) => handleLimitChange(parseInt(e.target.value))}
+              className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md py-1 pl-2 pr-6 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50"
+              disabled={loading || actionLoading}
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+          </label>
         </div>
-        <div className="blk-pagination__controls">
-          <button
-            type="button"
-            className="blk-page-btn"
-            onClick={() => handlePageChange(1)}
-            disabled={currentPage === 1 || loading || actionLoading}
-          >
-            First
-          </button>
-          <button
-            type="button"
-            className="blk-page-btn"
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1 || loading || actionLoading}
-          >
-            Previous
-          </button>
-          <span className="blk-pagination__page">
-            Page <strong>{currentPage}</strong> of <strong>{maxPage}</strong>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            Page <strong className="font-semibold text-gray-900 dark:text-gray-100">{currentPage}</strong> of <strong className="font-semibold text-gray-900 dark:text-gray-100">{maxPage}</strong>
           </span>
-          <button
-            type="button"
-            className="blk-page-btn"
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === maxPage || loading || actionLoading}
-          >
-            Next
-          </button>
-          <button
-            type="button"
-            className="blk-page-btn"
-            onClick={() => handlePageChange(maxPage)}
-            disabled={currentPage === maxPage || loading || actionLoading}
-          >
-            Last
-          </button>
-        </div>
-        <div className="blk-pagination__limit">
-          <label>Per Page:</label>
-          <select
-            value={limit}
-            onChange={(e) => handleLimitChange(parseInt(e.target.value))}
-            className="blk-pagination__select"
-            disabled={loading || actionLoading}
-          >
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-          </select>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              className="p-1.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1 || loading || actionLoading}
+              title="First Page"
+            >
+              <ChevronsLeft size={16} />
+            </button>
+            <button
+              type="button"
+              className="p-1.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1 || loading || actionLoading}
+              title="Previous Page"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              type="button"
+              className="p-1.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === maxPage || loading || actionLoading}
+              title="Next Page"
+            >
+              <ChevronRight size={16} />
+            </button>
+            <button
+              type="button"
+              className="p-1.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              onClick={() => handlePageChange(maxPage)}
+              disabled={currentPage === maxPage || loading || actionLoading}
+              title="Last Page"
+            >
+              <ChevronsRight size={16} />
+            </button>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="blk-page">
-      <div className="blk-page__toolbar">
-        <div className="blk-page__titles">
-          <h1>Block / Area Master Data</h1>
-          <p>
-            Manage palm oil plantation blocks and areas. Data retrieved from{" "}
-            <code style={{ fontSize: "0.8em" }}>/api/blocks</code>.
+    <div className="flex flex-col gap-6 pb-10">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Block / Area Master Data</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Manage palm oil plantation blocks and areas.
           </p>
         </div>
-        <div className="blk-page__actions">
-          <form onSubmit={handleSearchSubmit}>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <form onSubmit={handleSearchSubmit} className="flex-1 sm:flex-none">
             <input
               type="search"
-              className="blk-search"
+              className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
               placeholder="Search block code or division…"
               value={searchDraft}
               onChange={(e) => setSearchDraft(e.target.value)}
@@ -217,7 +222,7 @@ function BlocksPage() {
           </form>
           <button
             type="button"
-            className="blk-btn-add"
+            className="px-4 py-2 bg-gray-900 hover:bg-gray-800 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap"
             onClick={openModal}
             disabled={actionLoading}
           >
@@ -227,40 +232,43 @@ function BlocksPage() {
       </div>
 
       {isModalOpen && (
-        <div className="blk-modal-overlay">
-          <div className="blk-modal" role="dialog" aria-modal="true">
-            <div className="blk-modal__header">
-              <h2 className="blk-modal__title">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 w-full max-w-lg rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200" role="dialog" aria-modal="true">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {editingBlock ? "Edit Block" : "Add Block"}
               </h2>
               <button
                 type="button"
-                className="blk-modal__close"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1"
                 onClick={closeModal}
                 aria-label="Close modal"
               >
-                ×
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            <BlockForm
-              onSubmit={handleSubmit}
-              editingBlock={editingBlock}
-              onCancel={closeModal}
-              loading={actionLoading}
-            />
+            <div className="p-6">
+              <BlockForm
+                onSubmit={handleSubmit}
+                editingBlock={editingBlock}
+                onCancel={closeModal}
+                loading={actionLoading}
+              />
+            </div>
           </div>
         </div>
       )}
 
-      <BlockTable
-        blocks={blocks}
-        vendors={vendors}
-        loading={loading || actionLoading}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
-
-      {renderPagination()}
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+        <BlockTable
+          blocks={blocks}
+          vendors={vendors}
+          loading={loading || actionLoading}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+        {renderPagination()}
+      </div>
     </div>
   )
 }
