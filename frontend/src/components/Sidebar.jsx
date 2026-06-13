@@ -11,7 +11,6 @@ import {
   PanelLeftClose,
   PanelLeft,
   Info,
-  Activity,
 } from "lucide-react"
 import DarkModeToggle from "./DarkModeToggle"
 
@@ -50,9 +49,6 @@ function Sidebar({ collapsed, onToggleCollapse }) {
           </NavLink>
           <NavLink to="/transactions/hauling" className={navCls} title="Actual Hauling">
             <Truck size={22} className="pt-sidebar__icon" aria-hidden />
-          </NavLink>
-          <NavLink to="/status" className={navCls} title="System Status">
-            <Activity size={22} className="pt-sidebar__icon" aria-hidden />
           </NavLink>
           <NavLink to="/about" className={navCls} title="About">
             <Info size={22} className="pt-sidebar__icon" aria-hidden />
@@ -136,11 +132,6 @@ function Sidebar({ collapsed, onToggleCollapse }) {
           )}
         </div>
 
-        <NavLink to="/status" className={navCls}>
-          <Activity size={20} className="pt-sidebar__icon" aria-hidden />
-          <span>Status</span>
-        </NavLink>
-        
         <NavLink to="/about" className={navCls}>
           <Info size={20} className="pt-sidebar__icon" aria-hidden />
           <span>About</span>

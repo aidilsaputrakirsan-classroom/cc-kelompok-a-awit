@@ -13,7 +13,6 @@ import MappingPage from "./pages/MappingPage"
 import ActualHauling from "./pages/ActualHauling"
 import ItemsPage from "./pages/ItemsPage"
 import AboutPage from "./components/AboutPage"
-import StatusPage from "./pages/StatusPage"
 
 export default function App() {
   return (
@@ -37,7 +36,6 @@ export default function App() {
               <Route path="master-data/mapping" element={<MappingPage />} />
               <Route path="transactions/hauling" element={<ActualHauling />} />
               <Route path="items" element={<ItemsPage />} />
-              <Route path="status" element={<StatusPage />} />
               <Route path="about" element={<AboutPage onBack={() => window.history.back()} />} />
             </Route>
           </Route>

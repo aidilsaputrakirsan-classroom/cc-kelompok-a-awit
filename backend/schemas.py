@@ -265,6 +265,7 @@ class ItemBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     description: Optional[str] = Field(None, max_length=255)
     category: Optional[str] = Field(None, max_length=50)
+    price: float = Field(default=0.0, ge=0)
     status: bool = Field(default=True)
 
 
@@ -278,6 +279,7 @@ class ItemUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     category: Optional[str] = None
+    price: Optional[float] = Field(None, ge=0)
     status: Optional[bool] = None
 
 
@@ -302,6 +304,9 @@ class ItemStatsResponse(BaseModel):
     total_items: int
     total_categories: int
     items_by_category: dict[str, int]
+    total_value: float
+    highest_price: float
+    lowest_price: float
 
 
 # ============================================================
