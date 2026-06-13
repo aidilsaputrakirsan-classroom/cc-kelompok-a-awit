@@ -8,7 +8,8 @@ def test_create_item(client, auth_headers):
         "code": "ITEM001",
         "name": "Laptop",
         "description": "Laptop untuk cloud computing",
-        "category": "Electronics"
+        "category": "Electronics",
+        "price": 15000.0
     }, headers=auth_headers)
     assert response.status_code == 201
     data = response.json()
@@ -162,13 +163,13 @@ def test_items_stats(client, auth_headers):
     # Buat 3 items di kategori Electronics
     for i in range(1, 4):
         client.post("/api/items", json={
-            "code": f"ELEC{i:03d}", "name": f"Electronic {i}", "category": "Electronics"
+            "code": f"ELEC{i:03d}", "name": f"Electronic {i}", "category": "Electronics", "price": float(i * 1000)
         }, headers=auth_headers)
     
     # Buat 2 items di kategori Accessories
     for i in range(1, 3):
         client.post("/api/items", json={
-            "code": f"ACC{i:03d}", "name": f"Accessory {i}", "category": "Accessories"
+            "code": f"ACC{i:03d}", "name": f"Accessory {i}", "category": "Accessories", "price": float(i * 500)
         }, headers=auth_headers)
     
     response = client.get("/api/items/stats", headers=auth_headers)
@@ -179,9 +180,14 @@ def test_items_stats(client, auth_headers):
     assert "total_items" in data
     assert "total_categories" in data
     assert "items_by_category" in data
+    assert "total_value" in data
+    assert "highest_price" in data
+    assert "lowest_price" in data
     
     # Validasi data
     assert data["total_items"] >= 5
     assert data["total_categories"] >= 2
     assert data["items_by_category"]["Electronics"] >= 3
     assert data["items_by_category"]["Accessories"] >= 2
+    assert data["total_value"] > 0
+    assert data["highest_price"] >= 3000.0

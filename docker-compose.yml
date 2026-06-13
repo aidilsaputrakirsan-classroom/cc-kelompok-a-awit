@@ -1,109 +1,191 @@
 version: '3.8'
 
-# Docker Compose untuk 3-container architecture:
-# - PostgreSQL database
-# - FastAPI backend
-# - Nginx frontend (dari React build)
+# =====================================================================
+# Docker Compose — Arsitektur Microservices (Resilience & Hardening)
+# Proyek: PalmTrack Cloud — PalmChain
+# Peran: Lead DevOps (Varrel)
+# =====================================================================
 
 services:
   # ============================================================
-  # Database Service
+  # DATABASES (Database per Service)
   # ============================================================
-  db:
+  auth-db:
     image: postgres:16-alpine
-    container_name: db
+    container_name: auth-db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
-      POSTGRES_DB: cloudapp
+      POSTGRES_DB: auth_db
       POSTGRES_INITDB_ARGS: "--encoding=UTF8"
-    ports:
-      - "5432:5432"
     networks:
       - cloudnet
     volumes:
-      # Named volume untuk persistent data
-      - pgdata:/var/lib/postgresql/data
+      - auth_db_data:/var/lib/postgresql/data
     healthcheck:
-      # Cek database setiap 5 detik
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
       start_period: 10s
+    # ── [TUGAS DEVOPS MODUL 13: HARDENING RESOURCE LIMITS] ──
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+
+  item-db:
+    image: postgres:16-alpine
+    container_name: item-db
     restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: item_db
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    networks:
+      - cloudnet
+    volumes:
+      - item_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    # ── [TUGAS DEVOPS MODUL 13: HARDENING RESOURCE LIMITS] ──
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
 
   # ============================================================
-  # Backend Service (FastAPI)
+  # BACKEND MICROSERVICES
   # ============================================================
-  backend:
+  auth-service:
     build:
-      context: ./backend
+      context: ./services/auth-service
       dockerfile: Dockerfile
-    container_name: backend
+    container_name: auth-service
+    restart: unless-stopped
     environment:
-      # Database connection — gunakan hostname 'db' (nama service)
-      DATABASE_URL: postgresql://postgres:postgres123@db:5432/cloudapp
-      
-      # JWT configuration
-      SECRET_KEY: your-secret-key-here-change-in-production
-      ALGORITHM: HS256
-      ACCESS_TOKEN_EXPIRE_MINUTES: 60
-      
-      # CORS configuration
-      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:5173,http://frontend,https://cc-kelompok-a-awit.akhzafachrozy.my.id
-    ports:
-      - "8000:8000"
+      DATABASE_URL: postgresql://postgres:postgres123@auth-db:5432/auth_db
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-here-change-in-production}
+      CORS_ORIGINS: "http://localhost,http://localhost:5173,http://localhost:3000"
     networks:
       - cloudnet
     depends_on:
-      # Wait for database service to be healthy
-      db:
+      auth-db:
         condition: service_healthy
+    # ── [TUGAS DEVOPS: HEALTHCHECK AUTH SERVICE] ──
     healthcheck:
-      # Check backend health setiap 10 detik
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health').getcode()"]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "auth-service"
+
+  item-service:
+    build:
+      context: ./services/item-service
+      dockerfile: Dockerfile
+    container_name: item-service
     restart: unless-stopped
-    # Backend akan tunggu database ready via wait-for-db.sh script
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres123@item-db:5432/item_db
+      AUTH_SERVICE_URL: http://auth-service:8001
+      CORS_ORIGINS: "http://localhost,http://localhost:5173,http://localhost:3000"
+    networks:
+      - cloudnet
+    depends_on:
+      item-db:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health').getcode()"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "item-service"
 
   # ============================================================
-  # Frontend Service (Nginx)
+  # FRONTEND SERVICE
   # ============================================================
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: frontend
-    ports:
-      - "3000:80"
+    restart: unless-stopped
     networks:
       - cloudnet
-    depends_on:
-      - backend
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+    # ── [TUGAS DEVOPS MODUL 13: HARDENING RESOURCE LIMITS] ──
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  # ============================================================
+  # API GATEWAY (Pintu Masuk Utama Tunggal)
+  # ============================================================
+  gateway:
+    image: nginx:alpine
+    container_name: gateway
     restart: unless-stopped
-    # Environment bisa di-pass ke Nginx config jika diperlukan
+    ports:
+      - "80:80"
+    volumes:
+      - ./services/gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      item-service:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    # ── [TUGAS DEVOPS MODUL 13: HARDENING RESOURCE LIMITS] ──
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
 
 # ============================================================
-# Networks
+# Networks & Volumes Configuration
 # ============================================================
 networks:
   cloudnet:
     driver: bridge
-    # Memungkinkan container saling berkomunikasi dengan hostname
 
-# ============================================================
-# Volumes
-# ============================================================
 volumes:
-  pgdata:
+  auth_db_data:
     driver: local
-    # Named volume untuk menyimpan data PostgreSQL persistent
+  item_db_data:
+    driver: local

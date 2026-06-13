@@ -1,18 +1,9 @@
 # Dokumentasi Arsitektur Microservices — PalmTrack Cloud (PalmChain)
 
-> **Tanggal Dokumen:** 09 Juni 2026 (Update: Modul 13)
+> **Tanggal Dokumen:** 09 Juni 2026
 > **Penulis:** Adonia Azarya Tamalonggehe (Lead QA & Documentation)
-> **Versi Arsitektur:** 2.1 (Fase Microservices Reliability — Modul 13)
+> **Versi Arsitektur:** 2.0 (Fase Microservices — Modul 12)
 > **Mata Kuliah:** Komputasi Awan — Institut Teknologi Kalimantan
-
----
-
-## Changelog
-
-| Versi | Tanggal | Perubahan |
-|-------|---------|----------|
-| 2.0 | 09 Jun 2026 | Arsitektur microservices awal (Modul 12) |
-| 2.1 | 09 Jun 2026 | Tambah resource limits, logging driver, circuit breaker diagram (Modul 13) |
 
 ---
 
@@ -101,21 +92,6 @@ sequenceDiagram
     GW-->>FE: 201 Created {item}
 ```
 
-### 1.5 Circuit Breaker — State Machine (Modul 13)
-
-```mermaid
-stateDiagram-v2
-    [*] --> Closed
-    Closed --> Open: 5 kegagalan berturut-turut
-    Open --> HalfOpen: Cooldown 30 detik selesai
-    HalfOpen --> Closed: 1 request berhasil ✅
-    HalfOpen --> Open: Request gagal lagi ❌
-
-    note right of Closed: NORMAL — semua request\nditeruskan ke Auth Service
-    note right of Open: OPEN — fast fail 503\ntanpa memanggil Auth Service
-    note right of HalfOpen: TESTING — coba 1 request\nuntuk cek apakah auth pulih
-```
-
 ---
 
 ## 2. Daftar Services + Ports
@@ -123,31 +99,11 @@ stateDiagram-v2
 | Container | Image | Port Expose | Port Internal | Database | Fungsi |
 |-----------|-------|-------------|--------------|----------|--------|
 | `gateway` | `nginx:alpine` | **80:80** | — | — | Pintu masuk tunggal, reverse proxy ke semua service |
-
-> **Update Modul 13** — Resource limits diterapkan pada seluruh container:
->
-> | Container | CPU Limit | Memory Limit |
-> |-----------|-----------|-------------|
-> | `auth-service` | 0.50 core | 512 MB |
-> | `item-service` | 0.50 core | 512 MB |
-> | `auth-db` | 0.25 core | 256 MB |
-> | `item-db` | 0.25 core | 256 MB |
-> | `frontend` | 0.25 core | 128 MB |
-> | `gateway` | 0.25 core | 128 MB |
->
-> **Logging** — `auth-service` dan `item-service` menggunakan driver `json-file` dengan rotasi otomatis maksimal 10 MB (3 file backup).
 | `auth-service` | `python:3.12-slim` | — | **8001** | `auth_db` | Register, login, verifikasi JWT token |
 | `item-service` | `python:3.12-slim` | — | **8002** | `item_db` | CRUD item, verifikasi token via auth-service |
 | `auth-db` | `postgres:16-alpine` | — | 5432 | — | Database eksklusif auth-service |
 | `item-db` | `postgres:16-alpine` | — | 5432 | — | Database eksklusif item-service |
 | `frontend` | React + Nginx | — | **3000** | — | Aplikasi React yang di-serve via Nginx |
-
-**Gateway Routing Rules:**
-
-**Update Modul 13 — Production Override (`docker-compose.prod.yml`):**
-- Semua service menggunakan `restart: always`
-- Port database (`auth-db`, `item-db`) **ditutup** dari host (tidak bisa diakses dari luar container)
-- Gateway membuka port `443` untuk persiapan HTTPS
 
 **Gateway Routing Rules:**
 
@@ -431,22 +387,5 @@ print(r.read())
 
 ---
 
----
-
-## 6. Reliability Patterns (Modul 13)
-
-Sistem mengimplementasikan tiga lapis proteksi untuk menangani kegagalan inter-service:
-
-| Pattern | Implementasi | Lokasi |
-|---------|-------------|--------|
-| **Retry + Exponential Backoff** | 3x retry (0.5s, 1s, 2s) untuk error transient | `services/item-service/auth_client.py` |
-| **Circuit Breaker** | State machine CLOSED→OPEN→HALF_OPEN, threshold 5 failure, cooldown 30s | `services/item-service/circuit_breaker.py` |
-| **Graceful Degradation** | Item Service tetap merespons dalam mode terbatas saat Auth down | `services/item-service/main.py` |
-
-> 📄 Lihat **[reliability-testing.md](./reliability-testing.md)** untuk skenario pengujian lengkap, cara reproduce, dan hasil test.
-
----
-
-*Dokumentasi ini disusun oleh **Adonia Azarya Tamalonggehe** (Lead QA & Documentation).*
-*Update terakhir: Modul 13 — Reliability & Hardening.*
+*Dokumentasi ini disusun oleh **Adonia Azarya Tamalonggehe** (Lead QA & Documentation) sebagai deliverable Modul 12 — Microservices Architecture.*
 *Institut Teknologi Kalimantan — Komputasi Awan 2026.*

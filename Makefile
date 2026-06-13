@@ -1,10 +1,24 @@
-.PHONY: up down build logs ps clean restart
+.PHONY: dev prod up down build logs status ps clean restart lint test pr-check
 
-# Start semua services
+# ── [TUGAS DEVOPS MODUL 14: ENVIRONMENT TARGETS] ──
+# Start lingkungan DEVELOPMENT lokal
+dev:
+	docker compose up --build -d
+
+# Start lingkungan PRODUCTION (menggabungkan file override prod)
+prod:
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+
+# Lihat status kesehatan kontainer (Memantau indikator healthy)
+status:
+	docker compose ps
+
+# ── [PERINTAH UTILITY REGULER] ──
+# Start semua services biasa
 up:
 	docker compose up -d
 
-# Start dengan rebuild
+# Start dengan rebuild total
 build:
 	docker compose up --build -d
 
@@ -12,33 +26,33 @@ build:
 down:
 	docker compose down
 
-# Stop, remove, DAN hapus volumes (⚠️ data hilang!)
+# Stop, remove, DAN hapus data volume serta cache (Hard Reset)
 clean:
 	docker compose down -v
-	docker system prune -f
+	docker builder prune -f
 
-# Restart semua
+# Restart semua kontainer
 restart:
 	docker compose restart
 
-# Lihat logs (semua services)
+# Lihat logs terintegrasi (semua services)
 logs:
 	docker compose logs -f
 
-# Lihat status
+# Alias untuk melihat status
 ps:
 	docker compose ps
 	
-# Linter (jalankan linter untuk cek kerapian kode backend)
+# Linter (Jalankan linter flake8 di dalam Auth Service)
 lint:
-	@echo "Menjalankan linter..."
-	docker compose exec backend flake8 .
+	@echo "Menjalankan linter di auth-service..."
+	docker compose exec auth-service flake8 .
 
-# Test (placeholder untuk unit test)
+# Test (Menjalankan unit test pytest di dalam Auth Service)
 test:
-	@echo "Menjalankan unit test..."
-	docker compose exec backend pytest
+	@echo "Menjalankan unit test di auth-service..."
+	docker compose exec auth-service pytest
 
-# PR Check (simulasi CI lokal: build ulang lalu test)
+# PR Check (Simulasi CI lokal sebelum push ke GitHub)
 pr-check: lint test
-	@echo "✅ PR Check selesai! Kode siap untuk dibuatkan Pull Request."
+	@echo "✅ PR Check lokal selesai! Kode infrastruktur siap untuk Pull Request."

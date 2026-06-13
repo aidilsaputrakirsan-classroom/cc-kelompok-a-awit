@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import "./LoginPage.css";
-import { User, Lock, Eye, EyeOff } from "lucide-react";
+import { User, Lock, Eye, EyeOff, Mail } from "lucide-react";
 
 function IconAndroid() {
   return (
@@ -24,11 +24,8 @@ function LogoIcon() {
 function IllustrationSVG() {
   return (
     <svg width="100%" height="100%" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Background Mountains */}
       <path d="M-50 300 L100 150 L250 300 Z" fill="#282828" />
       <path d="M150 300 L250 200 L450 300 Z" fill="#2A2A2A" />
-      
-      {/* Floating Board */}
       <g transform="translate(140, 70) rotate(-15) skewX(20)">
         <rect x="0" y="0" width="120" height="70" fill="#E0E0E0" rx="4" />
         <path d="M10 35 L110 35" stroke="#BDBDBD" strokeWidth="2" />
@@ -36,56 +33,51 @@ function IllustrationSVG() {
         <circle cx="60" cy="35" r="10" stroke="#D6382F" strokeWidth="2" fill="none" />
         <path d="M55 30 L65 40 M65 30 L55 40" stroke="#D6382F" strokeWidth="2" />
       </g>
-      
-      {/* Worker 1 (Left) */}
       <g transform="translate(90, 180)">
         <circle cx="10" cy="10" r="8" fill="#F07C35" />
         <rect x="2" y="20" width="16" height="24" fill="#666666" rx="4" />
         <rect x="4" y="44" width="4" height="20" fill="#444444" />
         <rect x="12" y="44" width="4" height="20" fill="#444444" />
         <path d="M18 24 L30 18" stroke="#666666" strokeWidth="4" strokeLinecap="round" />
-        {/* Tool */}
         <rect x="28" y="14" width="10" height="14" fill="#BDBDBD" rx="2" />
       </g>
-
-      {/* Worker 2 (Middle) */}
       <g transform="translate(200, 160)">
         <circle cx="10" cy="10" r="8" fill="#F07C35" />
         <rect x="2" y="20" width="16" height="24" fill="#666666" rx="4" />
         <rect x="4" y="44" width="4" height="20" fill="#444444" />
         <rect x="12" y="44" width="4" height="20" fill="#444444" />
         <path d="M2 24 L-10 18" stroke="#666666" strokeWidth="4" strokeLinecap="round" />
-        {/* Box */}
         <rect x="-24" y="4" width="18" height="18" fill="#4285F4" rx="2" />
       </g>
-
-      {/* Worker 3 (Right) */}
       <g transform="translate(260, 200)">
         <circle cx="10" cy="10" r="8" fill="#F07C35" />
         <rect x="2" y="20" width="16" height="24" fill="#666666" rx="4" />
         <rect x="4" y="44" width="4" height="20" fill="#444444" />
         <rect x="12" y="44" width="4" height="20" fill="#444444" />
-        {/* Cart */}
         <rect x="-30" y="30" width="24" height="14" fill="#4285F4" rx="2" />
         <circle cx="-25" cy="48" r="4" fill="#222" />
         <circle cx="-11" cy="48" r="4" fill="#222" />
         <path d="M-6 34 L2 24" stroke="#666666" strokeWidth="4" strokeLinecap="round" />
       </g>
-      
-      {/* Ground oval */}
       <ellipse cx="200" cy="270" rx="140" ry="20" fill="#000000" opacity="0.1" />
     </svg>
   );
 }
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, registerAndLogin } = useAuth();
+  const [mode, setMode] = useState("login"); // "login" | "register"
   const [showPw, setShowPw] = useState(false);
+  const [showPw2, setShowPw2] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+
+  const switchMode = (m) => { setMode(m); setError(""); };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -103,9 +95,24 @@ export default function LoginPage() {
     }
   };
 
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (!name || !email || !password || !confirmPw) { setError("Semua field wajib diisi."); return; }
+    if (password !== confirmPw) { setError("Konfirmasi password tidak cocok."); return; }
+    if (password.length < 8) { setError("Password minimal 8 karakter."); return; }
+    setLoading(true);
+    try {
+      await registerAndLogin({ name, email, password });
+    } catch (err) {
+      setError(err.message || "Registrasi gagal, coba lagi.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="login-container">
-      {/* Background Elements */}
       <div className="bg-dots"></div>
       <div className="bg-circle bg-circle-1"></div>
       <div className="bg-circle bg-circle-2"></div>
@@ -126,48 +133,131 @@ export default function LoginPage() {
         {/* Right Side: Form */}
         <div className="login-right">
           <div className="login-form-wrapper">
-            <h2>Login</h2>
-            
-            {error && (
-              <div className="login-alert">
-                {error}
-              </div>
+            {/* Tab switcher Login / Daftar */}
+            <div className="login-tabs">
+              <button
+                id="tab-login"
+                className={`login-tab${mode === "login" ? " login-tab--active" : ""}`}
+                onClick={() => switchMode("login")}
+                type="button"
+              >Masuk</button>
+              <button
+                id="tab-register"
+                className={`login-tab${mode === "register" ? " login-tab--active" : ""}`}
+                onClick={() => switchMode("register")}
+                type="button"
+              >Daftar</button>
+              <div className={`login-tab-bar${mode === "register" ? " login-tab-bar--right" : ""}`} />
+            </div>
+
+            {error && <div className="login-alert">{error}</div>}
+
+            {/* ── LOGIN FORM ── */}
+            {mode === "login" && (
+              <form id="form-login" onSubmit={handleLogin} noValidate className="login-form">
+                <div className="input-group">
+                  <span className="input-icon"><Mail size={15} /></span>
+                  <input
+                    id="login-email"
+                    type="email"
+                    placeholder="agus@gmail.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
+                    required
+                  />
+                </div>
+                <div className="input-group">
+                  <span className="input-icon"><Lock size={15} /></span>
+                  <input
+                    id="login-password"
+                    type={showPw ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                    required
+                  />
+                  <button type="button" className="pw-toggle" onClick={() => setShowPw(v => !v)}>
+                    {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+                <button id="btn-login" type="submit" className="login-btn" disabled={loading}>
+                  {loading ? "Memproses..." : "Login"}
+                </button>
+                <p className="switch-hint">
+                  Belum punya akun?{" "}
+                  <button type="button" className="switch-link" onClick={() => switchMode("register")}>Daftar sekarang</button>
+                </p>
+              </form>
             )}
 
-            <form onSubmit={handleLogin} noValidate className="login-form">
-              <div className="input-group">
-                <span className="input-icon"><User size={15} /></span>
-                <input
-                  type="email"
-                  placeholder="agus@gmail.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="input-group">
-                <span className="input-icon"><Lock size={15} /></span>
-                <input
-                  type={showPw ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <button
-                  type="button"
-                  className="pw-toggle"
-                  onClick={() => setShowPw(!showPw)}
-                >
-                  {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+            {/* ── REGISTER FORM ── */}
+            {mode === "register" && (
+              <form id="form-register" onSubmit={handleRegister} noValidate className="login-form">
+                <div className="input-group">
+                  <span className="input-icon"><User size={15} /></span>
+                  <input
+                    id="reg-name"
+                    type="text"
+                    placeholder="Nama lengkap"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    autoComplete="name"
+                    required
+                  />
+                </div>
+                <div className="input-group">
+                  <span className="input-icon"><Mail size={15} /></span>
+                  <input
+                    id="reg-email"
+                    type="email"
+                    placeholder="agus@gmail.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
+                    required
+                  />
+                </div>
+                <div className="input-group">
+                  <span className="input-icon"><Lock size={15} /></span>
+                  <input
+                    id="reg-password"
+                    type={showPw ? "text" : "password"}
+                    placeholder="Min. 8 karakter + angka + simbol"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="new-password"
+                    required
+                  />
+                  <button type="button" className="pw-toggle" onClick={() => setShowPw(v => !v)}>
+                    {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+                <div className="input-group">
+                  <span className="input-icon"><Lock size={15} /></span>
+                  <input
+                    id="reg-confirm"
+                    type={showPw2 ? "text" : "password"}
+                    placeholder="Ulangi password"
+                    value={confirmPw}
+                    onChange={(e) => setConfirmPw(e.target.value)}
+                    autoComplete="new-password"
+                    required
+                  />
+                  <button type="button" className="pw-toggle" onClick={() => setShowPw2(v => !v)}>
+                    {showPw2 ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+                <button id="btn-register" type="submit" className="login-btn" disabled={loading}>
+                  {loading ? "Mendaftar..." : "Buat Akun"}
                 </button>
-              </div>
-
-              <button type="submit" className="login-btn" disabled={loading}>
-                {loading ? "Memproses..." : "Login"}
-              </button>
-            </form>
+                <p className="switch-hint">
+                  Sudah punya akun?{" "}
+                  <button type="button" className="switch-link" onClick={() => switchMode("login")}>Masuk</button>
+                </p>
+              </form>
+            )}
 
             <div className="download-app">
               <button className="download-btn">
