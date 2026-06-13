@@ -29,6 +29,7 @@ function Dashboard() {
   const { showToast } = useOutletContext() || {}
   const isDarkMode = useDarkMode()
   const [loading, setLoading] = useState(true)
+  const [serviceError, setServiceError] = useState(false)
   const [contractorTotal, setContractorTotal] = useState(0)
   const [blockTotal, setBlockTotal] = useState(0)
   const [todayTonnage, setTodayTonnage] = useState(0)
@@ -50,6 +51,7 @@ function Dashboard() {
 
   const load = useCallback(async () => {
     setLoading(true)
+    setServiceError(false)
     try {
       const [vendorsRes, blocksRes, dash] = await Promise.all([
         fetchVendors({ skip: 0, limit: 1 }),
@@ -83,7 +85,10 @@ function Dashboard() {
         })),
       )
     } catch (err) {
-      if (err.message !== "UNAUTHORIZED") {
+      if (err.message === "SERVICE_UNAVAILABLE" || err.message === "Failed to fetch") {
+        setServiceError(true)
+        showToast?.("Sebagian layanan sedang tidak tersedia (503)", "error")
+      } else if (err.message !== "UNAUTHORIZED") {
         showToast?.(err.message || "Gagal memuat dashboard", "error")
       }
       setBarData([
@@ -118,6 +123,13 @@ function Dashboard() {
           Ringkasan operasional PalmTrack Cloud — data agregat dari API.
         </p>
       </div>
+
+      {serviceError && (
+        <div style={{ padding: "15px 20px", backgroundColor: "#fff3cd", color: "#856404", borderRadius: "8px", marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span>🚧 <strong>Layanan Terganggu:</strong> Beberapa data mungkin tidak dapat ditampilkan karena gangguan koneksi ke microservice.</span>
+          <button onClick={load} style={{ padding: "6px 12px", backgroundColor: "#ffc107", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}>Coba Lagi</button>
+        </div>
+      )}
 
       <section className="pt-dash__stats" aria-label="Quick stats">
         <StatCard

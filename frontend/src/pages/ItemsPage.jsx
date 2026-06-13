@@ -16,9 +16,11 @@ function ItemsPage() {
   const [actionLoading, setActionLoading] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [serviceError, setServiceError] = useState(false)
 
   const loadItems = useCallback(async (search = "") => {
     setLoading(true)
+    setServiceError(false)
     try {
       const data = await fetchItems(search)
       setItems(data.items)
@@ -26,6 +28,9 @@ function ItemsPage() {
     } catch (err) {
       if (err.message === "UNAUTHORIZED") {
         logout()
+      } else if (err.message === "SERVICE_UNAVAILABLE" || err.message === "Failed to fetch") {
+        setServiceError(true)
+        showToast?.("Layanan sedang tidak tersedia (503)", "error")
       } else {
         console.error("Error loading items:", err)
         showToast?.("Gagal memuat data", "error")
@@ -104,12 +109,26 @@ function ItemsPage() {
         loading={actionLoading}
       />
       <SearchBar onSearch={handleSearch} />
-      <ItemList
-        items={items}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        loading={loading || actionLoading}
-      />
+      
+      {serviceError ? (
+        <div style={{ textAlign: "center", padding: "40px", backgroundColor: "#fff3cd", color: "#856404", borderRadius: "8px", marginTop: "20px" }}>
+          <h3 style={{ marginBottom: "10px" }}>🚧 Layanan Sedang Mengalami Gangguan</h3>
+          <p>Mohon maaf, layanan data saat ini tidak dapat diakses (Service Unavailable).</p>
+          <button 
+            onClick={() => loadItems(searchQuery)} 
+            style={{ marginTop: "15px", padding: "8px 16px", backgroundColor: "#ffc107", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+          >
+            Coba Lagi
+          </button>
+        </div>
+      ) : (
+        <ItemList
+          items={items}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          loading={loading || actionLoading}
+        />
+      )}
     </div>
   )
 }
