@@ -20,6 +20,14 @@ from schemas import (
     TokenResponse, TokenVerifyResponse
 )
 
+import logging
+from logging_config import setup_logging
+from logging_middleware import RequestLoggingMiddleware
+from metrics import metrics
+
+setup_logging()
+logger = logging.getLogger(__name__)
+
 # Create tables
 Base.metadata.create_all(bind=engine)
 
@@ -38,6 +46,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(RequestLoggingMiddleware)
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -76,6 +86,11 @@ def health_check():
         "service": "auth-service",
         "version": "2.0.0",
     }
+
+
+@app.get("/metrics")
+def get_metrics_endpoint():
+    return metrics.get_metrics()
 
 
 @app.post("/register", response_model=UserResponse, status_code=201)
