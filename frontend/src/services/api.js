@@ -57,6 +57,9 @@ async function handleResponse(response) {
     clearToken()
     throw new Error("UNAUTHORIZED")
   }
+  if (response.status >= 502 && response.status <= 504) {
+    throw new Error("SERVICE_UNAVAILABLE")
+  }
   if (!response.ok) {
     const error = await response.json().catch(() => ({}))
     if (Array.isArray(error.detail)) {
