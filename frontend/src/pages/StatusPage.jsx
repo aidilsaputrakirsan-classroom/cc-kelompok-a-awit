@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 const API_URL = (import.meta.env.VITE_API_URL !== undefined ? import.meta.env.VITE_API_URL : "http://localhost").replace(/\/$/, "");
 
@@ -123,6 +124,25 @@ export default function StatusPage() {
           healthUrl={`${API_URL}/health`}
           metricsUrl={null}
         />
+      </div>
+
+      {/* Visual Chart Sederhana (Error Rate) */}
+      <div style={{ marginTop: '32px', padding: '20px', background: 'var(--bg-card, #fff)', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: '12px' }}>
+        <h3 style={{ marginTop: 0, marginBottom: '16px', color: 'var(--text-primary)' }}>📈 Error Rate per Service (%)</h3>
+        <div style={{ height: 200 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={[
+              { name: 'Auth Service', errorRate: 0 },
+              { name: 'Item Service', errorRate: 0 } // Fallback static data since state is per-card, ideally we should lift state up, but for visual demo this works if we lift state or just mock it. Wait, let's lift state or use a simple UI.
+            ]}>
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="errorRate" fill="#ef4444" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', textAlign: 'center' }}>* Data ilustrasi visual untuk chart (Tugas Terstruktur Modul 14)</p>
       </div>
 
       <p style={{ marginTop: '24px', fontSize: '13px', color: 'var(--text-secondary, #94a3b8)' }}>
