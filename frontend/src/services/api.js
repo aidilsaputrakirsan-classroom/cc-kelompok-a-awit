@@ -4,11 +4,8 @@
 //   fetch(`${API_URL}/auth/login`)  → GET /api/auth/login → uvicorn: /auth/login  ✅
 //   fetch(`${API_URL}/api/items`)   → GET /api/api/items  → uvicorn: /api/items   ✅
 //
-// Dev lokal: VITE_API_URL = "http://localhost:8000"
-//   fetch(`${API_URL}/auth/login`)  → localhost:8000/auth/login  ✅
-//   fetch(`${API_URL}/api/items`)   → localhost:8000/api/items   ✅
-
-const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "")
+// Dev lokal: Jika menggunakan Vite proxy, biarkan kosong. Jika menggunakan gateway Nginx (port 80) langsung, gunakan VITE_API_URL="http://localhost"
+const API_URL = (import.meta.env.VITE_API_URL !== undefined ? import.meta.env.VITE_API_URL : "http://localhost").replace(/\/$/, "")
 
 const TOKEN_STORAGE_KEY = "palmtrack_access_token"
 
@@ -116,7 +113,7 @@ export async function getMe() {
 }
 
 // ==================== ITEMS API ====================
-// Backend routes: /api/items
+// Backend routes: /items (Microservices API Gateway)
 
 export async function fetchItems(search = "", skip = 0, limit = 20) {
   const params = new URLSearchParams()
@@ -124,14 +121,14 @@ export async function fetchItems(search = "", skip = 0, limit = 20) {
   params.append("skip", skip)
   params.append("limit", limit)
 
-  const response = await fetch(`${API_URL}/api/items?${params}`, {
+  const response = await fetch(`${API_URL}/items?${params}`, {
     headers: authHeaders(),
   })
   return handleResponse(response)
 }
 
 export async function createItem(itemData) {
-  const response = await fetch(`${API_URL}/api/items`, {
+  const response = await fetch(`${API_URL}/items`, {
     method: "POST",
     headers: { ...authHeaders(), "Content-Type": "application/json" },
     body: JSON.stringify(itemData),
@@ -140,7 +137,7 @@ export async function createItem(itemData) {
 }
 
 export async function updateItem(id, itemData) {
-  const response = await fetch(`${API_URL}/api/items/${id}`, {
+  const response = await fetch(`${API_URL}/items/${id}`, {
     method: "PUT",
     headers: { ...authHeaders(), "Content-Type": "application/json" },
     body: JSON.stringify(itemData),
@@ -149,7 +146,7 @@ export async function updateItem(id, itemData) {
 }
 
 export async function deleteItem(id) {
-  const response = await fetch(`${API_URL}/api/items/${id}`, {
+  const response = await fetch(`${API_URL}/items/${id}`, {
     method: "DELETE",
     headers: authHeaders(),
   })
