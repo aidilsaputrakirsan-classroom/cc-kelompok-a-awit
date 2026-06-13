@@ -10,6 +10,7 @@ import {
   ChevronRight,
   PanelLeftClose,
   PanelLeft,
+  Info,
 } from "lucide-react"
 import DarkModeToggle from "./DarkModeToggle"
 
@@ -48,6 +49,9 @@ function Sidebar({ collapsed, onToggleCollapse }) {
           </NavLink>
           <NavLink to="/transactions/hauling" className={navCls} title="Actual Hauling">
             <Truck size={22} className="pt-sidebar__icon" aria-hidden />
+          </NavLink>
+          <NavLink to="/about" className={navCls} title="About">
+            <Info size={22} className="pt-sidebar__icon" aria-hidden />
           </NavLink>
         </nav>
         <div className="pt-sidebar__footer pt-sidebar__footer--collapsed">
@@ -127,6 +131,11 @@ function Sidebar({ collapsed, onToggleCollapse }) {
             </div>
           )}
         </div>
+
+        <NavLink to="/about" className={navCls}>
+          <Info size={20} className="pt-sidebar__icon" aria-hidden />
+          <span>About</span>
+        </NavLink>
       </nav>
 
       <div className="pt-sidebar__footer">

@@ -12,6 +12,7 @@ import BlocksPage from "./pages/BlocksPage"
 import MappingPage from "./pages/MappingPage"
 import ActualHauling from "./pages/ActualHauling"
 import ItemsPage from "./pages/ItemsPage"
+import AboutPage from "./components/AboutPage"
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
               <Route path="master-data/mapping" element={<MappingPage />} />
               <Route path="transactions/hauling" element={<ActualHauling />} />
               <Route path="items" element={<ItemsPage />} />
+              <Route path="about" element={<AboutPage onBack={() => window.history.back()} />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
