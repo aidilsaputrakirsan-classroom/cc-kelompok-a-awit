@@ -624,8 +624,13 @@ def delete_item(db: Session, item_id: uuid.UUID) -> bool:
 
 
 def get_item_stats(db: Session) -> dict:
-    """Dapatkan statistik ringkas untuk items berdasarkan kategori."""
+    """Dapatkan statistik ringkas untuk items berdasarkan kategori dan harga."""
     total_items = db.query(func.count(Item.id)).scalar() or 0
+    
+    total_value = db.query(func.sum(Item.price)).scalar() or 0.0
+    highest_price = db.query(func.max(Item.price)).scalar() or 0.0
+    lowest_price = db.query(func.min(Item.price)).scalar() or 0.0
+
     category_rows = (
         db.query(Item.category, func.count(Item.id))
         .filter(Item.category.isnot(None))
@@ -638,6 +643,9 @@ def get_item_stats(db: Session) -> dict:
         "total_items": int(total_items),
         "total_categories": len(items_by_category),
         "items_by_category": items_by_category,
+        "total_value": float(total_value),
+        "highest_price": float(highest_price),
+        "lowest_price": float(lowest_price),
     }
 
 

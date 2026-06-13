@@ -1,8 +1,8 @@
-cat > .gitignore << 'EOF'
 # Python
 __pycache__/
 *.pyc
 venv/
+.venv/
 .env
 
 # Frontend env
@@ -18,4 +18,3 @@ dist/
 # IDE
 .vscode/
 .idea/
-EOF
