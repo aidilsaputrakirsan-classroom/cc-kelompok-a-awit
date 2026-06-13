@@ -181,4 +181,4 @@ async def get_item_stats(
         highest_price=float(highest_price),
         lowest_price=float(lowest_price),
         degraded=degraded
-    )
+    )
