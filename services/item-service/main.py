@@ -13,14 +13,6 @@ from schemas import ItemCreate, ItemUpdate, ItemResponse, ItemListResponse, Item
 from auth_client import verify_token_with_auth_service, verify_token_optional
 from sqlalchemy import func
 
-import logging
-from logging_config import setup_logging
-from logging_middleware import RequestLoggingMiddleware
-from metrics import metrics
-
-setup_logging()
-logger = logging.getLogger(__name__)
-
 # Create tables
 Base.metadata.create_all(bind=engine)
 
@@ -40,8 +32,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(RequestLoggingMiddleware)
-
 
 # =====================
 # ENDPOINTS
@@ -54,11 +44,6 @@ def health_check():
         "service": "item-service",
         "version": "2.0.0",
     }
-
-
-@app.get("/metrics")
-def get_metrics_endpoint():
-    return metrics.get_metrics()
 
 
 @app.post("/items", response_model=ItemResponse, status_code=201)
@@ -196,4 +181,4 @@ async def get_item_stats(
         highest_price=float(highest_price),
         lowest_price=float(lowest_price),
         degraded=degraded
-    )
+    )
