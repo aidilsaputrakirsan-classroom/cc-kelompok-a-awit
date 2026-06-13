@@ -20,21 +20,17 @@ L.Marker.prototype.options.icon = DefaultIcon;
 
 // API Placeholder
 const handleSaveBlock = async (geoJsonData) => {
-  console.log('New block drawn:', geoJsonData);
-  try {
-    // SKELETON: Fetch / Axios POST Request
-    // const response = await fetch('/api/blocks', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json'
-    //   },
-    //   body: JSON.stringify(geoJsonData)
-    // });
-    // const result = await response.json();
-    // console.log('Saved:', result);
-  } catch (error) {
-    console.error('Failed to save block', error);
-  }
+  // SKELETON: Fetch / Axios POST Request
+  // try {
+  //   const response = await fetch('/api/blocks', {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify(geoJsonData)
+  //   });
+  //   const result = await response.json();
+  // } catch (error) {
+  //   // handle error
+  // }
 };
 
 // Geoman Component
