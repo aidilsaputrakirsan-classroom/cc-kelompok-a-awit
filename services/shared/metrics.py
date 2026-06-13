@@ -4,7 +4,7 @@ Mengumpulkan metrics dasar: request count, error count, latency.
 """
 import time
 import threading
-from collections import defaultdict
+from collections import defaultdict, deque
 
 
 class MetricsCollector:
@@ -29,6 +29,9 @@ class MetricsCollector:
             "errors": 0,
             "total_latency_ms": 0,
         })
+        
+        # Sliding window for recent error rate (1 minute)
+        self.recent_requests = deque()
 
     def record_request(self, method: str, path: str, status_code: int, duration_ms: float):
         """Catat satu request."""
@@ -38,6 +41,11 @@ class MetricsCollector:
 
             if status_code >= 400:
                 self.error_count += 1
+
+            # Record in sliding window
+            now = time.time()
+            self.recent_requests.append((now, status_code >= 400))
+            self._cleanup_recent(now)
 
             # Latency
             self.latencies.append(duration_ms)
@@ -94,6 +102,23 @@ class MetricsCollector:
                 "latency": latency_stats,
                 "endpoints": endpoints,
             }
+
+    def _cleanup_recent(self, current_time: float):
+        """Hapus data request yang lebih dari 60 detik."""
+        while self.recent_requests and self.recent_requests[0][0] < current_time - 60:
+            self.recent_requests.popleft()
+
+    def get_recent_error_rate(self) -> float:
+        """Hitung persentase error dalam 60 detik terakhir."""
+        with self._lock:
+            now = time.time()
+            self._cleanup_recent(now)
+            if not self.recent_requests:
+                return 0.0
+            
+            total = len(self.recent_requests)
+            errors = sum(1 for _, is_error in self.recent_requests if is_error)
+            return round((errors / total) * 100, 2)
 
     def reset(self):
         """Reset semua metrics."""

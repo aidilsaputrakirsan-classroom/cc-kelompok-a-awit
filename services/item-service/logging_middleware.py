@@ -45,6 +45,19 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
                     "status_code": 500,
                 },
             )
+            
+            # Check for high error rate (alerting)
+            recent_error_rate = metrics.get_recent_error_rate()
+            if recent_error_rate > 10.0:
+                logger.critical(
+                    f"HIGH ERROR RATE DETECTED: {recent_error_rate}% errors in the last minute!",
+                    extra={
+                        "alert": True,
+                        "error_rate": recent_error_rate,
+                        "correlation_id": correlation_id,
+                    }
+                )
+
             raise
 
         # Hitung durasi
@@ -55,6 +68,18 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             request.method, request.url.path,
             response.status_code, duration_ms
         )
+
+        # Check for high error rate (alerting)
+        recent_error_rate = metrics.get_recent_error_rate()
+        if recent_error_rate > 10.0:
+            logger.critical(
+                f"HIGH ERROR RATE DETECTED: {recent_error_rate}% errors in the last minute!",
+                extra={
+                    "alert": True,
+                    "error_rate": recent_error_rate,
+                    "correlation_id": correlation_id,
+                }
+            )
 
         # Log request (skip health checks agar log tidak terlalu noisy)
         if request.url.path not in ["/health", "/metrics"]:
