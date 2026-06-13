@@ -9,8 +9,9 @@ from sqlalchemy.orm import Session
 
 from database import engine, get_db, Base
 from models import Item
-from schemas import ItemCreate, ItemUpdate, ItemResponse, ItemListResponse
-from auth_client import verify_token_with_auth_service
+from schemas import ItemCreate, ItemUpdate, ItemResponse, ItemListResponse, ItemStatsResponse
+from auth_client import verify_token_with_auth_service, verify_token_optional
+from sqlalchemy import func
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -129,3 +130,55 @@ async def delete_item(
         raise HTTPException(status_code=404, detail="Item not found")
     db.delete(item)
     db.commit()
+
+
+@app.get("/items/public", response_model=ItemListResponse)
+async def get_public_items(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    """Ambil daftar items publik tanpa auth."""
+    total = db.query(Item).count()
+    items = db.query(Item).offset(skip).limit(limit).all()
+    return ItemListResponse(total=total, items=items)
+
+
+@app.get("/items/stats", response_model=ItemStatsResponse)
+async def get_item_stats(
+    user: dict | None = Depends(verify_token_optional),
+    db: Session = Depends(get_db),
+):
+    """Ambil statistik item, mendukung degraded mode."""
+    query = db.query(Item)
+    degraded = False
+
+    if user is None:
+        # Degraded mode: Auth is down, no user info, show public stats
+        degraded = True
+    else:
+        # Normal mode: Filter by user
+        query = query.filter(Item.owner_id == user.get("user_id"))
+
+    total_items = query.count()
+    
+    # Calculate aggregates
+    total_value = db.query(func.sum(Item.price * Item.quantity)).filter(
+        Item.owner_id == user.get("user_id") if user else True
+    ).scalar() or 0.0
+    
+    highest_price = db.query(func.max(Item.price)).filter(
+        Item.owner_id == user.get("user_id") if user else True
+    ).scalar() or 0.0
+    
+    lowest_price = db.query(func.min(Item.price)).filter(
+        Item.owner_id == user.get("user_id") if user else True
+    ).scalar() or 0.0
+
+    return ItemStatsResponse(
+        total_items=total_items,
+        total_value=float(total_value),
+        highest_price=float(highest_price),
+        lowest_price=float(lowest_price),
+        degraded=degraded
+    )

@@ -32,3 +32,11 @@ class ItemResponse(BaseModel):
 class ItemListResponse(BaseModel):
     total: int
     items: list[ItemResponse]
+
+
+class ItemStatsResponse(BaseModel):
+    total_items: int
+    total_value: float
+    highest_price: float
+    lowest_price: float
+    degraded: bool = False
