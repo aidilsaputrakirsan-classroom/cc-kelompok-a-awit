@@ -330,6 +330,10 @@ Sebagai bagian dari jaminan mutu proyek (Quality Assurance), seluruh aspek tekni
 - [Panduan Git Workflow & Kolaborasi Tim](docs/git-workflow.md)
 - [Panduan Testing & CI/CD](docs/testing-guide.md)
 - [Release Notes Milestone 2 (v2.0)](docs/release-notes-m2.md)
+- [Release Notes Milestone 3 (v3.0 - UAS)](docs/release-notes-m3.md)
+- [API Contract Microservices](docs/api-contract-microservices.md)
+- [Panduan Operasional & Troubleshooting](docs/operations-guide.md)
+- [Checklist Kesiapan Final (UAS QA Lulus)](docs/final-checklist.md)
 
 ---
 *Dokumentasi disusun dan difinalisasi secara profesional oleh **Adonia Azarya Tamalonggehe** (Lead QA & Documentation).*
