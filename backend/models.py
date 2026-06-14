@@ -3,11 +3,25 @@ PalmChain Database Models
 Sistem Monitoring Rantai Pasok TBS (Tandan Buah Segar) Kelapa Sawit
 """
 
-from sqlalchemy import Column, Integer, String, Float, DateTime, Date, Boolean, ForeignKey, func, Text, JSON
+import uuid
+
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    func,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+
 from database import Base
-import uuid
 
 
 class MasterVendor(Base):
