@@ -1,13 +1,13 @@
 import os
-from datetime import datetime, timedelta, timezone
-from typing import Optional
 import time
+from datetime import timedelta
+from typing import Optional
 
 from dotenv import load_dotenv
-from jose import JWTError, jwt
-from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -44,21 +44,21 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Buat JWT access token dengan proper timestamp handling."""
     to_encode = data.copy()
-    
+
     # Ensure 'sub' is a string (JWT standard requirement)
     if "sub" in to_encode:
         to_encode["sub"] = str(to_encode["sub"])
-    
+
     # Gunakan integer timestamps (Unix epoch)
     now_timestamp = int(time.time())
     expire_delta_seconds = (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)).total_seconds()
     expire_timestamp = now_timestamp + int(expire_delta_seconds)
-    
+
     to_encode.update({
         "exp": expire_timestamp,  # Expiration time (Unix timestamp)
         "iat": now_timestamp      # Issued at time (Unix timestamp)
     })
-    
+
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 

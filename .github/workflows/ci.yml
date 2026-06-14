@@ -1,14 +1,15 @@
 # ==============================================
-# CI Pipeline — Cloud Team XX
+# CI Pipeline — PalmChain (cc-kelompok-a-awit)
 # ==============================================
 # Pipeline ini berjalan otomatis saat:
 # - Push ke branch main
 # - Pull Request ke branch main
-# 
+#
 # Jobs:
-# 1. test-backend: Install deps + run pytest
-# 2. test-frontend: Install deps + run vitest
-# 3. build-docker: Build Docker images (pastikan Dockerfile valid)
+# 1. lint        : Ruff linting (Python)
+# 2. test-backend: Install deps + run pytest
+# 3. test-frontend: Install deps + run vitest
+# 4. build-docker: Build Docker images
 
 name: CI Pipeline
 
@@ -18,13 +19,46 @@ on:
   pull_request:
     branches: [main]
 
+# Cancel run lama jika ada push baru ke branch yang sama
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # ================================
+  # JOB 0: Lint (Ruff — Python)
+  # ================================
+  lint:
+    name: 🔍 Lint (Ruff)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 📦 Install ruff
+        run: pip install ruff
+
+      - name: 🔍 Run ruff linter
+        run: ruff check backend/
+
+      - name: ✅ Lint passed
+        run: echo "✅ No linting errors found!"
+
   # ================================
   # JOB 1: Test Backend (Python/FastAPI)
   # ================================
   test-backend:
     name: 🐍 Test Backend
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [lint]
 
     defaults:
       run:
@@ -59,12 +93,25 @@ jobs:
         run: |
           pytest --cov=. --cov-report=term-missing --cov-fail-under=50
 
+      - name: 📊 Comment PR on failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ **Backend tests FAILED!** Cek log CI untuk detail error.'
+            })
+
   # ================================
   # JOB 2: Test Frontend (React/Vitest)
   # ================================
   test-frontend:
     name: ⚛️ Test Frontend
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     defaults:
       run:
@@ -90,25 +137,76 @@ jobs:
       - name: 🏗️ Build frontend
         run: npm run build
 
+      - name: 📊 Comment PR on failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ **Frontend tests FAILED!** Cek log CI untuk detail error.'
+            })
+
   # ================================
-  # JOB 3: Build Docker Images
+  # JOB 3: Build Docker Images (Monolith)
   # ================================
   build-docker:
     name: 🐳 Build Docker
     runs-on: ubuntu-latest
-    needs: [test-backend, test-frontend]    # Hanya jalan jika kedua test PASS
+    timeout-minutes: 10
+    needs: [test-backend, test-frontend]
 
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
       - name: 🐳 Build backend image
-        run: docker build -t cloudapp-backend:ci ./backend
+        run: docker build -t palmchain-backend:ci ./backend
 
       - name: 🐳 Build frontend image
-        run: docker build -t cloudapp-frontend:ci ./frontend
+        run: docker build -t palmchain-frontend:ci ./frontend
 
       - name: ✅ Build success
         run: |
           echo "✅ All Docker images built successfully!"
-          docker images | grep cloudapp
+          docker images | grep palmchain
+
+  # ================================
+  # JOB 4: Build Microservices Docker Images
+  # ================================
+  build-services:
+    name: 🐳 Build Microservices
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [test-backend, test-frontend]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐳 Build auth-service image
+        run: |
+          if [ -f services/auth-service/Dockerfile ]; then
+            docker build -t palmchain-auth:ci ./services/auth-service
+            echo "✅ auth-service built"
+          else
+            echo "⚠️ No Dockerfile for auth-service, skipping"
+          fi
+
+      - name: 🐳 Build item-service image
+        run: |
+          if [ -f services/item-service/Dockerfile ]; then
+            docker build -t palmchain-item:ci ./services/item-service
+            echo "✅ item-service built"
+          else
+            echo "⚠️ No Dockerfile for item-service, skipping"
+          fi
+
+      - name: ✅ Microservices build summary
+        run: |
+          echo "## 🐳 Docker Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          docker images | grep palmchain >> $GITHUB_STEP_SUMMARY || echo "No palmchain images found" >> $GITHUB_STEP_SUMMARY

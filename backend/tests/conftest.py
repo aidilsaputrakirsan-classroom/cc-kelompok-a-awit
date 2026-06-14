@@ -2,7 +2,6 @@
 Konfigurasi test — setup database test terpisah dari database utama.
 """
 import sys
-import os
 from pathlib import Path
 
 # Add parent directory ke sys.path agar dapat import dari backend/

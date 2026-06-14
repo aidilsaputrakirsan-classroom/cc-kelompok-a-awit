@@ -1,30 +1,47 @@
 import os
-from io import BytesIO
-from datetime import date, datetime, timedelta
-from collections import defaultdict, deque
-from dotenv import load_dotenv
-from fastapi import FastAPI, Depends, HTTPException, Query, Form, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from fastapi.responses import StreamingResponse
-from fastapi.exceptions import RequestValidationError
-from sqlalchemy.orm import Session
-from sqlalchemy import text
-
-from database import engine, get_db
-from models import Base, User, MasterVendor, MasterBlock, HaulingTransaction, Item
 import uuid
-from schemas import (
-    VendorCreate, VendorUpdate, VendorResponse, VendorListResponse,
-    BlockCreate, BlockUpdate, BlockResponse, BlockListResponse,
-    HaulingTransactionCreate, HaulingTransactionUpdate, HaulingTransactionResponse, HaulingTransactionListResponse,
-    HaulingTransactionEnvelope,
-    DashboardResponse, DashboardTodayStats, DashboardMTDStats,
-    UserCreate, UserResponse, LoginRequest, TokenResponse,
-    ItemCreate, ItemUpdate, ItemResponse, ItemListResponse, ItemStatsResponse,
-)
-from auth import create_access_token, get_current_user, require_roles
+from collections import defaultdict, deque
+from datetime import date, datetime, timedelta
+from io import BytesIO
+
+from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, StreamingResponse
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+
 import crud
+from auth import create_access_token, get_current_user, require_roles
+from database import engine, get_db
+from models import Base, User
+from schemas import (
+    BlockCreate,
+    BlockListResponse,
+    BlockResponse,
+    BlockUpdate,
+    DashboardMTDStats,
+    DashboardResponse,
+    DashboardTodayStats,
+    HaulingTransactionCreate,
+    HaulingTransactionEnvelope,
+    HaulingTransactionListResponse,
+    HaulingTransactionUpdate,
+    ItemCreate,
+    ItemListResponse,
+    ItemResponse,
+    ItemStatsResponse,
+    ItemUpdate,
+    LoginRequest,
+    TokenResponse,
+    UserCreate,
+    UserResponse,
+    VendorCreate,
+    VendorListResponse,
+    VendorResponse,
+    VendorUpdate,
+)
 
 load_dotenv()
 
@@ -132,7 +149,7 @@ def health_check():
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
     """
     Registrasi user baru.
-    
+
     Requirements:
     - **email**: Format valid (contoh: user@itk.ac.id)
     - **name**: Minimal 2 karakter, maksimal 100 karakter
@@ -140,7 +157,7 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
       - Huruf (A-Z, a-z)
       - Angka (0-9)
       - Special character (!@#$%^&*)
-    
+
     Contoh password valid: `Password123!`
     """
     try:
@@ -159,15 +176,15 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     """
     Login dengan JSON body dan dapatkan JWT token.
-    
+
     - **email**: Email pengguna yang terdaftar
     - **password**: Password pengguna
-    
+
     **Response:**
     - **access_token**: JWT token untuk otorisasi (valid 60 menit)
     - **token_type**: Tipe token (selalu 'bearer')
     - **user**: Informasi user yang login
-    
+
     **Penggunaan:**
     Gunakan token di header setiap request:
     ```
@@ -197,7 +214,7 @@ def login_for_access_token(
 ):
     """
     OAuth2 compatible token endpoint.
-    
+
     Endpoint ini menerima form data (username=email, password=password).
     Digunakan oleh Swagger UI Authorization dan OAuth2 clients.
     """
@@ -271,7 +288,7 @@ def get_vendor(
         vendor_uuid = uuid.UUID(vendor_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid vendor ID format")
-    
+
     vendor = crud.get_vendor(db=db, vendor_id=vendor_uuid)
     if not vendor:
         raise HTTPException(status_code=404, detail="Vendor tidak ditemukan")
@@ -290,7 +307,7 @@ def update_vendor(
         vendor_uuid = uuid.UUID(vendor_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid vendor ID format")
-    
+
     updated = crud.update_vendor(db=db, vendor_id=vendor_uuid, vendor_data=vendor)
     if not updated:
         raise HTTPException(status_code=404, detail="Vendor tidak ditemukan")
@@ -308,7 +325,7 @@ def delete_vendor(
         vendor_uuid = uuid.UUID(vendor_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid vendor ID format")
-    
+
     success = crud.delete_vendor(db=db, vendor_id=vendor_uuid)
     if not success:
         raise HTTPException(status_code=404, detail="Vendor tidak ditemukan")
@@ -365,7 +382,7 @@ def get_block(
         block_uuid = uuid.UUID(block_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid block ID format")
-    
+
     block = crud.get_block(db=db, block_id=block_uuid)
     if not block:
         raise HTTPException(status_code=404, detail="Block tidak ditemukan")
@@ -384,7 +401,7 @@ def update_block(
         block_uuid = uuid.UUID(block_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid block ID format")
-    
+
     updated = crud.update_block(db=db, block_id=block_uuid, block_data=block)
     if not updated:
         raise HTTPException(status_code=404, detail="Block tidak ditemukan")
@@ -402,7 +419,7 @@ def delete_block(
         block_uuid = uuid.UUID(block_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid block ID format")
-    
+
     success = crud.delete_block(db=db, block_id=block_uuid)
     if not success:
         raise HTTPException(status_code=404, detail="Block tidak ditemukan")
@@ -448,19 +465,19 @@ def list_hauling_transactions(
     """Ambil daftar hauling transactions dengan pagination dan filter. **Membutuhkan autentikasi.**"""
     vendor_uuid = None
     block_uuid = None
-    
+
     if vendor_id:
         try:
             vendor_uuid = uuid.UUID(vendor_id)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid vendor ID format")
-    
+
     if block_id:
         try:
             block_uuid = uuid.UUID(block_id)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid block ID format")
-    
+
     return crud.get_hauling_transactions(
         db=db,
         vendor_id=vendor_uuid,
@@ -486,7 +503,7 @@ def get_hauling_transaction(
         hauling_uuid = uuid.UUID(hauling_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid hauling ID format")
-    
+
     hauling = crud.get_hauling_transaction(db=db, hauling_id=hauling_uuid)
     if not hauling:
         raise HTTPException(status_code=404, detail="Hauling transaction tidak ditemukan")
@@ -505,7 +522,7 @@ def update_hauling_transaction(
         hauling_uuid = uuid.UUID(hauling_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid hauling ID format")
-    
+
     updated, error_code = crud.update_hauling_transaction(db=db, hauling_id=hauling_uuid, hauling_data=hauling, updated_by=current_user)
     if not updated:
         if error_code == "duplicate_ticket":
@@ -531,7 +548,7 @@ def delete_hauling_transaction(
         hauling_uuid = uuid.UUID(hauling_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid hauling ID format")
-    
+
     success = crud.delete_hauling_transaction(db=db, hauling_id=hauling_uuid, deleted_by=current_user)
     if not success:
         raise HTTPException(status_code=404, detail="Hauling transaction tidak ditemukan")
@@ -639,10 +656,10 @@ def export_hauling_transactions(
 
     try:
         from reportlab.lib import colors
-        from reportlab.lib.pagesizes import landscape, A4
+        from reportlab.lib.pagesizes import A4, landscape
         from reportlab.lib.styles import getSampleStyleSheet
-        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
         from reportlab.lib.units import mm
+        from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
     except Exception:
         raise HTTPException(status_code=500, detail="PDF export dependency belum tersedia")
 
@@ -704,7 +721,7 @@ def list_items(
 ):
     """
     Ambil daftar items dengan pagination. **Membutuhkan autentikasi.**
-    
+
     Query parameters:
     - **category**: Filter berdasarkan kategori (e.g., 'electronics', 'hardware')
     - **search**: Cari berdasarkan code atau name
@@ -733,7 +750,7 @@ def get_item(
         item_uuid = uuid.UUID(item_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid item ID format")
-    
+
     item = crud.get_item(db=db, item_id=item_uuid)
     if not item:
         raise HTTPException(status_code=404, detail="Item tidak ditemukan")
@@ -752,7 +769,7 @@ def update_item(
         item_uuid = uuid.UUID(item_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid item ID format")
-    
+
     updated = crud.update_item(db=db, item_id=item_uuid, item_data=item)
     if not updated:
         raise HTTPException(status_code=404, detail="Item tidak ditemukan")
@@ -770,7 +787,7 @@ def delete_item(
         item_uuid = uuid.UUID(item_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid item ID format")
-    
+
     success = crud.delete_item(db=db, item_id=item_uuid)
     if not success:
         raise HTTPException(status_code=404, detail="Item tidak ditemukan")
@@ -785,19 +802,19 @@ def get_dashboard(
 ):
     """
     Dapatkan dashboard summary dengan statistik hari ini dan Month-To-Date.
-    
+
     **Response:**
     - **today**: Statistik transaksi hari ini (total_transactions, total_tonage, avg_tonage)
     - **mtd**: Statistik bulan ini (total_transactions, total_tonage, target_tonage, achievement_percentage)
     - **last_updated**: Waktu terakhir data diperbarui
-    
+
     **Membutuhkan autentikasi.**
     """
     from datetime import datetime
-    
+
     today_stats = crud.get_hauling_stats_today(db=db)
     mtd_stats = crud.get_hauling_stats_mtd(db=db, target_tonage=500.0)
-    
+
     return {
         "today": DashboardTodayStats(**today_stats),
         "mtd": DashboardMTDStats(**mtd_stats),
