@@ -144,3 +144,18 @@ def verify_token(authorization: str = Header(...)):
         email=payload["email"],
         name=payload["name"],
     )
+
+
+@app.get("/me", response_model=UserResponse)
+def get_current_user(authorization: str = Header(...), db: Session = Depends(get_db)):
+    """Dapatkan profil user yang sedang login berdasarkan JWT token."""
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+
+    token = authorization.split("Bearer ")[1]
+    payload = decode_token(token)
+
+    user = db.query(User).filter(User.id == int(payload["sub"])).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
