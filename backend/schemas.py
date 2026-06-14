@@ -1,9 +1,9 @@
-from pydantic import BaseModel, Field, field_validator, model_validator
-from typing import Optional, List
-from datetime import datetime, date
 import re
 import uuid
+from datetime import date, datetime
+from typing import List, Optional
 
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 # ============================================================
 # VENDOR SCHEMAS
@@ -366,16 +366,16 @@ class UserCreate(BaseModel):
         """
         if len(v) < 8:
             raise ValueError('Password minimal 8 karakter')
-        
+
         if not re.search(r'[a-zA-Z]', v):
             raise ValueError('Password harus mengandung huruf (A-Z, a-z)')
-        
+
         if not re.search(r'[0-9]', v):
             raise ValueError('Password harus mengandung angka (0-9)')
-        
+
         if not re.search(r'[!@#$%^&*()_+\-=\[\]{};:\'",.<>?/\\|`~]', v):
             raise ValueError('Password harus mengandung special character (!@#$%^&*)')
-        
+
         return v
 
 
@@ -403,4 +403,3 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
-    

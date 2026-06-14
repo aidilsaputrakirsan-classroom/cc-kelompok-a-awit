@@ -1,16 +1,23 @@
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import or_, func, and_
-from datetime import datetime, timedelta, date, timezone
 import uuid
-from fastapi.encoders import jsonable_encoder
-from models import MasterVendor, MasterBlock, HaulingTransaction, HaulingTransactionLog, User, Item
-from schemas import (
-    VendorCreate, VendorUpdate, BlockCreate, BlockUpdate,
-    HaulingTransactionCreate, HaulingTransactionUpdate, UserCreate,
-    ItemCreate, ItemUpdate
-)
-from auth import hash_password, verify_password
+from datetime import date, datetime, timedelta, timezone
 
+from fastapi.encoders import jsonable_encoder
+from sqlalchemy import and_, func, or_
+from sqlalchemy.orm import Session, joinedload
+
+from auth import hash_password, verify_password
+from models import HaulingTransaction, HaulingTransactionLog, Item, MasterBlock, MasterVendor, User
+from schemas import (
+    BlockCreate,
+    BlockUpdate,
+    HaulingTransactionCreate,
+    HaulingTransactionUpdate,
+    ItemCreate,
+    ItemUpdate,
+    UserCreate,
+    VendorCreate,
+    VendorUpdate,
+)
 
 # ==================== USER CRUD ====================
 
@@ -50,7 +57,7 @@ def create_vendor(db: Session, vendor_data: VendorCreate) -> MasterVendor:
     existing = db.query(MasterVendor).filter(MasterVendor.code == vendor_data.code).first()
     if existing:
         return None
-    
+
     db_vendor = MasterVendor(
         **vendor_data.model_dump()
     )
@@ -69,7 +76,7 @@ def get_vendors(db: Session, skip: int = 0, limit: int = 20, search: str = None,
     - status: filter by active status
     """
     query = db.query(MasterVendor)
-    
+
     if search:
         query = query.filter(
             or_(
@@ -78,13 +85,13 @@ def get_vendors(db: Session, skip: int = 0, limit: int = 20, search: str = None,
                 MasterVendor.email.ilike(f"%{search}%")
             )
         )
-    
+
     if status is not None:
         query = query.filter(MasterVendor.status == status)
-    
+
     total = query.count()
     vendors = query.order_by(MasterVendor.created_at.desc()).offset(skip).limit(limit).all()
-    
+
     return {"total": total, "vendors": vendors}
 
 
@@ -96,14 +103,14 @@ def get_vendor(db: Session, vendor_id: uuid.UUID) -> MasterVendor | None:
 def update_vendor(db: Session, vendor_id: uuid.UUID, vendor_data: VendorUpdate) -> MasterVendor | None:
     """Update vendor berdasarkan ID."""
     db_vendor = db.query(MasterVendor).filter(MasterVendor.id == vendor_id).first()
-    
+
     if not db_vendor:
         return None
-    
+
     update_data = vendor_data.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_vendor, field, value)
-    
+
     db.commit()
     db.refresh(db_vendor)
     return db_vendor
@@ -112,10 +119,10 @@ def update_vendor(db: Session, vendor_id: uuid.UUID, vendor_data: VendorUpdate) 
 def delete_vendor(db: Session, vendor_id: uuid.UUID) -> bool:
     """Hapus vendor berdasarkan ID. Return True jika berhasil."""
     db_vendor = db.query(MasterVendor).filter(MasterVendor.id == vendor_id).first()
-    
+
     if not db_vendor:
         return False
-    
+
     db.delete(db_vendor)
     db.commit()
     return True
@@ -143,7 +150,7 @@ def create_block(db: Session, block_data: BlockCreate) -> MasterBlock:
     existing = db.query(MasterBlock).filter(MasterBlock.block_code == block_data.block_code).first()
     if existing:
         return None
-    
+
     db_block = MasterBlock(
         **block_data.model_dump()
     )
@@ -162,7 +169,7 @@ def get_blocks(db: Session, skip: int = 0, limit: int = 20, search: str = None, 
     - status: filter by active status
     """
     query = db.query(MasterBlock)
-    
+
     if search:
         query = query.filter(
             or_(
@@ -170,13 +177,13 @@ def get_blocks(db: Session, skip: int = 0, limit: int = 20, search: str = None, 
                 MasterBlock.division.ilike(f"%{search}%")
             )
         )
-    
+
     if status is not None:
         query = query.filter(MasterBlock.status == status)
-    
+
     total = query.count()
     blocks = query.order_by(MasterBlock.created_at.desc()).offset(skip).limit(limit).all()
-    
+
     return {"total": total, "blocks": blocks}
 
 
@@ -188,14 +195,14 @@ def get_block(db: Session, block_id: uuid.UUID) -> MasterBlock | None:
 def update_block(db: Session, block_id: uuid.UUID, block_data: BlockUpdate) -> MasterBlock | None:
     """Update block berdasarkan ID."""
     db_block = db.query(MasterBlock).filter(MasterBlock.id == block_id).first()
-    
+
     if not db_block:
         return None
-    
+
     update_data = block_data.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_block, field, value)
-    
+
     db.commit()
     db.refresh(db_block)
     return db_block
@@ -204,10 +211,10 @@ def update_block(db: Session, block_id: uuid.UUID, block_data: BlockUpdate) -> M
 def delete_block(db: Session, block_id: uuid.UUID) -> bool:
     """Hapus block berdasarkan ID. Return True jika berhasil."""
     db_block = db.query(MasterBlock).filter(MasterBlock.id == block_id).first()
-    
+
     if not db_block:
         return False
-    
+
     db.delete(db_block)
     db.commit()
     return True
@@ -548,7 +555,7 @@ def create_item(db: Session, item_data: ItemCreate) -> Item:
     existing = db.query(Item).filter(Item.code == item_data.code).first()
     if existing:
         return None
-    
+
     db_item = Item(
         **item_data.model_dump()
     )
@@ -558,7 +565,7 @@ def create_item(db: Session, item_data: ItemCreate) -> Item:
     return db_item
 
 
-def get_items(db: Session, skip: int = 0, limit: int = 20, search: str = None, 
+def get_items(db: Session, skip: int = 0, limit: int = 20, search: str = None,
               category: str = None, status: bool = None):
     """
     Ambil daftar items dengan pagination & filter.
@@ -569,7 +576,7 @@ def get_items(db: Session, skip: int = 0, limit: int = 20, search: str = None,
     - status: filter by active status
     """
     query = db.query(Item)
-    
+
     if search:
         query = query.filter(
             or_(
@@ -577,16 +584,16 @@ def get_items(db: Session, skip: int = 0, limit: int = 20, search: str = None,
                 Item.name.ilike(f"%{search}%")
             )
         )
-    
+
     if category:
         query = query.filter(Item.category == category)
-    
+
     if status is not None:
         query = query.filter(Item.status == status)
-    
+
     total = query.count()
     items = query.order_by(Item.created_at.desc()).offset(skip).limit(limit).all()
-    
+
     return {"total": total, "items": items}
 
 
@@ -598,14 +605,14 @@ def get_item(db: Session, item_id: uuid.UUID) -> Item | None:
 def update_item(db: Session, item_id: uuid.UUID, item_data: ItemUpdate) -> Item | None:
     """Update item berdasarkan ID."""
     db_item = db.query(Item).filter(Item.id == item_id).first()
-    
+
     if not db_item:
         return None
-    
+
     update_data = item_data.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_item, field, value)
-    
+
     db.commit()
     db.refresh(db_item)
     return db_item
@@ -614,10 +621,10 @@ def update_item(db: Session, item_id: uuid.UUID, item_data: ItemUpdate) -> Item 
 def delete_item(db: Session, item_id: uuid.UUID) -> bool:
     """Hapus item berdasarkan ID. Return True jika berhasil."""
     db_item = db.query(Item).filter(Item.id == item_id).first()
-    
+
     if not db_item:
         return False
-    
+
     db.delete(db_item)
     db.commit()
     return True
@@ -626,7 +633,7 @@ def delete_item(db: Session, item_id: uuid.UUID) -> bool:
 def get_item_stats(db: Session) -> dict:
     """Dapatkan statistik ringkas untuk items berdasarkan kategori dan harga."""
     total_items = db.query(func.count(Item.id)).scalar() or 0
-    
+
     total_value = db.query(func.sum(Item.price)).scalar() or 0.0
     highest_price = db.query(func.max(Item.price)).scalar() or 0.0
     lowest_price = db.query(func.min(Item.price)).scalar() or 0.0
@@ -660,7 +667,7 @@ def get_hauling_stats_today(db: Session) -> dict:
     """
     today_start = datetime.now().date()
     today_end = today_start + timedelta(days=1)
-    
+
     query = db.query(HaulingTransaction).filter(
         and_(
             HaulingTransaction.deleted_at.is_(None),
@@ -668,7 +675,7 @@ def get_hauling_stats_today(db: Session) -> dict:
             HaulingTransaction.transaction_date < today_end
         )
     )
-    
+
     total_transactions = query.count()
     total_tonage = db.query(func.sum(HaulingTransaction.net_weight)).filter(
         and_(
@@ -677,9 +684,9 @@ def get_hauling_stats_today(db: Session) -> dict:
             HaulingTransaction.transaction_date < today_end
         )
     ).scalar() or 0
-    
+
     avg_tonage = total_tonage / total_transactions if total_transactions > 0 else 0
-    
+
     return {
         "total_transactions": total_transactions,
         "total_tonage": float(round(total_tonage, 2)),
@@ -697,22 +704,22 @@ def get_hauling_stats_mtd(db: Session, target_tonage: float = 500.0) -> dict:
     """
     now = datetime.now()
     month_start = now.date().replace(day=1)
-    
+
     query = db.query(HaulingTransaction).filter(
         HaulingTransaction.deleted_at.is_(None),
         HaulingTransaction.transaction_date >= month_start,
         HaulingTransaction.transaction_date <= now.date()
     )
-    
+
     total_transactions = query.count()
     total_tonage = db.query(func.sum(HaulingTransaction.net_weight)).filter(
         HaulingTransaction.deleted_at.is_(None),
         HaulingTransaction.transaction_date >= month_start,
         HaulingTransaction.transaction_date <= now.date()
     ).scalar() or 0
-    
+
     achievement_percentage = (total_tonage / target_tonage * 100) if target_tonage > 0 else 0
-    
+
     return {
         "total_transactions": total_transactions,
         "total_tonage": float(round(total_tonage, 2)),
