@@ -19,7 +19,7 @@ auth_circuit = CircuitBreaker(
     cooldown_seconds=30,
 )
 
-async def verify_token_with_auth_service(request: Request, authorization: str = Header(...)) -> dict:
+async def verify_token_with_auth_service(authorization: str = Header(...)) -> dict:
     """
     Dependency: Verifikasi token dengan memanggil Auth Service.
     Digunakan sebagai Depends() di endpoints yang butuh autentikasi.
@@ -34,7 +34,7 @@ async def verify_token_with_auth_service(request: Request, authorization: str = 
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{AUTH_SERVICE_URL}/verify",
-                headers=headers,
+                headers={"Authorization": authorization},
                 timeout=5.0,
             )
 
