@@ -6,7 +6,9 @@ Auth Service via HTTP untuk memverifikasi token.
 import os
 import httpx
 from typing import Optional
-from fastapi import HTTPException, Header
+from fastapi import HTTPException, Header, Request
+
+from circuit_breaker import CircuitBreaker
 
 from circuit_breaker import CircuitBreaker
 
@@ -29,6 +31,11 @@ async def verify_token_with_auth_service(authorization: str = Header(...)) -> di
             status_code=503,
             detail="Auth Service circuit breaker OPEN. Try again later."
         )
+
+    correlation_id = getattr(request.state, "correlation_id", None)
+    headers = {"Authorization": authorization}
+    if correlation_id:
+        headers["X-Correlation-ID"] = correlation_id
 
     try:
         async with httpx.AsyncClient() as client:
@@ -62,7 +69,7 @@ async def verify_token_with_auth_service(authorization: str = Header(...)) -> di
         )
 
 
-async def verify_token_optional(authorization: Optional[str] = Header(None)) -> Optional[dict]:
+async def verify_token_optional(request: Request, authorization: Optional[str] = Header(None)) -> Optional[dict]:
     """
     Dependency: Optional verifikasi token.
     Akan mengembalikan None jika token tidak ada atau Auth Service sedang down.
@@ -72,7 +79,7 @@ async def verify_token_optional(authorization: Optional[str] = Header(None)) -> 
         return None
 
     try:
-        return await verify_token_with_auth_service(authorization)
+        return await verify_token_with_auth_service(request, authorization)
     except HTTPException as e:
         if e.status_code in [503, 504]:
             return None  # Degradation: return None user if auth is down

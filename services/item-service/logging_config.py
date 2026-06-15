@@ -26,18 +26,9 @@ class JSONFormatter(logging.Formatter):
         }
 
         # Tambah extra fields jika ada
-        if hasattr(record, "correlation_id"):
-            log_entry["correlation_id"] = record.correlation_id
-        if hasattr(record, "method"):
-            log_entry["method"] = record.method
-        if hasattr(record, "path"):
-            log_entry["path"] = record.path
-        if hasattr(record, "status_code"):
-            log_entry["status_code"] = record.status_code
-        if hasattr(record, "duration_ms"):
-            log_entry["duration_ms"] = record.duration_ms
-        if hasattr(record, "user_id"):
-            log_entry["user_id"] = record.user_id
+        for field in ["correlation_id", "method", "path", "status_code", "duration_ms", "user_id", "alert", "error_rate"]:
+            if hasattr(record, field):
+                log_entry[field] = getattr(record, field)
 
         # Tambah exception info jika ada
         if record.exc_info and record.exc_info[0] is not None:

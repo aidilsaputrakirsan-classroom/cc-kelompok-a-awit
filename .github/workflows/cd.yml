@@ -657,3 +657,41 @@ jobs:
       - name: Cleanup
         if: always()
         run: rm -f /tmp/*-deploy.zip /tmp/deploy-response.txt || true
+
+      # ──────────────────────────────────────────────────────────────
+      # 📢 DEPLOY NOTIFICATION SUMMARY — Lead CI/CD Tugas 11
+      # ──────────────────────────────────────────────────────────────
+      - name: 📢 Deployment Notification Summary
+        if: always()
+        run: |
+          DEPLOY_STATUS="${{ steps.deploy.outcome }}"
+          HEALTH_STATUS="${{ steps.deploy.outcome }}"
+          COMMIT_SHA="${{ needs.detect-changes.outputs.head_sha }}"
+          SHORT_SHA="${COMMIT_SHA:0:7}"
+          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          LIVE_DOMAIN="${{ steps.deploy.outputs.domain }}"
+
+          if [ "$DEPLOY_STATUS" = "success" ]; then
+            STATUS_EMOJI="✅"
+            STATUS_TEXT="SUCCESS"
+          else
+            STATUS_EMOJI="❌"
+            STATUS_TEXT="FAILED"
+          fi
+
+          {
+            echo "## $STATUS_EMOJI Deployment Notification — $STATUS_TEXT"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| 🕐 Timestamp | \`$TIMESTAMP\` |"
+            echo "| 📦 Commit SHA | [\`$SHORT_SHA\`](https://github.com/${{ github.repository }}/commit/$COMMIT_SHA) |"
+            echo "| 🌿 Branch | \`${{ github.ref_name }}\` |"
+            echo "| 👤 Triggered by | @${{ github.actor }} |"
+            echo "| 🚀 Deploy Status | **$STATUS_TEXT** |"
+            echo "| 🌐 Production URL | [$LIVE_DOMAIN]($LIVE_DOMAIN) |"
+            echo "| 🏥 Health Check URL | [$LIVE_DOMAIN/health]($LIVE_DOMAIN/health) |"
+            echo ""
+            echo "> Deploy oleh GitHub Actions · [Lihat run ini](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          } >> "$GITHUB_STEP_SUMMARY"
+

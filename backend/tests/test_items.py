@@ -1,5 +1,4 @@
 """Test CRUD item endpoints."""
-from main import app
 
 
 def test_create_item(client, auth_headers):
@@ -126,7 +125,7 @@ def test_create_item_duplicate_code(client, auth_headers):
     client.post("/api/items", json={
         "code": "DUPCODE", "name": "Item 1", "category": "Electronics"
     }, headers=auth_headers)
-    
+
     # Buat item kedua dengan code sama
     response = client.post("/api/items", json={
         "code": "DUPCODE", "name": "Item 2", "category": "Electronics"
@@ -141,14 +140,14 @@ def test_pagination_get_items(client, auth_headers):
         client.post("/api/items", json={
             "code": f"PAGI{i:03d}", "name": f"Item {i}", "category": "Test"
         }, headers=auth_headers)
-    
+
     # Test: skip=0, limit=2 → harus return 2 items
     response = client.get("/api/items?skip=0&limit=2", headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
     assert len(data["items"]) == 2
     assert data["total"] >= 5
-    
+
     # Test: skip=2, limit=2 → harus return 2 items berbeda
     response2 = client.get("/api/items?skip=2&limit=2", headers=auth_headers)
     assert response2.status_code == 200
@@ -165,17 +164,17 @@ def test_items_stats(client, auth_headers):
         client.post("/api/items", json={
             "code": f"ELEC{i:03d}", "name": f"Electronic {i}", "category": "Electronics", "price": float(i * 1000)
         }, headers=auth_headers)
-    
+
     # Buat 2 items di kategori Accessories
     for i in range(1, 3):
         client.post("/api/items", json={
             "code": f"ACC{i:03d}", "name": f"Accessory {i}", "category": "Accessories", "price": float(i * 500)
         }, headers=auth_headers)
-    
+
     response = client.get("/api/items/stats", headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
-    
+
     # Validasi struktur response
     assert "total_items" in data
     assert "total_categories" in data
@@ -183,7 +182,7 @@ def test_items_stats(client, auth_headers):
     assert "total_value" in data
     assert "highest_price" in data
     assert "lowest_price" in data
-    
+
     # Validasi data
     assert data["total_items"] >= 5
     assert data["total_categories"] >= 2
