@@ -33,7 +33,7 @@ try:
             # Postgres
             conn.execute(text("ALTER TABLE master_blocks ADD COLUMN IF NOT EXISTS geometry JSON;"))
             print("Successfully added 'geometry' column to master_blocks.")
-            
+
         conn.commit()
 except Exception as e:
     print(f"Error: {e}")
