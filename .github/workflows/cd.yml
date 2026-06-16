@@ -663,14 +663,21 @@ jobs:
             
             REAL_SSH_CMD=$(echo "$SSH_CMD" | sed "s/^ssh /sshpass -p '$SSH_PASS' ssh -o StrictHostKeyChecking=no /")
             
-            echo "=== svc-status ==="
-            eval "$REAL_SSH_CMD 'svc-status || true'"
+            echo "=== svc-status ===" > backend-logs.txt
+            eval "$REAL_SSH_CMD 'svc-status || true'" >> backend-logs.txt
             
-            echo "=== svc-applog ==="
-            eval "$REAL_SSH_CMD 'svc-applog | tail -n 50 || true'"
+            echo "=== svc-applog ===" >> backend-logs.txt
+            eval "$REAL_SSH_CMD 'svc-applog | tail -n 50 || true'" >> backend-logs.txt
             
-            echo "=== svc-logs ==="
-            eval "$REAL_SSH_CMD 'svc-logs | tail -n 50 || true'"
+            echo "=== svc-logs ===" >> backend-logs.txt
+            eval "$REAL_SSH_CMD 'svc-logs | tail -n 50 || true'" >> backend-logs.txt
+            
+            echo "Publishing logs to repository..."
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add backend-logs.txt
+            git commit -m "chore: add backend startup diagnostics logs [skip ci]" || true
+            git push origin main || true
             
             exit 1
           fi
