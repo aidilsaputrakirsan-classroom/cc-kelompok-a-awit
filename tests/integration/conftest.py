@@ -6,7 +6,7 @@ import os
 import pytest
 import httpx
 
-GATEWAY_URL = os.getenv("GATEWAY_URL", "http://localhost")
+GATEWAY_URL = os.getenv("GATEWAY_URL", "http://localhost:8080")
 
 @pytest.fixture(scope="session")
 def gateway_url():
