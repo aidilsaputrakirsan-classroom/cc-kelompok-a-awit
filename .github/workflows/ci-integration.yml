@@ -63,9 +63,9 @@ jobs:
           fi
 
       - name: 🐍 Setup Python for integration tests
-         uses: actions/setup-python@v5
-         with:
-           python-version: "3.12"
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
       - name: 📦 Install test dependencies
         run: pip install httpx pytest pytest-html
