@@ -605,7 +605,7 @@ body.dark .mdc-th {
   background: rgba(50, 50, 50, 0.03);
 }
 
-:root.dark .mdc-tr:hover {
+:root.dark .mdc-tr:hover,
 body.dark .mdc-tr:hover {
   background: rgba(255, 255, 255, 0.03);
 }
@@ -689,7 +689,7 @@ body.dark .mdc-badge--on {
   border: 1px solid var(--border-color);
 }
 
-:root.dark .mdc-badge--off {
+:root.dark .mdc-badge--off,
 body.dark .mdc-badge--off {
   background: rgba(255, 255, 255, 0.08);
 }
@@ -816,7 +816,7 @@ body.dark .mdc-page-btn:hover:not(:disabled) {
   transition: background-color 0.3s ease;
 }
 
-:root.dark .mdc-modal {
+:root.dark .mdc-modal,
 body.dark .mdc-modal {
   box-shadow: 0 20px 80px rgba(0, 0, 0, 0.4);
 }
@@ -853,7 +853,7 @@ body.dark .mdc-modal {
   background: rgba(50, 50, 50, 0.08);
 }
 
-:root.dark .mdc-modal__close:hover {
+:root.dark .mdc-modal__close:hover,
 body.dark .mdc-modal__close:hover {
   background: rgba(255, 255, 255, 0.1);
 }

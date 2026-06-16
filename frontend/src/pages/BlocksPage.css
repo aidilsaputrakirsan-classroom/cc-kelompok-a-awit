@@ -574,7 +574,7 @@ body.dark .blk-th {
   background: rgba(50, 50, 50, 0.03);
 }
 
-:root.dark .blk-tr:hover {
+:root.dark .blk-tr:hover,
 body.dark .blk-tr:hover {
   background: rgba(255, 255, 255, 0.03);
 }
@@ -647,7 +647,7 @@ body.dark .blk-badge--on {
   border: 1px solid var(--border-color);
 }
 
-:root.dark .blk-badge--off {
+:root.dark .blk-badge--off,
 body.dark .blk-badge--off {
   background: rgba(255, 255, 255, 0.08);
 }
@@ -774,7 +774,7 @@ body.dark .blk-page-btn:hover:not(:disabled) {
   transition: background-color 0.3s ease;
 }
 
-:root.dark .blk-modal {
+:root.dark .blk-modal,
 body.dark .blk-modal {
   box-shadow: 0 20px 80px rgba(0, 0, 0, 0.4);
 }
@@ -811,7 +811,7 @@ body.dark .blk-modal {
   background: rgba(50, 50, 50, 0.08);
 }
 
-:root.dark .blk-modal__close:hover {
+:root.dark .blk-modal__close:hover,
 body.dark .blk-modal__close:hover {
   background: rgba(255, 255, 255, 0.1);
 }
