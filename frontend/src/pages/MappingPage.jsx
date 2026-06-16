@@ -156,6 +156,7 @@ function GeomanControl({ onSaveShape }) {
 }
 
 export default function MappingPage() {
+
   const outlet = useOutletContext() || {};
   const { showToast } = outlet;
 
@@ -227,6 +228,7 @@ export default function MappingPage() {
       else alert("Gagal menyimpan block. Cek log.");
     }
   };
+
 
   return (
     <div className="pt-mapping-page">
