@@ -13,12 +13,14 @@ import MappingPage from "./pages/MappingPage"
 import ActualHauling from "./pages/ActualHauling"
 import ItemsPage from "./pages/ItemsPage"
 import AboutPage from "./components/AboutPage"
+import StatusPage from "./pages/StatusPage"
 
 export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <Routes>
+          <Route path="/status" element={<StatusPage />} />
           <Route
             path="/login"
             element={(
