@@ -647,8 +647,8 @@ jobs:
           
           echo "Memulai uji kesehatan pada endpoint: $HEALTH_URL"
           
-          # Melakukan hit ke endpoint health check publik
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL")
+          # Melakukan hit ke endpoint health check publik dengan timeout 10 detik
+          HTTP_STATUS=$(curl -s -o /dev/null --connect-timeout 10 --max-time 15 -w "%{http_code}" "$HEALTH_URL")
           
           if [ "$HTTP_STATUS" == "200" ]; then
             echo "✅ Health check PASSED! Production backend merespons dengan HTTP $HTTP_STATUS"
@@ -661,7 +661,8 @@ jobs:
             SSH_CMD="${{ steps.deploy.outputs.ssh_cmd }}"
             SSH_PASS="${{ steps.deploy.outputs.ssh_pass }}"
             
-            REAL_SSH_CMD=$(echo "$SSH_CMD" | sed "s/^ssh /sshpass -p '$SSH_PASS' ssh -o StrictHostKeyChecking=no /")
+            # Tambahkan ConnectTimeout=10 agar SSH tidak hang selamanya jika port/host diblokir firewall
+            REAL_SSH_CMD=$(echo "$SSH_CMD" | sed "s/^ssh /sshpass -p '$SSH_PASS' ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 /")
             
             echo "=== svc-status ===" > backend-logs.txt
             eval "$REAL_SSH_CMD 'svc-status || true'" >> backend-logs.txt
