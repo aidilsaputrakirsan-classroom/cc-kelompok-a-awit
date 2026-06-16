@@ -215,7 +215,11 @@ body.dark .blk-tr:hover {
 }
 
 .blk-td--number {
-  text-align: right;
+  text-align: left;
+}
+
+.blk-th--number {
+  text-align: left;
 }
 
 .blk-td--empty {
@@ -591,7 +595,7 @@ body.dark .blk-tr:hover {
 }
 
 .blk-td--number {
-  text-align: right;
+  text-align: left;
 }
 
 .blk-td--empty {

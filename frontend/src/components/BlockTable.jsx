@@ -22,7 +22,7 @@ function BlockTable({ blocks, vendors, loading, onEdit, onDelete }) {
             <th className="blk-th">Block Code</th>
             <th className="blk-th">Division / Area</th>
             <th className="blk-th">Responsible Contractor</th>
-            <th className="blk-th">Area Size (Ha)</th>
+            <th className="blk-th blk-th--number">Area Size (Ha)</th>
             <th className="blk-th blk-th--status">Status</th>
             {(onEdit || onDelete) && <th className="blk-th blk-th--actions">Actions</th>}
           </tr>
