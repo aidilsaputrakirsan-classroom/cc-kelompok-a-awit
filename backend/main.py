@@ -53,6 +53,7 @@ def ensure_hauling_schema() -> None:
     """Tambahkan kolom/objek hauling baru jika database sudah terlanjur ada."""
     is_sqlite = "sqlite" in str(engine.url)
 
+
     if is_sqlite:
         # SQLite: tanpa IF NOT EXISTS, catch duplicate column name
         ddl_statements = [
@@ -96,7 +97,11 @@ def ensure_hauling_schema() -> None:
                 print(f"Schema update warning on statement '{statement}': {e}")
 
 
-ensure_hauling_schema()
+try:
+    ensure_hauling_schema()
+except Exception:
+    import traceback
+    traceback.print_exc()
 
 EXPORT_RATE_LIMIT_WINDOW_SECONDS = 60
 EXPORT_RATE_LIMIT_MAX_REQUESTS = 10
@@ -113,6 +118,10 @@ app = FastAPI(
 # ==================== CORS (FIXED) ====================
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
 origins_list = [origin.strip() for origin in allowed_origins.split(",")]
+# Tambahkan domain production jika belum ada
+_prod_domain = "https://cc-kelompok-a-awit.akhzafachrozy.my.id"
+if _prod_domain not in origins_list:
+    origins_list.append(_prod_domain)
 
 app.add_middleware(
     CORSMiddleware,
