@@ -51,6 +51,11 @@ Base.metadata.create_all(bind=engine)
 
 def ensure_hauling_schema() -> None:
     """Tambahkan kolom/objek hauling baru jika database sudah terlanjur ada."""
+    # Skip untuk SQLite — syntax ini khusus PostgreSQL
+    db_url = os.getenv("DATABASE_URL", "")
+    if "sqlite" in db_url:
+        return
+
     ddl_statements = [
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'operator'",
         "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS transaction_date DATE",
@@ -72,7 +77,11 @@ def ensure_hauling_schema() -> None:
                 pass
 
 
-ensure_hauling_schema()
+try:
+    ensure_hauling_schema()
+except Exception:
+    import traceback
+    traceback.print_exc()
 
 EXPORT_RATE_LIMIT_WINDOW_SECONDS = 60
 EXPORT_RATE_LIMIT_MAX_REQUESTS = 10
@@ -89,6 +98,10 @@ app = FastAPI(
 # ==================== CORS (FIXED) ====================
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
 origins_list = [origin.strip() for origin in allowed_origins.split(",")]
+# Tambahkan domain production jika belum ada
+_prod_domain = "https://cc-kelompok-a-awit.akhzafachrozy.my.id"
+if _prod_domain not in origins_list:
+    origins_list.append(_prod_domain)
 
 app.add_middleware(
     CORSMiddleware,
