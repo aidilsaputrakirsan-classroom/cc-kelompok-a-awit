@@ -39,14 +39,14 @@ def create_user(db: Session, user_data: UserCreate) -> User:
     return db_user
 
 
-def authenticate_user(db: Session, email: str, password: str) -> User | None:
+def authenticate_user(db: Session, email: str, password: str) -> tuple[User | None, str | None]:
     """Autentikasi user: cek email & password."""
     user = db.query(User).filter(User.email == email).first()
     if not user:
-        return None
+        return None, "Email tidak terdaftar."
     if not verify_password(password, user.hashed_password):
-        return None
-    return user
+        return None, "Password salah."
+    return user, None
 
 
 # ==================== VENDOR CRUD ====================

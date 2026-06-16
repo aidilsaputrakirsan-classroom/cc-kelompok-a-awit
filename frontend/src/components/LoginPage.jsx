@@ -88,7 +88,7 @@ export default function LoginPage() {
       await login(email, password);
     } catch (err) {
       setError(err.message === "UNAUTHORIZED"
-        ? "Email atau password salah."
+        ? "Sesi atau kredensial tidak valid."
         : err.message || "Login gagal, coba lagi.");
     } finally {
       setLoading(false);
