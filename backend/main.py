@@ -62,6 +62,7 @@ def ensure_hauling_schema() -> None:
         "ALTER TABLE hauling_transactions ALTER COLUMN ticket_no TYPE VARCHAR(100)",
         "ALTER TABLE hauling_transactions ALTER COLUMN vehicle_plate TYPE VARCHAR(20)",
         "ALTER TABLE items ADD COLUMN IF NOT EXISTS price FLOAT DEFAULT 0",
+        "ALTER TABLE master_blocks ADD COLUMN geometry JSON",
     ]
 
     with engine.begin() as connection:
