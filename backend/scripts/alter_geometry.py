@@ -1,5 +1,5 @@
 import os
-import sqlite3 #noqa
+import sqlite3  #noqa
 import sys
 
 db_path = os.path.join(os.path.dirname(__file__), '..', 'fallback.db')
