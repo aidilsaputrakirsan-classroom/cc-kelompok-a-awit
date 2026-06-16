@@ -5,7 +5,7 @@
 //   fetch(`${API_URL}/api/items`)   → GET /api/api/items  → uvicorn: /api/items   ✅
 //
 // Dev lokal: Jika menggunakan Vite proxy, biarkan kosong. Jika menggunakan gateway Nginx (port 80) langsung, gunakan VITE_API_URL="http://localhost"
-const API_URL = (import.meta.env.VITE_API_URL !== undefined ? import.meta.env.VITE_API_URL : "http://localhost").replace(/\/$/, "")
+export const API_URL = (import.meta.env.VITE_API_URL !== undefined ? import.meta.env.VITE_API_URL : "http://localhost").replace(/\/$/, "")
 
 const TOKEN_STORAGE_KEY = "palmtrack_access_token"
 
@@ -55,7 +55,8 @@ function authHeaders() {
 async function handleResponse(response) {
   if (response.status === 401) {
     clearToken()
-    throw new Error("UNAUTHORIZED")
+    const error = await response.json().catch(() => ({}))
+    throw new Error(error.detail || error.message || "UNAUTHORIZED")
   }
   if (response.status >= 502 && response.status <= 504) {
     throw new Error("SERVICE_UNAVAILABLE")

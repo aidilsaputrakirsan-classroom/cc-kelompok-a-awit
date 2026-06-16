@@ -181,7 +181,7 @@
   justify-content: center;
 }
 
-.input-group input {
+.login-container .input-group input {
   width: 100%;
   padding: 10px 12px 10px 36px;
   border: 1px solid #e5e7eb;
@@ -192,17 +192,17 @@
   transition: all 0.2s;
   box-sizing: border-box;
 }
-.input-group input:focus {
+.login-container .input-group input:focus {
   outline: none;
   border-color: #C8372D;
   box-shadow: 0 0 0 3px rgba(200, 55, 45, 0.1);
 }
 
-.input-group input::placeholder {
+.login-container .input-group input::placeholder {
   color: #9ca3af;
 }
 
-.pw-toggle {
+.login-container .pw-toggle {
   position: absolute;
   right: 9px;
   background: none;
@@ -216,11 +216,11 @@
   transition: color 0.2s;
 }
 
-.pw-toggle:hover {
+.login-container .pw-toggle:hover {
   color: #4b5563;
 }
 
-.login-btn {
+.login-container .login-btn {
   background-color: #C8372D;
   color: white;
   border: none;
@@ -233,13 +233,13 @@
   margin-top: 6px;
 }
 
-.login-btn:hover:not(:disabled) {
+.login-container .login-btn:hover:not(:disabled) {
   background-color: #b02e25;
 }
-.login-btn:active:not(:disabled) {
+.login-container .login-btn:active:not(:disabled) {
   transform: translateY(1px);
 }
-.login-btn:disabled {
+.login-container .login-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
@@ -251,7 +251,7 @@
   justify-content: center;
 }
 
-.download-btn {
+.login-container .download-btn {
   display: flex;
   align-items: center;
   gap: 9px;
@@ -265,12 +265,12 @@
   transition: all 0.2s;
 }
 
-.download-btn:hover {
+.login-container .download-btn:hover {
   box-shadow: 0 6px 16px rgba(0,0,0,0.08);
   transform: translateY(-2px);
 }
 
-.download-btn svg {
+.login-container .download-btn svg {
   color: #1f2937;
 }
 
@@ -302,7 +302,7 @@
   padding: 3px;
   margin-bottom: -8px;
 }
-.login-tab {
+.login-container .login-tab {
   flex: 1;
   padding: 8px;
   font-size: 12px;
@@ -317,7 +317,7 @@
   z-index: 1;
   font-family: inherit;
 }
-.login-tab--active {
+.login-container .login-tab--active {
   color: #1f2937;
 }
 .login-tab-bar {
@@ -340,7 +340,7 @@
   color: #6b7280;
   margin: 0;
 }
-.switch-link {
+.login-container .switch-link {
   background: none;
   border: none;
   color: #C8372D;
@@ -352,4 +352,4 @@
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.switch-link:hover { color: #b02e25; }
+.login-container .switch-link:hover { color: #b02e25; }

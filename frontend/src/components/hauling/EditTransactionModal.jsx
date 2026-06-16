@@ -1,8 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import TransactionFormFields from "./TransactionFormFields";
-import { getToken } from "../../services/api";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+import { getToken, API_URL } from "../../services/api";
 
 function EditTransactionModal({ transactionId, open, vendors, blocks, onSubmit, onClose }) {
   const [formData, setFormData] = useState(null);

@@ -135,7 +135,7 @@ function TransactionFormFields({ formData, onFormChange, vendors, blocks, submit
             borderColor: isNetWeightWarning ? "#ffeeba" : "var(--border-color, rgba(50, 50, 50, 0.25))",
           }}
         >
-          {netWeight === null ? "—" : netWeight.toFixed(3)}
+          {netWeight === null ? "—" : new Intl.NumberFormat('id-ID', { minimumFractionDigits: 3, maximumFractionDigits: 3 }).format(netWeight)}
         </div>
         {isNetWeightWarning && (
           <span style={{ fontSize: "0.8rem", color: "#856404", marginTop: "4px" }}>

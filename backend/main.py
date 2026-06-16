@@ -191,11 +191,11 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     Authorization: Bearer <access_token>
     ```
     """
-    user = crud.authenticate_user(db=db, email=login_data.email, password=login_data.password)
-    if not user:
+    user, error = crud.authenticate_user(db=db, email=login_data.email, password=login_data.password)
+    if error:
         raise HTTPException(
             status_code=401,
-            detail="Email atau password salah. Periksa kembali kredensial Anda."
+            detail=error
         )
 
     token = create_access_token(data={"sub": user.id})
@@ -219,11 +219,11 @@ def login_for_access_token(
     Digunakan oleh Swagger UI Authorization dan OAuth2 clients.
     """
     # Username di OAuth2 context berarti email
-    user = crud.authenticate_user(db=db, email=username, password=password)
-    if not user:
+    user, error = crud.authenticate_user(db=db, email=username, password=password)
+    if error:
         raise HTTPException(
             status_code=401,
-            detail="Email atau password salah",
+            detail=error,
             headers={"WWW-Authenticate": "Bearer"},
         )
 
