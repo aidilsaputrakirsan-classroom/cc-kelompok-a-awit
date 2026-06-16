@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, GeoJSON } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, GeoJSON, Tooltip } from 'react-leaflet';
+import polylabel from 'polylabel';
+import calculateArea from '@turf/area';
 import 'leaflet/dist/leaflet.css';
 import './MappingPage.css';
 
@@ -12,7 +14,7 @@ import '@geoman-io/leaflet-geoman-free';
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
 import { useOutletContext } from 'react-router-dom';
 
-import { createBlock, fetchBlocks } from '../services/api';
+import { createBlock, fetchBlocks, fetchVendors } from '../services/api';
 
 let DefaultIcon = L.icon({
     iconUrl: icon,
@@ -21,10 +23,29 @@ let DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-function SaveBlockModal({ open, geoJson, layer, onClose, onSave, showToast }) {
+function SaveBlockModal({ open, geoJson, layer, onClose, onSave, showToast, vendors }) {
   const [blockCode, setBlockCode] = useState("");
   const [division, setDivision] = useState("");
+  const [hectarage, setHectarage] = useState("");
+  const [vendorId, setVendorId] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (open && geoJson) {
+      try {
+        const areaSqMeters = calculateArea(geoJson);
+        const areaHa = (areaSqMeters / 10000).toFixed(2);
+        setHectarage(areaHa);
+      } catch (e) {
+        console.error("Failed to calculate area:", e);
+      }
+    } else {
+      setBlockCode("");
+      setDivision("");
+      setHectarage("");
+      setVendorId("");
+    }
+  }, [open, geoJson]);
 
   if (!open) return null;
 
@@ -36,7 +57,13 @@ function SaveBlockModal({ open, geoJson, layer, onClose, onSave, showToast }) {
       return;
     }
     setIsSaving(true);
-    await onSave({ block_code: blockCode, division, geometry: geoJson }, layer);
+    await onSave({ 
+      block_code: blockCode, 
+      division, 
+      hectarage: hectarage ? parseFloat(hectarage) : null,
+      vendor_id: vendorId || null,
+      geometry: geoJson 
+    }, layer);
     setIsSaving(false);
   };
 
@@ -52,6 +79,26 @@ function SaveBlockModal({ open, geoJson, layer, onClose, onSave, showToast }) {
           <div className="pt-form-group">
             <label>Division/Afdeling</label>
             <input type="text" value={division} onChange={e => setDivision(e.target.value)} />
+          </div>
+          <div className="pt-form-group">
+            <label>Area Size (Ha)</label>
+            <input 
+              type="number" 
+              step="0.01" 
+              value={hectarage} 
+              onChange={e => setHectarage(e.target.value)} 
+              placeholder="Auto-calculated" 
+            />
+            <small style={{color: '#666', marginTop: '4px'}}>Dihitung otomatis berdasarkan luas poligon.</small>
+          </div>
+          <div className="pt-form-group">
+            <label>Responsible Contractor</label>
+            <select value={vendorId} onChange={e => setVendorId(e.target.value)}>
+              <option value="">-- Pilih Contractor --</option>
+              {vendors && vendors.map(v => (
+                <option key={v.id} value={v.id}>{v.name}</option>
+              ))}
+            </select>
           </div>
           <div className="pt-modal-actions">
             <button type="button" className="pt-btn-secondary" onClick={onClose} disabled={isSaving}>Batal</button>
@@ -116,6 +163,7 @@ export default function MappingPage() {
   const position = [-6.960833, 140.496111];
 
   const [blocks, setBlocks] = useState([]);
+  const [vendors, setVendors] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentShape, setCurrentShape] = useState({ geoJson: null, layer: null });
 
@@ -130,8 +178,20 @@ export default function MappingPage() {
     }
   };
 
+  const loadVendors = async () => {
+    try {
+      const data = await fetchVendors({ limit: 1000, status: true });
+      if (data && data.vendors) {
+        setVendors(data.vendors);
+      }
+    } catch (error) {
+      console.error("Failed to load vendors:", error);
+    }
+  };
+
   useEffect(() => {
     loadBlocks();
+    loadVendors();
   }, []);
 
   const handleDrawFinish = (geoJsonData, layer) => {
@@ -193,21 +253,75 @@ export default function MappingPage() {
             </Popup>
           </Marker>
 
-          {blocks.map(block => (
-            block.geometry && (
-              <GeoJSON 
-                key={block.id} 
-                data={block.geometry} 
-                style={{ color: '#ff7800', weight: 2, fillOpacity: 0.4 }}
-              >
-                <Popup>
-                  <strong>Kode Blok:</strong> {block.block_code}<br />
-                  <strong>Afdeling:</strong> {block.division || '-'}<br />
-                  <strong>Luas:</strong> {block.hectarage || '-'} ha
-                </Popup>
-              </GeoJSON>
-            )
-          ))}
+          {blocks.map(block => {
+            if (!block.geometry) return null;
+            
+            let center = null;
+            try {
+              const geom = block.geometry;
+              const type = geom.type;
+              let coords = [];
+              if (type === 'Polygon') {
+                  coords = geom.coordinates;
+              } else if (type === 'MultiPolygon') {
+                  coords = geom.coordinates[0];
+              } else if (type === 'Feature' && geom.geometry) {
+                  if (geom.geometry.type === 'Polygon') {
+                      coords = geom.geometry.coordinates;
+                  } else if (geom.geometry.type === 'MultiPolygon') {
+                      coords = geom.geometry.coordinates[0];
+                  }
+              }
+              
+              if (coords && coords.length > 0) {
+                  const result = polylabel(coords, 0.00001); 
+                  if (!isNaN(result[0]) && !isNaN(result[1])) {
+                      center = [result[1], result[0]]; // Leaflet Marker uses [lat, lng]
+                  }
+              }
+            } catch (e) {
+                console.error("Polylabel calculation failed for block:", block.block_code, e);
+            }
+
+            const vendor = vendors.find(v => v.id === block.vendor_id);
+            const vendorName = vendor ? vendor.name : 'Unknown Contractor';
+
+            return (
+              <React.Fragment key={block.id}>
+                <GeoJSON 
+                  data={block.geometry} 
+                  style={{ color: '#ff7800', weight: 2, fillOpacity: 0.4 }}
+                >
+                  <Popup>
+                    <strong>Kode Blok:</strong> {block.block_code}<br />
+                    <strong>Afdeling:</strong> {block.division || '-'}<br />
+                    <strong>Contractor:</strong> {vendorName}<br />
+                    <strong>Luas:</strong> {block.hectarage || '-'} ha
+                  </Popup>
+                  {!center && (
+                    <Tooltip permanent direction="center" className="pt-polygon-tooltip">
+                      <div style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
+                        <div style={{fontSize:'16px'}}>{block.block_code}</div>
+                        <div style={{fontSize:'11px', fontWeight:'normal', opacity:0.9, marginTop:'2px'}}>{vendorName}</div>
+                        <div style={{fontSize:'11px', fontWeight:'normal', opacity:0.9}}>{block.hectarage ? block.hectarage + ' Ha' : ''}</div>
+                      </div>
+                    </Tooltip>
+                  )}
+                </GeoJSON>
+                {center && (
+                  <Marker position={center} icon={L.divIcon({
+                    className: 'pt-polygon-tooltip-marker',
+                    html: `<div class="pt-polygon-tooltip" style="display:flex; flex-direction:column; align-items:center;">
+                             <div style="font-size:16px;">${block.block_code}</div>
+                             <div style="font-size:11px; font-weight:normal; opacity:0.9; margin-top:2px;">${vendorName}</div>
+                             <div style="font-size:11px; font-weight:normal; opacity:0.9;">${block.hectarage ? block.hectarage + ' Ha' : ''}</div>
+                           </div>`,
+                    iconSize: [0, 0]
+                  })} />
+                )}
+              </React.Fragment>
+            );
+          })}
         </MapContainer>
       </div>
 
@@ -218,6 +332,7 @@ export default function MappingPage() {
         onClose={handleModalClose} 
         onSave={handleSaveBlock} 
         showToast={showToast}
+        vendors={vendors}
       />
     </div>
   );

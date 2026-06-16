@@ -74,7 +74,8 @@
   font-size: 0.9rem;
 }
 
-.pt-form-group input {
+.pt-form-group input,
+.pt-form-group select {
   padding: 0.75rem;
   border: 1px solid #ccc; /* Set explicit visible stroke/border */
   border-radius: 4px;
@@ -112,4 +113,32 @@
 .pt-btn-primary:disabled, .pt-btn-secondary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Tooltip for polygon center */
+.pt-polygon-tooltip {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-weight: 800;
+  font-size: 14px;
+  color: #000;
+  text-shadow: 
+    1px 1px 2px white, 
+    -1px -1px 2px white, 
+    1px -1px 2px white, 
+    -1px 1px 2px white;
+}
+.pt-polygon-tooltip::before {
+  display: none !important;
+}
+
+/* Marker centering */
+.pt-polygon-tooltip-marker {
+  overflow: visible !important;
+}
+.pt-polygon-tooltip-marker .pt-polygon-tooltip {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
 }
