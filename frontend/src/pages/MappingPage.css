@@ -1,7 +1,7 @@
 .pt-mapping-page {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: calc(100vh - 60px);
   padding: 1.5rem;
   gap: 1rem;
 }
@@ -10,28 +10,31 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .pt-mapping-title {
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
-  color: var(--pt-text);
+  color: var(--text-primary);
 }
 
 .pt-mapping-container {
   flex: 1;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  border: 1px solid var(--pt-border);
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  min-height: 500px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(44, 47, 54, 0.04);
+  min-height: 600px;
+  position: relative;
 }
 
 /* Ensure leaflet map takes full height of container */
 .leaflet-container {
   width: 100%;
   height: 100%;
+  min-height: 600px;
   z-index: 1;
 }
 
@@ -42,7 +45,8 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(44, 47, 54, 0.5);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -50,16 +54,17 @@
 }
 
 .pt-modal-content {
-  background: white;
+  background: var(--card-bg, white);
   padding: 2rem;
-  border-radius: 8px;
+  border-radius: 16px;
   width: 400px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 20px 60px rgba(44, 47, 54, 0.12);
 }
 
 .pt-modal-content h3 {
   margin-top: 0;
   margin-bottom: 1.5rem;
+  color: var(--text-primary);
 }
 
 .pt-form-group {
@@ -72,16 +77,24 @@
   font-weight: 500;
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
+  color: var(--text-primary);
 }
 
 .pt-form-group input,
 .pt-form-group select {
   padding: 0.75rem;
-  border: 1px solid #ccc; /* Set explicit visible stroke/border */
-  border-radius: 4px;
+  border: 1px solid var(--border-color, #ccc);
+  border-radius: 8px;
   font-size: 1rem;
-  background-color: white; /* Match modal background */
-  color: #333; /* Dark text for light background */
+  background-color: var(--bg-input, white);
+  color: var(--text-primary, #333);
+}
+
+.pt-form-group input:focus,
+.pt-form-group select:focus {
+  border-color: #ff0000;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.08);
 }
 
 .pt-modal-actions {
@@ -92,22 +105,33 @@
 }
 
 .pt-btn-primary {
-  background: #c94b40; /* Red color matching the reference image */
+  background: #ff0000;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.pt-btn-primary:hover:not(:disabled) {
+  background: #d40000;
 }
 
 .pt-btn-secondary {
   background: transparent;
-  color: var(--pt-text);
-  border: 1px solid var(--pt-border);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
   padding: 0.75rem 1.5rem;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.pt-btn-secondary:hover:not(:disabled) {
+  border-color: rgba(44, 47, 54, 0.3);
 }
 
 .pt-btn-primary:disabled, .pt-btn-secondary:disabled {

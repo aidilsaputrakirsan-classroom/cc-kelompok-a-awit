@@ -9,7 +9,7 @@
   overflow-x: hidden;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 body {
@@ -21,19 +21,20 @@ body {
 }
 
 input:focus {
-  border-color: #2E75B6 !important;
+  border-color: var(--accent-color) !important;
+  outline: none;
 }
 
 button:hover {
-  opacity: 0.9;
-  transition: all 0.15s;
+  opacity: 0.95;
+  transition: all 0.2s ease;
 }
 
 /* Spinner used in loading states */
 .spinner {
   width: 32px;
   height: 32px;
-  border: 4px solid var(--border-color);
+  border: 3px solid var(--border-color);
   border-top-color: var(--accent-color);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -46,8 +47,6 @@ button:hover {
   }
 }
 
-/* Old login styles removed */
-
 /* ——— Dashboard module nav (PalmTrack) ——— */
 .pt-nav {
   display: flex;
@@ -55,8 +54,8 @@ button:hover {
   gap: 0.35rem;
   margin-bottom: 1.25rem;
   padding: 0.35rem;
-  background: #ffffff;
-  border: 1px solid rgba(50, 50, 50, 0.12);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 10px;
 }
 
@@ -68,26 +67,24 @@ button:hover {
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  color: rgba(50, 50, 50, 0.65);
+  color: var(--text-secondary);
   background: transparent;
-  transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .pt-nav__btn:hover {
-  color: #323232;
-  background: rgba(50, 50, 50, 0.05);
+  color: var(--text-primary);
+  background: rgba(44, 47, 54, 0.04);
   opacity: 1;
 }
 
 .pt-nav__btn--active {
-  color: #323232;
-  background: rgba(186, 53, 44, 0.1);
-  box-shadow: inset 0 -2px 0 0 #ba352c;
+  color: var(--accent-color);
+  background: rgba(255, 0, 0, 0.06);
+  box-shadow: inset 0 -2px 0 0 var(--accent-color);
 }
 
 /* Dark Mode Styles */
-/* Old login dark mode shell removed */
-
 :root.dark input {
   background: var(--bg-input);
   color: var(--text-primary);
@@ -100,21 +97,21 @@ button:hover {
 }
 
 body.dark {
-  --pt-bg: #1a1a1a;
-  --pt-primary: #ff6b6b;
-  --pt-primary-hover: #ff5252;
+  --pt-bg: #1a1c23;
+  --pt-primary: #ff3333;
+  --pt-primary-hover: #ff0000;
   --pt-neutral: #ffffff;
-  --pt-line: rgba(255, 255, 255, 0.2);
-  --pt-muted: rgba(255, 255, 255, 0.6);
+  --pt-line: rgba(255, 255, 255, 0.1);
+  --pt-muted: rgba(255, 255, 255, 0.5);
 }
 
 body.dark input {
-  background: #333;
-  color: white;
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border-color: var(--border-input);
 }
 
 body.dark button {
-  background: #444;
-  color: white;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }

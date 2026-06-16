@@ -9,16 +9,16 @@
 }
 
 .dark-mode-toggle:hover .toggle-pill {
-  box-shadow: 0 0 8px rgba(192, 57, 43, 0.4);
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.3);
 }
 
 .toggle-pill {
   position: relative;
   width: 44px;
   height: 24px;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.15);
   border-radius: 24px;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.2s ease;
   display: flex;
   align-items: center;
   padding: 2px;
@@ -26,7 +26,7 @@
 }
 
 .toggle-pill.active {
-  background-color: rgba(192, 57, 43, 0.35);
+  background-color: rgba(255, 0, 0, 0.3);
 }
 
 .toggle-thumb {
@@ -36,13 +36,13 @@
   height: 20px;
   background-color: #ffffff;
   border-radius: 50%;
-  transition: left 0.3s ease, box-shadow 0.3s ease;
+  transition: left 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .toggle-pill.active .toggle-thumb {
   left: 22px;
-  box-shadow: 0 2px 6px rgba(192, 57, 43, 0.4);
+  box-shadow: 0 2px 6px rgba(255, 0, 0, 0.3);
 }
 
 .toggle-label {
