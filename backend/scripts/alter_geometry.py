@@ -1,4 +1,5 @@
 import os
+import sqlite3  #noqa
 import sys
 
 from dotenv import load_dotenv
