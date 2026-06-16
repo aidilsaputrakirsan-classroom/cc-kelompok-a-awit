@@ -78,6 +78,7 @@ class BlockBase(BaseModel):
     block_code: str = Field(..., min_length=1, max_length=10)
     division: Optional[str] = None
     hectarage: Optional[float] = Field(None, ge=0)
+    geometry: Optional[dict] = None
     vendor_id: Optional[uuid.UUID] = None
     status: bool = Field(default=True)
 

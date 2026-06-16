@@ -34,3 +34,82 @@
   height: 100%;
   z-index: 1;
 }
+
+/* Modal Styling */
+.pt-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.pt-modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 400px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.pt-modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.pt-form-group {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.pt-form-group label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.pt-form-group input {
+  padding: 0.75rem;
+  border: 1px solid #ccc; /* Set explicit visible stroke/border */
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: white; /* Match modal background */
+  color: #333; /* Dark text for light background */
+}
+
+.pt-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.pt-btn-primary {
+  background: #c94b40; /* Red color matching the reference image */
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.pt-btn-secondary {
+  background: transparent;
+  color: var(--pt-text);
+  border: 1px solid var(--pt-border);
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pt-btn-primary:disabled, .pt-btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

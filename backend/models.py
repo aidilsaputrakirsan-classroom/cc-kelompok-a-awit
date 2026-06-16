@@ -51,6 +51,7 @@ class MasterBlock(Base):
     block_code = Column(String(10), unique=True, nullable=False, index=True)
     division = Column(String(50))  # Afdeling
     hectarage = Column(Float)  # Luas area dalam hektar
+    geometry = Column(JSON, nullable=True)  # Menyimpan bentuk/koordinat geojson
     vendor_id = Column(UUID(as_uuid=True), ForeignKey("master_vendors.id", ondelete="SET NULL"), nullable=True, index=True)
     status = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

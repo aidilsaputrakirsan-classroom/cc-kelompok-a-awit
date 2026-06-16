@@ -181,7 +181,7 @@ body.dark .blk-th {
 }
 
 .blk-th--actions {
-  width: 10rem;
+  width: 12rem;
   text-align: center;
 }
 
@@ -226,14 +226,11 @@ body.dark .blk-tr:hover {
 }
 
 .blk-td--actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  width: 10rem;
-  padding: 0.35rem 0.35rem;
-  flex-wrap: wrap;
-  min-height: 2.75rem;
+  text-align: center;
+  vertical-align: middle;
+  min-width: 12rem;
+  padding: 0.35rem 0.75rem;
+  white-space: nowrap;
 }
 
 .blk-badge {
@@ -284,6 +281,7 @@ body.dark .blk-badge--off {
   align-items: center;
   justify-content: center;
   gap: 0.25rem;
+  margin: 0 0.25rem;
   padding: 0.35rem 0.75rem;
   min-width: 4.5rem;
   border: none;
@@ -515,7 +513,7 @@ body.dark .blk-modal__close:hover {
 
   .blk-th--actions {
     width: auto;
-    min-width: 10rem;
+    min-width: 12rem;
   }
 
   .blk-td--actions {
@@ -567,6 +565,7 @@ body.dark .blk-th {
 
 .blk-th--actions {
   width: auto;
+  min-width: 12rem;
   text-align: center;
 }
 
@@ -602,16 +601,11 @@ body.dark .blk-tr:hover {
 }
 
 .blk-td--actions {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  text-align: center;
+  vertical-align: middle;
   min-width: 12rem;
-  width: auto;
-  padding: 0.35rem 0.35rem;
-  flex-wrap: nowrap;
-  min-height: 2.75rem;
+  padding: 0.35rem 0.75rem;
+  white-space: nowrap;
 }
 
 .blk-badge {

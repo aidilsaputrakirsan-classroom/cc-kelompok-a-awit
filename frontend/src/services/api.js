@@ -55,7 +55,8 @@ function authHeaders() {
 async function handleResponse(response) {
   if (response.status === 401) {
     clearToken()
-    throw new Error("UNAUTHORIZED")
+    const error = await response.json().catch(() => ({}))
+    throw new Error(error.detail || error.message || "UNAUTHORIZED")
   }
   if (response.status >= 502 && response.status <= 504) {
     throw new Error("SERVICE_UNAVAILABLE")
