@@ -81,8 +81,8 @@ function GeomanControl() {
 }
 
 export default function MappingPage() {
-  // Koordinat default (bisa diganti sesuai koordinat perkebunan)
-  const position = [-6.200000, 106.816666];
+  // Koordinat default: PT Bio Inti Agrindo (Merauke, Papua Selatan)
+  const position = [-6.960833, 140.496111];
 
   return (
     <div className="pt-mapping-page">

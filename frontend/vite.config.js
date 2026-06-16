@@ -5,10 +5,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/auth': 'http://localhost',
-      '/api': 'http://localhost',
-      '/items': 'http://localhost',
-      '/health': 'http://localhost',
+      '/auth': 'http://localhost:8000',
+      '/api': 'http://localhost:8000',
+      '/items': 'http://localhost:8000',
+      '/health': 'http://localhost:8000',
     },
   },
   test: {
