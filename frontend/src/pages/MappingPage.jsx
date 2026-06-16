@@ -155,6 +155,27 @@ function GeomanControl({ onSaveShape }) {
   return null;
 }
 
+// Fix for Leaflet gray/cut-off tiles due to CSS page transitions
+function MapResizer() {
+  const map = useMap();
+  useEffect(() => {
+    // Wait for the .page-transition-animate to finish (0.35s)
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 400);
+    
+    // Also invalidate on window resize to be safe
+    const handleResize = () => map.invalidateSize();
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [map]);
+  return null;
+}
+
 export default function MappingPage() {
 
   const outlet = useOutletContext() || {};
@@ -247,6 +268,7 @@ export default function MappingPage() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           
+          <MapResizer />
           <GeomanControl onSaveShape={handleDrawFinish} />
 
           <Marker position={position}>

@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+
 import "./LoginPage.css";
-import { User, Lock, Eye, EyeOff, Mail } from "lucide-react";
+import { User, Lock, Eye, EyeOff, Mail, ArrowLeft } from "lucide-react";
 
 function IconAndroid() {
   return (
@@ -66,7 +68,11 @@ function IllustrationSVG() {
 
 export default function LoginPage() {
   const { login, registerAndLogin } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [mode, setMode] = useState("login"); // "login" | "register"
+
+
   const [showPw, setShowPw] = useState(false);
   const [showPw2, setShowPw2] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -124,6 +130,10 @@ export default function LoginPage() {
 
   return (
     <div className="login-container">
+      <button className="back-btn" onClick={() => navigate('/onboarding')} type="button">
+        <ArrowLeft size={20} />
+        <span>Kembali</span>
+      </button>
       <div className="bg-dots"></div>
       <div className="bg-circle bg-circle-1"></div>
       <div className="bg-circle bg-circle-2"></div>

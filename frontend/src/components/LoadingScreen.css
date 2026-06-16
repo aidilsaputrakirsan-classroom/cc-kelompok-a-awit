@@ -1,0 +1,108 @@
+.loading-screen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #ffffff;
+  z-index: 99999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.loading-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.loading-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-image-wrapper {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-image {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  animation: pulse-image 2s infinite ease-in-out;
+  border-radius: 50%;
+}
+
+@keyframes pulse-image {
+  0% { transform: scale(0.95); opacity: 0.9; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.9; }
+}
+
+.loading-progress-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: rotate(-90deg);
+}
+
+.loading-progress-ring-circle {
+  stroke-dasharray: 465; /* 2 * PI * r = 2 * 3.14 * 74 = 464.96 */
+  stroke-dashoffset: 465;
+  animation-name: progress-fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes progress-fill {
+  0% { stroke-dashoffset: 465; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.loading-text {
+  margin-top: 24px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c2f36;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  animation: fade-pulse 1.5s infinite;
+}
+
+@keyframes fade-pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.loading-screen-overlay.fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+.loading-screen-overlay.fade-out {
+  animation: fade-out 0.5s ease-in forwards;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; visibility: visible; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; visibility: hidden; }
+}

@@ -7,8 +7,8 @@
   justify-content: center;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: "Segoe UI", system-ui, Arial, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .pt-boot__inner {
@@ -19,47 +19,47 @@
 .pt-shell {
   display: flex;
   min-height: 100vh;
-  font-family: "Segoe UI", system-ui, Arial, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--bg-primary);
-  transition: background-color 0.3s ease;
+  transition: background-color 0.2s ease;
 }
 
 .pt-shell--collapsed .pt-sidebar {
   width: 72px;
 }
 
+/* ─── Sidebar ─── */
 .pt-sidebar {
   width: 250px;
   flex-shrink: 0;
-  background: #2d2d2d;
+  background: #2c2f36;
   color: rgba(255, 255, 255, 0.88);
   display: flex;
   flex-direction: column;
-  border-right: 1px solid rgba(0, 0, 0, 0.15);
+  border-right: none;
   transition: width 0.2s ease;
 }
 
 :root.dark .pt-sidebar {
-  background: #252836;
-  border-right-color: rgba(255, 255, 255, 0.08);
+  background: #22252e;
 }
 
 body.dark .pt-sidebar {
-  background: #2a2a3a;
-  border-right-color: rgba(255, 255, 255, 0.08);
+  background: #22252e;
 }
 
 .pt-sidebar--collapsed {
   width: 72px;
 }
 
+/* ─── Sidebar Brand ─── */
 .pt-sidebar__brand {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.5rem;
   padding: 1.25rem 1rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .pt-sidebar__brand--collapsed {
@@ -80,15 +80,19 @@ body.dark .pt-sidebar {
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.15;
+  color: #ffffff;
 }
 
 .pt-sidebar__brand-sub {
   font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  opacity: 0.65;
+  color: #ff0000;
+  opacity: 0.85;
+  font-weight: 600;
 }
 
+/* ─── Sidebar Collapse Button ─── */
 .pt-sidebar__collapse {
   flex-shrink: 0;
   display: flex;
@@ -98,17 +102,18 @@ body.dark .pt-sidebar {
   height: 2rem;
   border: none;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .pt-sidebar__collapse:hover {
-  background: rgba(186, 53, 44, 0.35);
+  background: rgba(255, 0, 0, 0.2);
   color: #fff;
 }
 
+/* ─── Sidebar Navigation ─── */
 .pt-sidebar__nav {
   flex: 1;
   padding: 0.75rem 0.65rem 1.25rem;
@@ -129,11 +134,11 @@ body.dark .pt-sidebar {
   gap: 0.65rem;
   padding: 0.55rem 0.75rem;
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.65);
   text-decoration: none;
   font-size: 0.88rem;
-  font-weight: 600;
-  transition: background 0.15s ease, color 0.15s ease;
+  font-weight: 500;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .pt-sidebar__nav--icons .pt-sidebar__link {
@@ -144,21 +149,23 @@ body.dark .pt-sidebar {
 }
 
 .pt-sidebar__link:hover {
-  background: rgba(186, 53, 44, 0.22);
+  background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
 }
 
 .pt-sidebar__link--active {
-  background: rgba(186, 53, 44, 0.45);
+  background: rgba(255, 0, 0, 0.15);
   color: #ffffff;
-  box-shadow: inset 3px 0 0 0 #ba352c;
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 0 #ff0000;
 }
 
 .pt-sidebar__icon {
   flex-shrink: 0;
-  opacity: 0.95;
+  opacity: 0.9;
 }
 
+/* ─── Sidebar Groups ─── */
 .pt-sidebar__group {
   margin-top: 0.35rem;
 }
@@ -172,19 +179,19 @@ body.dark .pt-sidebar {
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.4);
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   cursor: pointer;
   text-align: left;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition: color 0.2s ease, background 0.2s ease;
 }
 
 .pt-sidebar__group-head:hover {
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .pt-sidebar__sub {
@@ -192,7 +199,7 @@ body.dark .pt-sidebar {
   flex-direction: column;
   gap: 0.15rem;
   padding: 0.25rem 0 0.35rem 0.35rem;
-  border-left: 2px solid rgba(255, 255, 255, 0.1);
+  border-left: 2px solid rgba(255, 255, 255, 0.06);
   margin-left: 0.85rem;
 }
 
@@ -202,9 +209,10 @@ body.dark .pt-sidebar {
   padding: 0.45rem 0.65rem;
 }
 
+/* ─── Sidebar Footer ─── */
 .pt-sidebar__footer {
   padding: 1rem 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   margin-top: auto;
   display: flex;
   align-items: center;
@@ -216,31 +224,34 @@ body.dark .pt-sidebar {
   gap: 0.5rem;
 }
 
+/* ─── Main Content ─── */
 .pt-shell__content {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
   background: var(--bg-primary);
-  transition: background-color 0.3s ease;
+  transition: background-color 0.2s ease;
 }
 
+/* ─── Topbar ─── */
 .pt-topbar {
-  padding: 1rem 1.5rem;
-  background: var(--bg-secondary);
+  padding: 0.85rem 1.5rem;
+  background: var(--bg-card);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .pt-topbar__title {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 800;
+  font-size: 1.1rem;
+  font-weight: 700;
   color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
 .pt-topbar__right {
@@ -250,17 +261,17 @@ body.dark .pt-sidebar {
 }
 
 .pt-topbar__user {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
   font-weight: 500;
 }
 
 .pt-topbar__theme-toggle {
   padding: 0.35rem 0.75rem;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -268,34 +279,46 @@ body.dark .pt-sidebar {
 }
 
 .pt-topbar__theme-toggle:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 .pt-topbar__logout {
-  padding: 0.35rem 0.75rem;
-  background: var(--accent-color);
-  color: white;
-  border: none;
-  border-radius: 6px;
+  padding: 0.4rem 0.85rem;
+  background: transparent;
+  color: var(--accent-color);
+  border: 1px solid var(--accent-color);
+  border-radius: 8px;
   font-size: 0.8rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .pt-topbar__logout:hover {
-  opacity: 0.85;
+  background: var(--accent-color);
+  color: #ffffff;
 }
 
+/* ─── Main Content Area ─── */
 .pt-main {
   flex: 1;
   padding: 1.5rem 2rem;
   overflow-y: auto;
   background: var(--bg-primary);
   color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  display: flex;
+  flex-direction: column;
 }
 
+.page-transition-animate {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Responsive ─── */
 @media (max-width: 720px) {
   .pt-shell {
     flex-direction: column;
@@ -319,5 +342,22 @@ body.dark .pt-sidebar {
     flex-direction: row;
     flex-wrap: wrap;
     width: 100%;
+  }
+}
+
+/* ─── Page Transition ─── */
+.page-transition-animate {
+  animation: pageFadeInUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  will-change: opacity, transform;
+}
+
+@keyframes pageFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

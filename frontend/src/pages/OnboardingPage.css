@@ -1,0 +1,247 @@
+.onboarding-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.onboarding-bg-shapes .shape {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: 0;
+}
+
+.shape-1 {
+  width: 500px;
+  height: 500px;
+  background-color: rgba(255, 0, 0, 0.08);
+  top: -100px;
+  left: -100px;
+  animation: float 8s ease-in-out infinite;
+}
+
+.shape-2 {
+  width: 400px;
+  height: 400px;
+  background-color: rgba(44, 47, 54, 0.06);
+  bottom: -50px;
+  right: -50px;
+  animation: float 10s ease-in-out infinite reverse;
+}
+
+.shape-3 {
+  width: 300px;
+  height: 300px;
+  background-color: rgba(133, 136, 143, 0.08);
+  top: 40%;
+  left: 60%;
+  animation: float 12s ease-in-out infinite 2s;
+}
+
+@keyframes float {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -30px) scale(1.05); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+.onboarding-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(44, 47, 54, 0.06);
+  border-radius: 16px;
+  padding: 3rem;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 8px 40px rgba(44, 47, 54, 0.06);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 500px;
+}
+
+.onboarding-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.onboarding-icon-wrapper {
+  background: rgba(255, 0, 0, 0.06);
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+  color: #ff0000;
+}
+
+.onboarding-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #2c2f36;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.onboarding-desc {
+  font-size: 1.1rem;
+  color: #85888f;
+  line-height: 1.6;
+  max-width: 90%;
+}
+
+.mt-4 {
+  margin-top: 1.5rem;
+}
+
+/* Features List for Step 2 */
+.onboarding-features {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  text-align: left;
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(44, 47, 54, 0.04);
+  border: 1px solid rgba(44, 47, 54, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.feature-item:hover {
+  transform: translateY(-2px);
+}
+
+.feature-icon {
+  color: #ff0000;
+  flex-shrink: 0;
+}
+
+.feature-item h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.15rem;
+  color: #2c2f36;
+  font-weight: 700;
+}
+
+.feature-item p {
+  margin: 0;
+  color: #85888f;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Footer & Controls */
+.onboarding-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.onboarding-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background-color: rgba(44, 47, 54, 0.12);
+  transition: all 0.3s ease;
+}
+
+.dot.active {
+  background-color: #ff0000;
+  width: 24px;
+}
+
+.onboarding-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.btn-skip {
+  background: none;
+  border: none;
+  color: #85888f;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+  transition: color 0.2s ease;
+}
+
+.btn-skip:hover {
+  color: #2c2f36;
+}
+
+.btn-next {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #ff0000;
+  color: white;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(255, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.btn-next:hover {
+  background-color: #d40000;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(255, 0, 0, 0.25);
+}
+
+.btn-next:active {
+  transform: translateY(1px);
+}
+
+@media (max-width: 640px) {
+  .onboarding-card {
+    padding: 2rem 1.5rem;
+    min-height: 100vh;
+    border-radius: 0;
+    border: none;
+  }
+  
+  .onboarding-title {
+    font-size: 1.75rem;
+  }
+}
