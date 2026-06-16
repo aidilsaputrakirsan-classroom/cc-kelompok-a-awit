@@ -30,6 +30,12 @@ jobs:
       # ── Tugas 13: Docker Compose up ──────────────────────────────
       - name: 🐳 Start all services via Docker Compose
         run: |
+          # Bebaskan port 80 jika ada service bawaan runner yang mendudukinya
+          sudo systemctl stop nginx || true
+          sudo systemctl stop apache2 || true
+          sudo killall nginx || true
+          sudo killall apache2 || true
+
           # Buat .env sementara untuk CI
           cat > .env <<'EOF'
           SECRET_KEY=integration-test-secret-key-32-chars-long
@@ -37,6 +43,7 @@ jobs:
 
           docker compose up -d --build
           echo "✅ Docker Compose services started"
+
 
       - name: ⏳ Wait for services to be healthy
         run: |

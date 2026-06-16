@@ -10,8 +10,6 @@ from fastapi import HTTPException, Header, Request
 
 from circuit_breaker import CircuitBreaker
 
-from circuit_breaker import CircuitBreaker
-
 AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://auth-service:8001")
 
 # Global circuit breaker instance
@@ -21,7 +19,7 @@ auth_circuit = CircuitBreaker(
     cooldown_seconds=30,
 )
 
-async def verify_token_with_auth_service(authorization: str = Header(...)) -> dict:
+async def verify_token_with_auth_service(request: Request, authorization: str = Header(...)) -> dict:
     """
     Dependency: Verifikasi token dengan memanggil Auth Service.
     Digunakan sebagai Depends() di endpoints yang butuh autentikasi.
@@ -41,7 +39,7 @@ async def verify_token_with_auth_service(authorization: str = Header(...)) -> di
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{AUTH_SERVICE_URL}/verify",
-                headers={"Authorization": authorization},
+                headers=headers,
                 timeout=5.0,
             )
 
