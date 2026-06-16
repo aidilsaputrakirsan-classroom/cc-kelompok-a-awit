@@ -51,26 +51,49 @@ Base.metadata.create_all(bind=engine)
 
 def ensure_hauling_schema() -> None:
     """Tambahkan kolom/objek hauling baru jika database sudah terlanjur ada."""
-    ddl_statements = [
-        "ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'operator'",
-        "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS transaction_date DATE",
-        "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS notes TEXT",
-        "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS created_by INTEGER",
-        "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS updated_by INTEGER",
-        "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE",
-        "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS deleted_by INTEGER",
-        "ALTER TABLE hauling_transactions ALTER COLUMN ticket_no TYPE VARCHAR(100)",
-        "ALTER TABLE hauling_transactions ALTER COLUMN vehicle_plate TYPE VARCHAR(20)",
-        "ALTER TABLE items ADD COLUMN IF NOT EXISTS price FLOAT DEFAULT 0",
-        "ALTER TABLE master_blocks ADD COLUMN geometry JSON",
-    ]
+    is_sqlite = "sqlite" in str(engine.url)
 
-    with engine.begin() as connection:
-        for statement in ddl_statements:
-            try:
+    if is_sqlite:
+        # SQLite: tanpa IF NOT EXISTS, catch duplicate column name
+        ddl_statements = [
+            "ALTER TABLE users ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'operator'",
+            "ALTER TABLE hauling_transactions ADD COLUMN transaction_date DATE",
+            "ALTER TABLE hauling_transactions ADD COLUMN notes TEXT",
+            "ALTER TABLE hauling_transactions ADD COLUMN created_by INTEGER",
+            "ALTER TABLE hauling_transactions ADD COLUMN updated_by INTEGER",
+            "ALTER TABLE hauling_transactions ADD COLUMN deleted_at TIMESTAMP",
+            "ALTER TABLE hauling_transactions ADD COLUMN deleted_by INTEGER",
+            "ALTER TABLE items ADD COLUMN price FLOAT DEFAULT 0",
+            "ALTER TABLE master_blocks ADD COLUMN geometry JSON",
+        ]
+    else:
+        # Postgres: gunakan IF NOT EXISTS
+        ddl_statements = [
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'operator'",
+            "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS transaction_date DATE",
+            "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS notes TEXT",
+            "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS created_by INTEGER",
+            "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS updated_by INTEGER",
+            "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE",
+            "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS deleted_by INTEGER",
+            "ALTER TABLE hauling_transactions ALTER COLUMN ticket_no TYPE VARCHAR(100)",
+            "ALTER TABLE hauling_transactions ALTER COLUMN vehicle_plate TYPE VARCHAR(20)",
+            "ALTER TABLE items ADD COLUMN IF NOT EXISTS price FLOAT DEFAULT 0",
+            "ALTER TABLE master_blocks ADD COLUMN IF NOT EXISTS geometry JSON",
+        ]
+
+    for statement in ddl_statements:
+        try:
+            with engine.connect() as connection:
                 connection.execute(text(statement))
-            except Exception:
+                connection.commit()
+        except Exception as e:
+            err_str = str(e).lower()
+            if "duplicate" in err_str or "already exists" in err_str or "multiple" in err_str:
                 pass
+            else:
+                # Log atau print warning jika ada error lain
+                print(f"Schema update warning on statement '{statement}': {e}")
 
 
 ensure_hauling_schema()
