@@ -6,6 +6,7 @@ import {
   clearToken,
   fetchVendors,
   fetchBlocks,
+  API_URL,
 } from "../services/api"
 
 import HaulingFilterBar from "../components/hauling/HaulingFilterBar"
@@ -15,8 +16,6 @@ import EditTransactionModal from "../components/hauling/EditTransactionModal"
 import DeleteConfirmDialog from "../components/hauling/DeleteConfirmDialog"
 import ExportButton from "../components/hauling/ExportButton"
 import "./BlocksPage.css" // Keep original CSS
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
 
 function authHeaders(json = true) {
   const headers = {}
