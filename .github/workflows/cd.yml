@@ -643,7 +643,7 @@ jobs:
           
           # Mengambil domain output yang dihasilkan secara dinamis oleh DeployCC
           LIVE_DOMAIN="${{ steps.deploy.outputs.domain }}"
-          HEALTH_URL="${LIVE_DOMAIN}/health"
+          HEALTH_URL="${LIVE_DOMAIN}/api/health"
           
           echo "Memulai uji kesehatan pada endpoint: $HEALTH_URL"
           
@@ -654,7 +654,24 @@ jobs:
             echo "✅ Health check PASSED! Production backend merespons dengan HTTP $HTTP_STATUS"
           else
             echo "❌ Health check FAILED! Server production mengembalikan HTTP $HTTP_STATUS"
-            echo "Silakan gunakan perintah '${{ steps.deploy.outputs.ssh_cmd }}' untuk memeriksa 'svc-logs'."
+            
+            echo "Installing sshpass to fetch server logs..."
+            sudo apt-get update && sudo apt-get install -y sshpass
+            
+            SSH_CMD="${{ steps.deploy.outputs.ssh_cmd }}"
+            SSH_PASS="${{ steps.deploy.outputs.ssh_pass }}"
+            
+            REAL_SSH_CMD=$(echo "$SSH_CMD" | sed "s/^ssh /sshpass -p '$SSH_PASS' ssh -o StrictHostKeyChecking=no /")
+            
+            echo "=== svc-status ==="
+            eval "$REAL_SSH_CMD 'svc-status || true'"
+            
+            echo "=== svc-applog ==="
+            eval "$REAL_SSH_CMD 'svc-applog | tail -n 50 || true'"
+            
+            echo "=== svc-logs ==="
+            eval "$REAL_SSH_CMD 'svc-logs | tail -n 50 || true'"
+            
             exit 1
           fi
           
