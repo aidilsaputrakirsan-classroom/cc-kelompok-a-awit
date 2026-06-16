@@ -127,6 +127,8 @@ jobs:
             # ── BACKEND ──
             backend:
               - 'backend/**'
+              - 'services/**'
+              - 'docker-compose.yml'
 
             # ── REQUIREMENTS (Python deps) ──
             requirements:
@@ -135,6 +137,8 @@ jobs:
               - 'backend/setup.py'
               - 'backend/Pipfile'
               - 'backend/Pipfile.lock'
+              - 'services/auth-service/requirements*.txt'
+              - 'services/item-service/requirements*.txt'
 
   # ─────────────────────────────────────────────────────────────────
   #  STEP 2 — Deploy
