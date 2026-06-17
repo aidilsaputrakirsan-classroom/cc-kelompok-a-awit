@@ -1,30 +1,47 @@
 import os
-from io import BytesIO
-from datetime import date, datetime, timedelta
-from collections import defaultdict, deque
-from dotenv import load_dotenv
-from fastapi import FastAPI, Depends, HTTPException, Query, Form, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from fastapi.responses import StreamingResponse
-from fastapi.exceptions import RequestValidationError
-from sqlalchemy.orm import Session
-from sqlalchemy import text
-
-from database import engine, get_db
-from models import Base, User, MasterVendor, MasterBlock, HaulingTransaction, Item
 import uuid
-from schemas import (
-    VendorCreate, VendorUpdate, VendorResponse, VendorListResponse,
-    BlockCreate, BlockUpdate, BlockResponse, BlockListResponse,
-    HaulingTransactionCreate, HaulingTransactionUpdate, HaulingTransactionResponse, HaulingTransactionListResponse,
-    HaulingTransactionEnvelope,
-    DashboardResponse, DashboardTodayStats, DashboardMTDStats,
-    UserCreate, UserResponse, LoginRequest, TokenResponse,
-    ItemCreate, ItemUpdate, ItemResponse, ItemListResponse, ItemStatsResponse,
-)
-from auth import create_access_token, get_current_user, require_roles
+from collections import defaultdict, deque
+from datetime import date, datetime, timedelta
+from io import BytesIO
+
+from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, StreamingResponse
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+
 import crud
+from auth import create_access_token, get_current_user, require_roles
+from database import engine, get_db
+from models import Base, User
+from schemas import (
+    BlockCreate,
+    BlockListResponse,
+    BlockResponse,
+    BlockUpdate,
+    DashboardMTDStats,
+    DashboardResponse,
+    DashboardTodayStats,
+    HaulingTransactionCreate,
+    HaulingTransactionEnvelope,
+    HaulingTransactionListResponse,
+    HaulingTransactionUpdate,
+    ItemCreate,
+    ItemListResponse,
+    ItemResponse,
+    ItemStatsResponse,
+    ItemUpdate,
+    LoginRequest,
+    TokenResponse,
+    UserCreate,
+    UserResponse,
+    VendorCreate,
+    VendorListResponse,
+    VendorResponse,
+    VendorUpdate,
+)
 
 load_dotenv()
 
@@ -34,28 +51,57 @@ Base.metadata.create_all(bind=engine)
 
 def ensure_hauling_schema() -> None:
     """Tambahkan kolom/objek hauling baru jika database sudah terlanjur ada."""
-    ddl_statements = [
-        "ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'operator'",
-        "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS transaction_date DATE",
-        "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS notes TEXT",
-        "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS created_by INTEGER",
-        "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS updated_by INTEGER",
-        "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE",
-        "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS deleted_by INTEGER",
-        "ALTER TABLE hauling_transactions ALTER COLUMN ticket_no TYPE VARCHAR(100)",
-        "ALTER TABLE hauling_transactions ALTER COLUMN vehicle_plate TYPE VARCHAR(20)",
-        "ALTER TABLE items ADD COLUMN IF NOT EXISTS price FLOAT DEFAULT 0",
-    ]
+    is_sqlite = "sqlite" in str(engine.url)
 
-    with engine.begin() as connection:
-        for statement in ddl_statements:
-            try:
+
+    if is_sqlite:
+        # SQLite: tanpa IF NOT EXISTS, catch duplicate column name
+        ddl_statements = [
+            "ALTER TABLE users ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'operator'",
+            "ALTER TABLE hauling_transactions ADD COLUMN transaction_date DATE",
+            "ALTER TABLE hauling_transactions ADD COLUMN notes TEXT",
+            "ALTER TABLE hauling_transactions ADD COLUMN created_by INTEGER",
+            "ALTER TABLE hauling_transactions ADD COLUMN updated_by INTEGER",
+            "ALTER TABLE hauling_transactions ADD COLUMN deleted_at TIMESTAMP",
+            "ALTER TABLE hauling_transactions ADD COLUMN deleted_by INTEGER",
+            "ALTER TABLE items ADD COLUMN price FLOAT DEFAULT 0",
+            "ALTER TABLE master_blocks ADD COLUMN geometry JSON",
+        ]
+    else:
+        # Postgres: gunakan IF NOT EXISTS
+        ddl_statements = [
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'operator'",
+            "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS transaction_date DATE",
+            "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS notes TEXT",
+            "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS created_by INTEGER",
+            "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS updated_by INTEGER",
+            "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE",
+            "ALTER TABLE hauling_transactions ADD COLUMN IF NOT EXISTS deleted_by INTEGER",
+            "ALTER TABLE hauling_transactions ALTER COLUMN ticket_no TYPE VARCHAR(100)",
+            "ALTER TABLE hauling_transactions ALTER COLUMN vehicle_plate TYPE VARCHAR(20)",
+            "ALTER TABLE items ADD COLUMN IF NOT EXISTS price FLOAT DEFAULT 0",
+            "ALTER TABLE master_blocks ADD COLUMN IF NOT EXISTS geometry JSON",
+        ]
+
+    for statement in ddl_statements:
+        try:
+            with engine.connect() as connection:
                 connection.execute(text(statement))
-            except Exception:
+                connection.commit()
+        except Exception as e:
+            err_str = str(e).lower()
+            if "duplicate" in err_str or "already exists" in err_str or "multiple" in err_str:
                 pass
+            else:
+                # Log atau print warning jika ada error lain
+                print(f"Schema update warning on statement '{statement}': {e}")
 
 
-ensure_hauling_schema()
+try:
+    ensure_hauling_schema()
+except Exception:
+    import traceback
+    traceback.print_exc()
 
 EXPORT_RATE_LIMIT_WINDOW_SECONDS = 60
 EXPORT_RATE_LIMIT_MAX_REQUESTS = 10
@@ -72,6 +118,10 @@ app = FastAPI(
 # ==================== CORS (FIXED) ====================
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
 origins_list = [origin.strip() for origin in allowed_origins.split(",")]
+# Tambahkan domain production jika belum ada
+_prod_domain = "https://cc-kelompok-a-awit.akhzafachrozy.my.id"
+if _prod_domain not in origins_list:
+    origins_list.append(_prod_domain)
 
 app.add_middleware(
     CORSMiddleware,
@@ -132,7 +182,7 @@ def health_check():
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
     """
     Registrasi user baru.
-    
+
     Requirements:
     - **email**: Format valid (contoh: user@itk.ac.id)
     - **name**: Minimal 2 karakter, maksimal 100 karakter
@@ -140,7 +190,7 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
       - Huruf (A-Z, a-z)
       - Angka (0-9)
       - Special character (!@#$%^&*)
-    
+
     Contoh password valid: `Password123!`
     """
     try:
@@ -159,26 +209,26 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     """
     Login dengan JSON body dan dapatkan JWT token.
-    
+
     - **email**: Email pengguna yang terdaftar
     - **password**: Password pengguna
-    
+
     **Response:**
     - **access_token**: JWT token untuk otorisasi (valid 60 menit)
     - **token_type**: Tipe token (selalu 'bearer')
     - **user**: Informasi user yang login
-    
+
     **Penggunaan:**
     Gunakan token di header setiap request:
     ```
     Authorization: Bearer <access_token>
     ```
     """
-    user = crud.authenticate_user(db=db, email=login_data.email, password=login_data.password)
-    if not user:
+    user, error = crud.authenticate_user(db=db, email=login_data.email, password=login_data.password)
+    if error:
         raise HTTPException(
             status_code=401,
-            detail="Email atau password salah. Periksa kembali kredensial Anda."
+            detail=error
         )
 
     token = create_access_token(data={"sub": user.id})
@@ -197,16 +247,16 @@ def login_for_access_token(
 ):
     """
     OAuth2 compatible token endpoint.
-    
+
     Endpoint ini menerima form data (username=email, password=password).
     Digunakan oleh Swagger UI Authorization dan OAuth2 clients.
     """
     # Username di OAuth2 context berarti email
-    user = crud.authenticate_user(db=db, email=username, password=password)
-    if not user:
+    user, error = crud.authenticate_user(db=db, email=username, password=password)
+    if error:
         raise HTTPException(
             status_code=401,
-            detail="Email atau password salah",
+            detail=error,
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -271,7 +321,7 @@ def get_vendor(
         vendor_uuid = uuid.UUID(vendor_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid vendor ID format")
-    
+
     vendor = crud.get_vendor(db=db, vendor_id=vendor_uuid)
     if not vendor:
         raise HTTPException(status_code=404, detail="Vendor tidak ditemukan")
@@ -290,7 +340,7 @@ def update_vendor(
         vendor_uuid = uuid.UUID(vendor_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid vendor ID format")
-    
+
     updated = crud.update_vendor(db=db, vendor_id=vendor_uuid, vendor_data=vendor)
     if not updated:
         raise HTTPException(status_code=404, detail="Vendor tidak ditemukan")
@@ -308,7 +358,7 @@ def delete_vendor(
         vendor_uuid = uuid.UUID(vendor_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid vendor ID format")
-    
+
     success = crud.delete_vendor(db=db, vendor_id=vendor_uuid)
     if not success:
         raise HTTPException(status_code=404, detail="Vendor tidak ditemukan")
@@ -365,7 +415,7 @@ def get_block(
         block_uuid = uuid.UUID(block_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid block ID format")
-    
+
     block = crud.get_block(db=db, block_id=block_uuid)
     if not block:
         raise HTTPException(status_code=404, detail="Block tidak ditemukan")
@@ -384,7 +434,7 @@ def update_block(
         block_uuid = uuid.UUID(block_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid block ID format")
-    
+
     updated = crud.update_block(db=db, block_id=block_uuid, block_data=block)
     if not updated:
         raise HTTPException(status_code=404, detail="Block tidak ditemukan")
@@ -402,7 +452,7 @@ def delete_block(
         block_uuid = uuid.UUID(block_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid block ID format")
-    
+
     success = crud.delete_block(db=db, block_id=block_uuid)
     if not success:
         raise HTTPException(status_code=404, detail="Block tidak ditemukan")
@@ -448,19 +498,19 @@ def list_hauling_transactions(
     """Ambil daftar hauling transactions dengan pagination dan filter. **Membutuhkan autentikasi.**"""
     vendor_uuid = None
     block_uuid = None
-    
+
     if vendor_id:
         try:
             vendor_uuid = uuid.UUID(vendor_id)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid vendor ID format")
-    
+
     if block_id:
         try:
             block_uuid = uuid.UUID(block_id)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid block ID format")
-    
+
     return crud.get_hauling_transactions(
         db=db,
         vendor_id=vendor_uuid,
@@ -486,7 +536,7 @@ def get_hauling_transaction(
         hauling_uuid = uuid.UUID(hauling_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid hauling ID format")
-    
+
     hauling = crud.get_hauling_transaction(db=db, hauling_id=hauling_uuid)
     if not hauling:
         raise HTTPException(status_code=404, detail="Hauling transaction tidak ditemukan")
@@ -505,7 +555,7 @@ def update_hauling_transaction(
         hauling_uuid = uuid.UUID(hauling_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid hauling ID format")
-    
+
     updated, error_code = crud.update_hauling_transaction(db=db, hauling_id=hauling_uuid, hauling_data=hauling, updated_by=current_user)
     if not updated:
         if error_code == "duplicate_ticket":
@@ -531,7 +581,7 @@ def delete_hauling_transaction(
         hauling_uuid = uuid.UUID(hauling_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid hauling ID format")
-    
+
     success = crud.delete_hauling_transaction(db=db, hauling_id=hauling_uuid, deleted_by=current_user)
     if not success:
         raise HTTPException(status_code=404, detail="Hauling transaction tidak ditemukan")
@@ -639,10 +689,10 @@ def export_hauling_transactions(
 
     try:
         from reportlab.lib import colors
-        from reportlab.lib.pagesizes import landscape, A4
+        from reportlab.lib.pagesizes import A4, landscape
         from reportlab.lib.styles import getSampleStyleSheet
-        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
         from reportlab.lib.units import mm
+        from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
     except Exception:
         raise HTTPException(status_code=500, detail="PDF export dependency belum tersedia")
 
@@ -704,7 +754,7 @@ def list_items(
 ):
     """
     Ambil daftar items dengan pagination. **Membutuhkan autentikasi.**
-    
+
     Query parameters:
     - **category**: Filter berdasarkan kategori (e.g., 'electronics', 'hardware')
     - **search**: Cari berdasarkan code atau name
@@ -733,7 +783,7 @@ def get_item(
         item_uuid = uuid.UUID(item_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid item ID format")
-    
+
     item = crud.get_item(db=db, item_id=item_uuid)
     if not item:
         raise HTTPException(status_code=404, detail="Item tidak ditemukan")
@@ -752,7 +802,7 @@ def update_item(
         item_uuid = uuid.UUID(item_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid item ID format")
-    
+
     updated = crud.update_item(db=db, item_id=item_uuid, item_data=item)
     if not updated:
         raise HTTPException(status_code=404, detail="Item tidak ditemukan")
@@ -770,7 +820,7 @@ def delete_item(
         item_uuid = uuid.UUID(item_id)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid item ID format")
-    
+
     success = crud.delete_item(db=db, item_id=item_uuid)
     if not success:
         raise HTTPException(status_code=404, detail="Item tidak ditemukan")
@@ -785,19 +835,19 @@ def get_dashboard(
 ):
     """
     Dapatkan dashboard summary dengan statistik hari ini dan Month-To-Date.
-    
+
     **Response:**
     - **today**: Statistik transaksi hari ini (total_transactions, total_tonage, avg_tonage)
     - **mtd**: Statistik bulan ini (total_transactions, total_tonage, target_tonage, achievement_percentage)
     - **last_updated**: Waktu terakhir data diperbarui
-    
+
     **Membutuhkan autentikasi.**
     """
     from datetime import datetime
-    
+
     today_stats = crud.get_hauling_stats_today(db=db)
     mtd_stats = crud.get_hauling_stats_mtd(db=db, target_tonage=500.0)
-    
+
     return {
         "today": DashboardTodayStats(**today_stats),
         "mtd": DashboardMTDStats(**mtd_stats),

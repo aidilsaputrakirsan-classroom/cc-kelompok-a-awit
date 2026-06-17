@@ -1,0 +1,156 @@
+# ============================================================
+# CI Integration Test + Log Artifacts — Lead CI/CD Tugas 13 & 14
+# ============================================================
+# Job ini berjalan SETELAH unit test (ci.yml) berhasil.
+# Menjalankan integration test via Docker Compose dan
+# menyimpan log sebagai GitHub Actions artifacts.
+
+name: CI Integration Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: integration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration-test:
+    name: 🔗 Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      # ── Tugas 13: Docker Compose up ──────────────────────────────
+      - name: 🐳 Start all services via Docker Compose
+        run: |
+          # Bebaskan port 80 jika ada service bawaan runner yang mendudukinya
+          sudo systemctl stop nginx || true
+          sudo systemctl stop apache2 || true
+          sudo killall nginx || true
+          sudo killall apache2 || true
+
+          # Buat .env sementara untuk CI
+          cat > .env <<'EOF'
+          SECRET_KEY=integration-test-secret-key-32-chars-long
+          EOF
+
+          docker compose up -d --build
+          echo "✅ Docker Compose services started"
+
+
+      - name: ⏳ Wait for services to be healthy
+        run: |
+          echo "Waiting 30s for services to initialize..."
+          sleep 30
+
+          echo "Checking gateway health on port 80..."
+          HTTP="000"
+          for i in $(seq 1 15); do
+            HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/health || echo "000")
+            if [ "$HTTP" = "200" ]; then
+              echo "✅ Gateway healthy after $i attempt(s)"
+              break
+            fi
+            echo "  Attempt $i: HTTP $HTTP — waiting 5s..."
+            sleep 5
+          done
+
+          if [ "$HTTP" != "200" ]; then
+            echo "❌ Gateway not healthy after 15 attempts"
+            docker compose ps
+            docker compose logs --tail=100
+            exit 1
+          fi
+
+      - name: 🐍 Setup Python for integration tests
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 📦 Install test dependencies
+        run: pip install httpx pytest pytest-html
+
+      # ── Tugas 13: Run integration tests ──────────────────────────
+      - name: 🧪 Run integration tests
+        env:
+          GATEWAY_URL: "http://localhost"
+        run: |
+          pytest tests/integration/ -v \
+            --tb=short \
+            --html=tests/integration/report.html \
+            --self-contained-html \
+            -o "junit_family=xunit2" \
+            --junitxml=tests/integration/results.xml \
+            2>&1 | tee tests/integration/test-output.log
+
+      # ── Tugas 14: Collect Docker logs ────────────────────────────
+      - name: 📋 Collect Docker service logs
+        if: always()
+        run: |
+          mkdir -p /tmp/docker-logs
+
+          # Simpan log semua services
+          for service in gateway frontend backend palmchain-db; do
+            docker compose logs $service > /tmp/docker-logs/${service}.log 2>&1 || true
+            echo "Saved logs for: $service"
+          done
+
+          # Summary stats
+          docker compose ps > /tmp/docker-logs/compose-status.txt 2>&1
+          docker stats --no-stream > /tmp/docker-logs/docker-stats.txt 2>&1 || true
+
+          echo "📋 Log files collected:"
+          ls -lh /tmp/docker-logs/
+
+      # ── Tugas 14: Upload artifacts ────────────────────────────────
+      - name: 📤 Upload Docker logs as artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-service-logs-${{ github.run_number }}
+          path: |
+            /tmp/docker-logs/
+          retention-days: 7
+
+      - name: 📤 Upload test results as artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results-${{ github.run_number }}
+          path: |
+            tests/integration/report.html
+            tests/integration/results.xml
+            tests/integration/test-output.log
+          retention-days: 14
+
+      # ── Summary ──────────────────────────────────────────────────
+      - name: 📊 Integration Test Summary
+        if: always()
+        run: |
+          {
+            echo "## 🔗 Integration Test Summary"
+            echo ""
+            echo "| Item | Value |"
+            echo "|------|-------|"
+            echo "| 🏃 Run Number | \`#${{ github.run_number }}\` |"
+            echo "| 📦 Commit | \`${GITHUB_SHA:0:7}\` |"
+            echo "| 📁 Artifacts | Docker logs + test results (7-14 hari) |"
+            echo ""
+            echo "### 🐳 Service Status"
+            echo "\`\`\`"
+            docker compose ps 2>/dev/null || echo "Services already stopped"
+            echo "\`\`\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 🛑 Stop all services
+        if: always()
+        run: |
+          docker compose down -v --remove-orphans
+          echo "✅ All services stopped and volumes cleaned"

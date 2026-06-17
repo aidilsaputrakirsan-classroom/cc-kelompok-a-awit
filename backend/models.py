@@ -3,11 +3,25 @@ PalmChain Database Models
 Sistem Monitoring Rantai Pasok TBS (Tandan Buah Segar) Kelapa Sawit
 """
 
-from sqlalchemy import Column, Integer, String, Float, DateTime, Date, Boolean, ForeignKey, func, Text, JSON
+import uuid
+
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    func,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+
 from database import Base
-import uuid
 
 
 class MasterVendor(Base):
@@ -37,6 +51,7 @@ class MasterBlock(Base):
     block_code = Column(String(10), unique=True, nullable=False, index=True)
     division = Column(String(50))  # Afdeling
     hectarage = Column(Float)  # Luas area dalam hektar
+    geometry = Column(JSON, nullable=True)  # Menyimpan bentuk/koordinat geojson
     vendor_id = Column(UUID(as_uuid=True), ForeignKey("master_vendors.id", ondelete="SET NULL"), nullable=True, index=True)
     status = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

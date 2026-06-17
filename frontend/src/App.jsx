@@ -2,6 +2,13 @@ import { Navigate, Route, Routes } from "react-router-dom"
 import "./App.css"
 import { AuthProvider } from "./context/AuthContext"
 import { ThemeProvider } from "./context/ThemeContext"
+import { LoadingProvider } from "./context/LoadingContext"
+import { ParticlesProvider } from "@tsparticles/react"
+import { loadSlim } from "@tsparticles/slim"
+
+const particlesInit = async (engine) => {
+  await loadSlim(engine);
+};
 import LoginPage from "./components/LoginPage"
 import MainLayout from "./layouts/MainLayout"
 import { LoginGate } from "./routes/LoginGate"
@@ -13,12 +20,18 @@ import MappingPage from "./pages/MappingPage"
 import ActualHauling from "./pages/ActualHauling"
 import ItemsPage from "./pages/ItemsPage"
 import AboutPage from "./components/AboutPage"
+import OnboardingPage from "./pages/OnboardingPage"
+import StatusPage from "./pages/StatusPage"
 
 export default function App() {
   return (
+    <ParticlesProvider init={particlesInit}>
+    <LoadingProvider>
     <ThemeProvider>
       <AuthProvider>
         <Routes>
+          <Route path="/status" element={<StatusPage />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
           <Route
             path="/login"
             element={(
@@ -43,5 +56,7 @@ export default function App() {
         </Routes>
       </AuthProvider>
     </ThemeProvider>
+    </LoadingProvider>
+    </ParticlesProvider>
   )
 }

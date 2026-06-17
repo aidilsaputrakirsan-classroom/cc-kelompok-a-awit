@@ -10,8 +10,6 @@ from fastapi import HTTPException, Header, Request
 
 from circuit_breaker import CircuitBreaker
 
-from circuit_breaker import CircuitBreaker
-
 AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://auth-service:8001")
 
 # Global circuit breaker instance

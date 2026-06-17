@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 import { useOutletContext } from "react-router-dom"
 import { fetchVendors, createVendor, updateVendor, deleteVendor } from "../services/api"
 import ContractorTable from "../components/ContractorTable"
@@ -158,7 +159,7 @@ function MasterDataContractorPage({ onUnauthorized: onUnauthorizedProp, onNotify
         </div>
       </div>
 
-      {isModalOpen && (
+      {isModalOpen && createPortal(
         <div className="mdc-modal-overlay">
           <div className="mdc-modal" role="dialog" aria-modal="true">
             <div className="mdc-modal__header">
@@ -181,7 +182,8 @@ function MasterDataContractorPage({ onUnauthorized: onUnauthorizedProp, onNotify
               loading={actionLoading}
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <ContractorTable

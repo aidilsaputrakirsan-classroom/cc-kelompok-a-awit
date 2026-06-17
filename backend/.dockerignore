@@ -1,31 +1,10 @@
-# Virtual environment
-venv/
-.venv/
-
-# Environment files (secrets!)
+# Jangan copy file-file ini ke Docker image
 .env
-
-# Python cache
+test.db
+fallback.db
+*.db
 __pycache__/
 *.pyc
-*.pyo
-
-# IDE
-.vscode/
-.idea/
-
-# Git
-.git/
-.gitignore
-
-# Docker
-Dockerfile
-.dockerignore
-
-# Testing
-tests/
-*.test.py
-
-# Documentation
-*.md
-docs/
+.pytest_cache/
+venv/
+.venv/

@@ -127,6 +127,8 @@ jobs:
             # ── BACKEND ──
             backend:
               - 'backend/**'
+              - 'services/**'
+              - 'docker-compose.yml'
 
             # ── REQUIREMENTS (Python deps) ──
             requirements:
@@ -135,6 +137,8 @@ jobs:
               - 'backend/setup.py'
               - 'backend/Pipfile'
               - 'backend/Pipfile.lock'
+              - 'services/auth-service/requirements*.txt'
+              - 'services/item-service/requirements*.txt'
 
   # ─────────────────────────────────────────────────────────────────
   #  STEP 2 — Deploy
@@ -639,21 +643,93 @@ jobs:
           
           # Mengambil domain output yang dihasilkan secara dinamis oleh DeployCC
           LIVE_DOMAIN="${{ steps.deploy.outputs.domain }}"
-          HEALTH_URL="${LIVE_DOMAIN}/health"
+          HEALTH_URL="${LIVE_DOMAIN}/api/health"
           
           echo "Memulai uji kesehatan pada endpoint: $HEALTH_URL"
           
-          # Melakukan hit ke endpoint health check publik
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL")
+          # Melakukan hit ke endpoint health check publik dengan timeout 10 detik
+          HTTP_STATUS=$(curl -s -o /dev/null --connect-timeout 10 --max-time 15 -w "%{http_code}" "$HEALTH_URL")
           
           if [ "$HTTP_STATUS" == "200" ]; then
             echo "✅ Health check PASSED! Production backend merespons dengan HTTP $HTTP_STATUS"
           else
             echo "❌ Health check FAILED! Server production mengembalikan HTTP $HTTP_STATUS"
-            echo "Silakan gunakan perintah '${{ steps.deploy.outputs.ssh_cmd }}' untuk memeriksa 'svc-logs'."
+            
+            echo "Installing sshpass to fetch server logs..."
+            sudo apt-get update && sudo apt-get install -y sshpass
+            
+            SSH_CMD="${{ steps.deploy.outputs.ssh_cmd }}"
+            SSH_PASS="${{ steps.deploy.outputs.ssh_pass }}"
+            
+            # Tambahkan ConnectTimeout=10 agar SSH tidak hang selamanya jika port/host diblokir firewall
+            REAL_SSH_CMD=$(echo "$SSH_CMD" | sed "s/^ssh /sshpass -p '$SSH_PASS' ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 /")
+            
+            echo "=== svc-status ==="
+            eval "$REAL_SSH_CMD 'svc-status || true'"
+            
+            echo "=== svc-applog ==="
+            eval "$REAL_SSH_CMD 'svc-applog | tail -n 50 || true'"
+            
+            echo "=== svc-logs ==="
+            eval "$REAL_SSH_CMD 'svc-logs | tail -n 50 || true'"
+            
+            # Save to file as well for artifact uploading
+            echo "=== svc-status ===" > /tmp/backend-logs.txt
+            eval "$REAL_SSH_CMD 'svc-status || true'" >> /tmp/backend-logs.txt
+            echo "=== svc-applog ===" >> /tmp/backend-logs.txt
+            eval "$REAL_SSH_CMD 'svc-applog | tail -n 50 || true'" >> /tmp/backend-logs.txt
+            echo "=== svc-logs ===" >> /tmp/backend-logs.txt
+            eval "$REAL_SSH_CMD 'svc-logs | tail -n 50 || true'" >> /tmp/backend-logs.txt
+            
             exit 1
           fi
           
+      - name: 📤 Upload Backend Logs on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-startup-logs
+          path: /tmp/backend-logs.txt
+          retention-days: 5
+          
       - name: Cleanup
         if: always()
-        run: rm -f /tmp/*-deploy.zip /tmp/deploy-response.txt || true
+        run: rm -f /tmp/*-deploy.zip /tmp/deploy-response.txt /tmp/backend-logs.txt || true
+
+      # ──────────────────────────────────────────────────────────────
+      # 📢 DEPLOY NOTIFICATION SUMMARY — Lead CI/CD Tugas 11
+      # ──────────────────────────────────────────────────────────────
+      - name: 📢 Deployment Notification Summary
+        if: always()
+        run: |
+          DEPLOY_STATUS="${{ steps.deploy.outcome }}"
+          HEALTH_STATUS="${{ steps.deploy.outcome }}"
+          COMMIT_SHA="${{ needs.detect-changes.outputs.head_sha }}"
+          SHORT_SHA="${COMMIT_SHA:0:7}"
+          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          LIVE_DOMAIN="${{ steps.deploy.outputs.domain }}"
+
+          if [ "$DEPLOY_STATUS" = "success" ]; then
+            STATUS_EMOJI="✅"
+            STATUS_TEXT="SUCCESS"
+          else
+            STATUS_EMOJI="❌"
+            STATUS_TEXT="FAILED"
+          fi
+
+          {
+            echo "## $STATUS_EMOJI Deployment Notification — $STATUS_TEXT"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| 🕐 Timestamp | \`$TIMESTAMP\` |"
+            echo "| 📦 Commit SHA | [\`$SHORT_SHA\`](https://github.com/${{ github.repository }}/commit/$COMMIT_SHA) |"
+            echo "| 🌿 Branch | \`${{ github.ref_name }}\` |"
+            echo "| 👤 Triggered by | @${{ github.actor }} |"
+            echo "| 🚀 Deploy Status | **$STATUS_TEXT** |"
+            echo "| 🌐 Production URL | [$LIVE_DOMAIN]($LIVE_DOMAIN) |"
+            echo "| 🏥 Health Check URL | [$LIVE_DOMAIN/health]($LIVE_DOMAIN/health) |"
+            echo ""
+            echo "> Deploy oleh GitHub Actions · [Lihat run ini](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          } >> "$GITHUB_STEP_SUMMARY"
+

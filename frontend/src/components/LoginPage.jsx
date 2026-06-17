@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+
 import "./LoginPage.css";
-import { User, Lock, Eye, EyeOff, Mail } from "lucide-react";
+import { User, Lock, Eye, EyeOff, Mail, ArrowLeft } from "lucide-react";
 
 function IconAndroid() {
   return (
@@ -66,7 +68,11 @@ function IllustrationSVG() {
 
 export default function LoginPage() {
   const { login, registerAndLogin } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [mode, setMode] = useState("login"); // "login" | "register"
+
+
   const [showPw, setShowPw] = useState(false);
   const [showPw2, setShowPw2] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -88,7 +94,7 @@ export default function LoginPage() {
       await login(email, password);
     } catch (err) {
       setError(err.message === "UNAUTHORIZED"
-        ? "Email atau password salah."
+        ? "Sesi atau kredensial tidak valid."
         : err.message || "Login gagal, coba lagi.");
     } finally {
       setLoading(false);
@@ -101,11 +107,22 @@ export default function LoginPage() {
     if (!name || !email || !password || !confirmPw) { setError("Semua field wajib diisi."); return; }
     if (password !== confirmPw) { setError("Konfirmasi password tidak cocok."); return; }
     if (password.length < 8) { setError("Password minimal 8 karakter."); return; }
+    if (!/[a-zA-Z]/.test(password)) { setError("Password harus mengandung huruf (A-Z atau a-z)."); return; }
+    if (!/[0-9]/.test(password)) { setError("Password harus mengandung angka (0-9)."); return; }
+    if (!/[!@#$%^&*()_+\-=\[\]{};:'",.<>?/\\|`~]/.test(password)) {
+      setError("Password harus mengandung karakter spesial (contoh: ! @ # $ %)."); return;
+    }
     setLoading(true);
     try {
       await registerAndLogin({ name, email, password });
     } catch (err) {
-      setError(err.message || "Registrasi gagal, coba lagi.");
+      // Tampilkan pesan error dari backend secara langsung jika ada
+      const msg = err.message;
+      if (msg && msg !== "Validasi gagal") {
+        setError(msg);
+      } else {
+        setError("Registrasi gagal. Pastikan email belum terdaftar dan password memenuhi syarat.");
+      }
     } finally {
       setLoading(false);
     }
@@ -113,6 +130,10 @@ export default function LoginPage() {
 
   return (
     <div className="login-container">
+      <button className="back-btn" onClick={() => navigate('/onboarding')} type="button">
+        <ArrowLeft size={20} />
+        <span>Kembali</span>
+      </button>
       <div className="bg-dots"></div>
       <div className="bg-circle bg-circle-1"></div>
       <div className="bg-circle bg-circle-2"></div>
@@ -224,7 +245,7 @@ export default function LoginPage() {
                   <input
                     id="reg-password"
                     type={showPw ? "text" : "password"}
-                    placeholder="Min. 8 karakter + angka + simbol"
+                    placeholder="Min. 8 karakter, angka & simbol (!@#$)"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     autoComplete="new-password"

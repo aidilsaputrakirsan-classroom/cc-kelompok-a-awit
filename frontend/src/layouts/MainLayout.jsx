@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState, useEffect } from "react"
-import { Outlet } from "react-router-dom"
+import { Outlet, useLocation } from "react-router-dom"
 import Sidebar from "../components/Sidebar"
 import { useAuth } from "../context/AuthContext"
 import { useTheme } from "../context/ThemeContext"
@@ -9,6 +9,7 @@ function MainLayout() {
   const { user, logout, showToast } = useAuth()
   const { isDarkMode } = useTheme()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const location = useLocation()
 
   useEffect(() => {
     document.body.className = isDarkMode ? "dark" : "light"
@@ -44,7 +45,9 @@ function MainLayout() {
           </div>
         </header>
         <main className="pt-main">
-          <Outlet context={outletContext} />
+          <div key={location.pathname} className="page-transition-animate">
+            <Outlet context={outletContext} />
+          </div>
         </main>
       </div>
     </div>
