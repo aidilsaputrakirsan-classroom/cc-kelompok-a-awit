@@ -43,10 +43,10 @@ jobs:
           echo "Waiting 30s for services to initialize..."
           sleep 30
 
-          echo "Checking gateway health on port 8080..."
+          echo "Checking gateway health on port 80..."
           HTTP="000"
           for i in $(seq 1 15); do
-            HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/health || echo "000")
+            HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/health || echo "000")
             if [ "$HTTP" = "200" ]; then
               echo "✅ Gateway healthy after $i attempt(s)"
               break
@@ -73,7 +73,7 @@ jobs:
       # ── Tugas 13: Run integration tests ──────────────────────────
       - name: 🧪 Run integration tests
         env:
-          GATEWAY_URL: "http://localhost:8080"
+          GATEWAY_URL: "http://localhost"
         run: |
           pytest tests/integration/ -v \
             --tb=short \
@@ -90,7 +90,7 @@ jobs:
           mkdir -p /tmp/docker-logs
 
           # Simpan log semua services
-          for service in gateway frontend auth-service item-service auth-db item-db; do
+          for service in gateway frontend backend palmchain-db; do
             docker compose logs $service > /tmp/docker-logs/${service}.log 2>&1 || true
             echo "Saved logs for: $service"
           done
