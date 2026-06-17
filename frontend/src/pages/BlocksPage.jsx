@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 import { useOutletContext } from "react-router-dom"
 import { fetchBlocks, createBlock, updateBlock, deleteBlock, fetchVendors } from "../services/api"
 import BlockTable from "../components/BlockTable"
@@ -226,7 +227,7 @@ function BlocksPage() {
         </div>
       </div>
 
-      {isModalOpen && (
+      {isModalOpen && createPortal(
         <div className="blk-modal-overlay">
           <div className="blk-modal" role="dialog" aria-modal="true">
             <div className="blk-modal__header">
@@ -249,7 +250,8 @@ function BlocksPage() {
               loading={actionLoading}
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <BlockTable

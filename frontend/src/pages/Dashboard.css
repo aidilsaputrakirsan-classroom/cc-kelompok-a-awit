@@ -24,7 +24,7 @@
 
 .pt-dash__stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   margin-bottom: 1.75rem;
 }
@@ -81,7 +81,7 @@ body.dark .pt-dash-card {
 
 .pt-dash__charts {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.25rem;
 }
 

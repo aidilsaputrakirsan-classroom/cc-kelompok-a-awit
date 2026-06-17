@@ -474,6 +474,8 @@ body.dark .mdc-page-btn:hover:not(:disabled) {
   width: min(680px, 100%);
   background: var(--card-bg);
   border-radius: 16px;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 20px 60px rgba(44, 47, 54, 0.12);
   padding: 1.5rem;
   position: relative;
@@ -801,6 +803,8 @@ body.dark .mdc-page-btn:hover:not(:disabled) {
   width: min(680px, 100%);
   background: var(--card-bg);
   border-radius: 24px;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 20px 80px rgba(0, 0, 0, 0.16);
   padding: 1.5rem;
   position: relative;
