@@ -5,7 +5,7 @@
 //   fetch(`${API_URL}/api/items`)   → GET /api/api/items  → uvicorn: /api/items   ✅
 //
 // Dev lokal: Jika menggunakan Vite proxy, biarkan kosong. Jika menggunakan gateway Nginx (port 80) langsung, gunakan VITE_API_URL="http://localhost"
-export const API_URL = (import.meta.env.VITE_API_URL !== undefined ? import.meta.env.VITE_API_URL : "http://localhost").replace(/\/$/, "")
+export const API_URL = (import.meta.env.VITE_API_URL !== undefined ? import.meta.env.VITE_API_URL : "http://localhost:8000").replace(/\/$/, "")
 
 const TOKEN_STORAGE_KEY = "palmtrack_access_token"
 

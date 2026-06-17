@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap, GeoJSON, Tooltip } from 'react-leaflet';
 import polylabel from 'polylabel';
 import calculateArea from '@turf/area';
@@ -67,7 +68,7 @@ function SaveBlockModal({ open, geoJson, layer, onClose, onSave, showToast, vend
     setIsSaving(false);
   };
 
-  return (
+  return createPortal(
     <div className="pt-modal-overlay">
       <div className="pt-modal-content">
         <h3>Simpan Poligon Area</h3>
@@ -106,7 +107,8 @@ function SaveBlockModal({ open, geoJson, layer, onClose, onSave, showToast, vend
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
