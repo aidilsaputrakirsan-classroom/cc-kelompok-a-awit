@@ -319,17 +319,20 @@ docker compose down -v
 
 Sebagai bagian dari jaminan mutu proyek (Quality Assurance), seluruh aspek teknis dan fungsional telah melalui proses uji coba dan didokumentasikan di folder `docs/`. Silakan klik tautan berikut untuk membaca laporannya:
 
-- [Panduan Setup (Manual & Docker)](docs/setup-guide.md)
-- [Arsitektur Docker Detail (Multi-Container)](docs/docker-architecture.md)
-- [Skema Database & Relasi Detil](docs/database-schema.md)
-- [Hasil Pengujian UI/UX Aplikasi (Lengkap dengan Screenshot)](docs/ui-test-results.md)
-- [Hasil Pengujian Seluruh Endpoint API](docs/api-test-results.md)
-- [Hasil Pengujian Keamanan Autentikasi](docs/auth-test-results.md)
-- [Panduan Skenario Demo Ujian Tengah Semester (UTS)](docs/uts-demo-script.md)
-- [Retrospektif Milestone 1 (Week 1-8)](docs/retrospective-m1.md)
-- [Panduan Git Workflow & Kolaborasi Tim](docs/git-workflow.md)
-- [Panduan Testing & CI/CD](docs/testing-guide.md)
-- [Release Notes Milestone 2 (v2.0)](docs/release-notes-m2.md)
+- [Panduan Setup (Manual & Docker)](docs/guides/setup-guide.md)
+- [Arsitektur Docker Detail (Multi-Container)](docs/architecture/docker-architecture.md)
+- [Arsitektur Microservices](docs/architecture/microservices-architecture.md)
+- [Skema Database & Relasi Detil](docs/api/database-schema.md)
+- [Kontrak API Microservices](docs/api/api-contract-microservices.md)
+- [Hasil Pengujian UI/UX Aplikasi (Lengkap dengan Screenshot)](docs/testing_and_reports/ui-test-results.md)
+- [Hasil Pengujian Seluruh Endpoint API](docs/testing_and_reports/api-test-results.md)
+- [Hasil Pengujian Keamanan Autentikasi](docs/testing_and_reports/auth-test-results.md)
+- [Laporan Pengujian Keandalan & Circuit Breaker](docs/testing_and_reports/reliability-testing.md)
+- [Retrospektif Milestone 1 (Week 1-8)](docs/testing_and_reports/retrospective-m1.md)
+- [Panduan Git Workflow & Kolaborasi Tim](docs/guides/git-workflow.md)
+- [Panduan Testing & CI/CD](docs/guides/testing-guide.md)
+- [Panduan Operasional & Observability](docs/guides/operations-guide.md)
+- [Release Notes Milestone 2 (v2.0)](docs/testing_and_reports/release-notes-m2.md)
 
 ---
 *Dokumentasi disusun dan difinalisasi secara profesional oleh **Adonia Azarya Tamalonggehe** (Lead QA & Documentation).*
