@@ -5,25 +5,14 @@
 # =====================================================================
 
 services:
-  auth-db:
+  db:
     restart: always
     # Menutup total akses port dari luar kontainer demi keamanan data
     ports: !reset []
 
-  item-db:
-    restart: always
-    # Menutup total akses port dari luar kontainer demi keamanan data
-    ports: !reset []
-
-  auth-service:
+  backend:
     environment:
       - LOG_LEVEL=WARNING  # Kurangi noise log (hanya catat warning & error)
-      - DEBUG=false
-    restart: always
-
-  item-service:
-    environment:
-      - LOG_LEVEL=WARNING
       - DEBUG=false
     restart: always
 

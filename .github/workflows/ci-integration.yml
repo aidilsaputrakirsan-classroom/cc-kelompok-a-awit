@@ -97,7 +97,7 @@ jobs:
           mkdir -p /tmp/docker-logs
 
           # Simpan log semua services
-          for service in gateway frontend auth-service item-service auth-db item-db; do
+          for service in gateway frontend backend palmchain-db; do
             docker compose logs $service > /tmp/docker-logs/${service}.log 2>&1 || true
             echo "Saved logs for: $service"
           done
