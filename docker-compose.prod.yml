@@ -1,5 +1,3 @@
-version: '3.8'
-
 # =====================================================================
 # OVERRIDE: Production Environment
 # Digunakan bersamaan dengan docker-compose.yml utama menggunakan perintah:

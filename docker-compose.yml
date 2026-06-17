@@ -1,5 +1,3 @@
-version: '3.8'
-
 # =====================================================================
 # Docker Compose — Arsitektur Microservices (Resilience & Hardening)
 # Proyek: PalmTrack Cloud — PalmChain
